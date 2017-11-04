@@ -1,7 +1,7 @@
 CC = g++
 LD = g++
 
-OBJ = Radiosity.o Vector.o Image.o
+OBJ = Radiosity.o Vector.o Image.o Rectangle.o
 TARGET = Radiosity
 
 CFLAGS = -O3 -Wall
