@@ -4,6 +4,8 @@
 #include <cmath>
 using namespace std;
 
+typedef struct Vector Color;
+
 struct Vector {
     Vector(const Vector &b);
     Vector(double x_ = 0, double y_ = 0, double z_ = 0);
