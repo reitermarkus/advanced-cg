@@ -1,3 +1,6 @@
+/radiosity/Radiosity
+/radiosity/*.ppm
+
 # Prerequisites
 *.d
 
