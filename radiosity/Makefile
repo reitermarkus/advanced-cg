@@ -15,17 +15,19 @@ VPATH =
 # Rules
 all: $(TARGET)
 
+$(TARGET): $(OBJ)
+
 $(TARGET).o: $(TARGET).cpp
 	$(CC) $(CFLAGS) $(INCLUDES) -c $^ -o $@
 
 %.o: %.cpp
 	$(CC) $(CFLAGS) $(INCLUDES) -c $^ -o $@
 
-clean:
-	rm -f *.o $(TARGET)
-
 .PHONY: clean
+clean:
+	$(RM) $(TARGET) *.o
 
-# Dependencies
-$(TARGET): $(OBJ)
+run: all
+	./$(TARGET)
+
 
