@@ -1,7 +1,7 @@
 CC = c++
 LD = c++
 
-OBJ = Radiosity.o Vector.o Image.o Rectangle.o
+OBJ = $(patsubst %.cpp, %.o, $(wildcard *.cpp))
 TARGET = Radiosity
 
 CFLAGS = -O3 -Wall -std=c++1y

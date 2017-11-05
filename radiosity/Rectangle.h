@@ -1,27 +1,13 @@
 #ifndef __RECTANGLE_H__
 #define __RECTANGLE_H__
 
-#include <vector>
+#include "Shape.h"
 
-#include "Vector.h"
-#include "Ray.h"
-
-struct Rectangle {
-  Vector p0;
-  Vector edge_a, edge_b;
-  Color emission, color;
-  Vector normal;
-
-  vector<Color> patch;
-  int a_num, b_num;
-  double a_len, b_len;
-
+struct Rectangle: public Shape {
   Rectangle(const Vector p0_, const Vector &a_, const Vector &b_,
-            const Color &emission_, const Color &color_);
+        const Color &emission_, const Color &color_) : Shape(p0_, a_, b_, emission_, color_) {}
 
-  Color sample_patch(int ia, int ib) const;
-  void init_patchs(const int a_num_, const int b_num_);
-  const double intersect(const Ray &ray);
+  const double intersect(const Ray &ray) const;
 };
 
-#endif //__RECTANGLE_H__
+#endif // __RECTANGLE_H__
