@@ -4,7 +4,7 @@ LD = g++
 OBJ = Radiosity.o Vector.o Image.o Rectangle.o
 TARGET = Radiosity
 
-CFLAGS = -O3 -Wall
+CFLAGS = -O3 -Wall -std=gnu++11
 LDLIBS =
 INCLUDES =
 

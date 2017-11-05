@@ -52,7 +52,7 @@ const Color BackgroundColor(0.0, 0.0, 0.0);
  * - vector to corner(origin), edge a, edge b
  * - emitted light energy (light sources), surface reflectivity (~color)
  *******************************************************************/
-Rectangle recs[] = {
+vector<Rectangle> recs = {
     /* Cornell Box walls */
     Rectangle(Vector(0.0, 0.0, 0.0), Vector(100.0, 0.0, 0.0),
               Vector(0.0, 80.0, 0.0), Vector(),
@@ -102,7 +102,7 @@ Rectangle recs[] = {
  * of intersection and id of intersected object
  *******************************************************************/
 bool Intersect_Scene(const Ray &ray, double *t, int *id, Vector *normal) {
-  const int n = int(sizeof(recs) / sizeof(Rectangle));
+  const int n = recs.size();
   *t = 1e20;
   *id = -1;
 
@@ -129,7 +129,7 @@ bool Intersect_Scene(const Ray &ray, double *t, int *id, Vector *normal) {
 void Calculate_Form_Factors(const int a_div_num, const int b_div_num,
                             const int mc_sample) {
   /* Total number of patches in scene */
-  const int n = int(sizeof(recs) / sizeof(Rectangle));
+  const int n = recs.size();
   for (int i = 0; i < n; i++) {
     recs[i].init_patchs(a_div_num, b_div_num);
     patch_num += recs[i].a_num * recs[i].b_num;
@@ -304,7 +304,7 @@ void Calculate_Form_Factors(const int a_div_num, const int b_div_num,
  *******************************************************************/
 
 void Calculate_Radiosity(const int iteration) {
-  const int n = int(sizeof(recs) / sizeof(Rectangle));
+  const int n = recs.size();
   int patch_i = 0;
 
   for (int i = 0; i < n; i++) {
