@@ -1,0 +1,24 @@
+language: c
+
+matrix:
+  include:
+   - os: osx
+   - os: linux
+     compiler: c++-4.8
+
+addons:
+  apt:
+    sources:
+     - sourceline: ppa:ubuntu-toolchain-r/test
+    packages:
+     - cpp-4.8
+
+env:
+  - CFLAGS='-Werror'
+
+before_script:
+  - cd radiosity
+
+script:
+  - make
+  - ./Radiosity
