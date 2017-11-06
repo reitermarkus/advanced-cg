@@ -1,5 +1,32 @@
 #include "Rectangle.h"
 
+Rectangle::Rectangle(const Vector p0_, const Vector &a_, const Vector &b_,
+          const Color &emission_, const Color &color_): Shape(emission_, color_), p0(p0_), edge_a(a_), edge_b(b_) {
+  normal = edge_a.Cross(edge_b);
+  normal = normal.Normalized();
+  a_len = edge_a.Length();
+  b_len = edge_b.Length();
+}
+
+void Rectangle::init_patchs(const int a_num_, const int b_num_) {
+  a_num = a_num_;
+  b_num = b_num_;
+  patch.clear();
+  patch.resize(a_num * b_num);
+}
+
+Color Rectangle::sample_patch(int ia, int ib) const {
+  if (ia < 0)
+    ia = 0;
+  if (ia >= a_num)
+    ia = a_num - 1;
+  if (ib < 0)
+    ib = 0;
+  if (ib >= b_num)
+    ib = b_num - 1;
+  return patch[ia * b_num + ib];
+}
+
 const double Rectangle::intersect(const Ray &ray) const {
   const double t = (p0 - ray.org).Dot(normal) / ray.dir.Dot(normal);
   if (t <= 0.00001)

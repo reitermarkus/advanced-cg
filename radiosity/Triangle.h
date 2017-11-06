@@ -4,11 +4,13 @@
 #include "Shape.h"
 
 struct Triangle: public Shape {
-  Triangle(const Vector p0, const Vector &edge_a, const Vector &edge_b,
-           const Color &emission, const Color &color):
-    Shape(p0, edge_a, edge_b, emission, color) {}
+  Vector a, b, c;
 
-  const double intersect(const Ray &ray) const;
+  Triangle(const Vector a_, const Vector &b_, const Vector &c_,
+           const Color &emission, const Color &color):
+    Shape(emission, color), a(a_), b(b_), c(c_) {}
+
+  const Vector* intersect(const Ray &ray) const;
 };
 
 #endif // __TRIANGLE_H__
