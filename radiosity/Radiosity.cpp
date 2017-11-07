@@ -123,7 +123,7 @@ void Calculate_Form_Factors(const int a_div_num, const int b_div_num,
     patch_num += recs[i].a_num * recs[i].b_num;
   }
 
-  std::cout << "Number of rectangles: " << n << endl;
+  cout << "Number of rectangles: " << n << endl;
   cout << "Number of patches: " << patch_num << endl;
   int form_factor_num = patch_num * patch_num;
   cout << "Number of form factors: " << form_factor_num << endl;
@@ -487,17 +487,8 @@ int main(int argc, char **argv) {
             const double r2 = 2.0 * drand48();
 
             /* Transform uniform into non-uniform filter samples */
-            double dx;
-            if (r1 < 1.0)
-              dx = sqrt(r1) - 1.0;
-            else
-              dx = 1.0 - sqrt(2.0 - r1);
-
-            double dy;
-            if (r2 < 1.0)
-              dy = sqrt(r2) - 1.0;
-            else
-              dy = 1.0 - sqrt(2.0 - r2);
+            double dx = r1 < 1.0 ? (sqrt(r1) - 1.0) : (1.0 - sqrt(2.0 - r1));
+            double dy = r2 < 1.0 ? (sqrt(r2) - 1.0) : (1.0 - sqrt(2.0 - r2));
 
             /* Ray direction into scene from camera through sample */
             Vector dir = cx * ((x + (sx + 0.5 + dx) / 2.0) / width - 0.5) +
