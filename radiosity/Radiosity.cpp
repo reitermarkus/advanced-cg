@@ -142,9 +142,7 @@ void Calculate_Form_Factors(const int a_div_num, const int b_div_num,
     for (int ia = 0; ia < recs[i].a_num; ia++) {
       for (int ib = 0; ib < recs[i].b_num; ib++) {
         patch_area[patch_i + ia * recs[i].b_num + ib] =
-            ((recs[i].edge_a / recs[i].a_num)
-                 .Cross((recs[i].edge_b / recs[i].b_num)))
-                .Length();
+          recs[i].area / (recs[i].a_num * recs[i].b_num);
       }
     }
   }

@@ -6,6 +6,7 @@ Rectangle::Rectangle(const Vector p0_, const Vector &a_, const Vector &b_,
   normal = normal.Normalized();
   a_len = edge_a.Length();
   b_len = edge_b.Length();
+  area = a_len * b_len;
 }
 
 void Rectangle::init_patchs(const int a_num_, const int b_num_) {

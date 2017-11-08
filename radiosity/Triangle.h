@@ -8,7 +8,6 @@
 struct Triangle: public Shape {
   Vector a, b, c;
   double ab, bc, ca;
-  double area;
 
   Triangle(const Vector &a_, const Vector &b_, const Vector &c_,
            const Color &emission, const Color &color);

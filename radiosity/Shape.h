@@ -9,6 +9,7 @@
 struct Shape {
   Color emission, color;
   Vector normal;
+  double area;
 
   vector<Color> patch;
 
