@@ -31,7 +31,7 @@ int Image::toInteger(double x) {
   return int(pow(x, 1 / 2.2) * 255 + .5);
 }
 
-void Image::Save(const string &filename) {
+void Image::save(const string &filename) {
   /* Save image in PPM format */
   FILE *f = fopen(filename.c_str(), "wb");
   fprintf(f, "P3\n%d %d\n%d\n", width, height, 255);

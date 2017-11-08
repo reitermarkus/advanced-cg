@@ -19,31 +19,31 @@ Vector Vector::operator*(double c) const {
   return Vector(x * c, y * c, z * c);
 }
 
-Vector Vector::MultComponents(const Vector &b) const {
+Vector Vector::entrywiseProduct(const Vector &b) const {
   return Vector(x * b.x, y * b.y, z * b.z);
 }
 
-const double Vector::LengthSquared() const {
-  return Dot(*this);
+const double Vector::lengthSquared() const {
+  return dotProduct(*this);
 }
 
-const double Vector::Length() const {
-  return sqrt(LengthSquared());
+const double Vector::length() const {
+  return sqrt(lengthSquared());
 }
 
 const double Vector::distance(const Vector &b) const {
-  return (*this - b).Length();
+  return (*this - b).length();
 }
 
-const Vector Vector::Normalized() const {
-  return Vector(x, y, z) / Length();
+const Vector Vector::normalize() const {
+  return Vector(x, y, z) / length();
 }
 
-const double Vector::Dot(const Vector &b) const {
+const double Vector::dotProduct(const Vector &b) const {
   return x * b.x + y * b.y + z * b.z;
 }
 
-const Vector Vector::Cross(const Vector &b) const {
+const Vector Vector::crossProduct(const Vector &b) const {
   return Vector(
     (y * b.z) - (z * b.y),
     (z * b.x) - (x * b.z),

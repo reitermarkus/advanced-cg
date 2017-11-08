@@ -215,7 +215,7 @@ void Calculate_Form_Factors(const int a_div_num, const int b_div_num,
                                 ((double)(jb + u3) / recs[j].b_num);
 
                         /* Check for visibility between sample points */
-                        const Vector ij = (xj - xi).Normalized();
+                        const Vector ij = (xj - xi).normalize();
 
                         double t;
                         int id;
@@ -226,14 +226,14 @@ void Calculate_Form_Factors(const int a_div_num, const int b_div_num,
                         }
 
                         /* Cosines of angles beteen normals and ray inbetween */
-                        const double d0 = normal_i.Dot(ij);
-                        const double d1 = normal_j.Dot(-1.0 * ij);
+                        const double d0 = normal_i.dotProduct(ij);
+                        const double d1 = normal_j.dotProduct(-1.0 * ij);
 
                         /* Continue if patches facing each other */
                         if (d0 > 0.0 && d1 > 0.0) {
                           /* Sample form factor */
                           const double K =
-                              d0 * d1 / (M_PI * (xj - xi).LengthSquared());
+                              d0 * d1 / (M_PI * (xj - xi).lengthSquared());
 
                           /* Add weighted sample to estimate */
                           F += K / pdf;
@@ -308,7 +308,7 @@ void Calculate_Radiosity(const int iteration) {
           }
         }
         /* Multiply sum with color of patch and add emission */
-        B = recs[i].color.MultComponents(B) + recs[i].emission;
+        B = recs[i].color.entrywiseProduct(B) + recs[i].emission;
 
         /* Store overall patch radiosity of current iteration */
         recs[i].patch[ia * recs[i].b_num + ib] = B;
@@ -366,8 +366,8 @@ Color Radiance(const Ray &ray, const int depth, bool interpolation = true) {
 
   /* Determine intersected patch */
   const Vector v = hitpoint - obj.p0;
-  const double a_len = v.Dot(obj.edge_a.Normalized());
-  const double b_len = v.Dot(obj.edge_b.Normalized());
+  const double a_len = v.dotProduct(obj.edge_a.normalize());
+  const double b_len = v.dotProduct(obj.edge_b.normalize());
 
   double da = obj.a_num * a_len / obj.a_len;
   double db = obj.b_num * b_len / obj.b_len;
@@ -421,11 +421,11 @@ int main(int argc, char **argv) {
 
   /* Set camera origin and viewing direction (negative z direction) */
   Ray camera(Vector(50.0, 52.0, 295.6),
-             Vector(0.0, -0.042612, -1.0).Normalized());
+             Vector(0.0, -0.042612, -1.0).normalize());
 
   /* Image edge vectors for pixel sampling */
   Vector cx = Vector(width * 0.5135 / height);
-  Vector cy = (cx.Cross(camera.dir)).Normalized() * 0.5135;
+  Vector cy = (cx.crossProduct(camera.dir)).normalize() * 0.5135;
 
   /* Two final renderings; one with constant, one with interpolated patch colors
    */
@@ -485,12 +485,12 @@ int main(int argc, char **argv) {
             /* Determine constant radiance */
             accumulated_radiance =
                 accumulated_radiance +
-                Radiance(Ray(start, dir.Normalized()), 0, false) / samples;
+                Radiance(Ray(start, dir.normalize()), 0, false) / samples;
 
             /* Determine interpolated radiance */
             accumulated_radiance2 =
                 accumulated_radiance2 +
-                Radiance(Ray(start, dir.Normalized()), 0, true) / samples;
+                Radiance(Ray(start, dir.normalize()), 0, true) / samples;
           }
 
           img.addColor(x, y, accumulated_radiance);
@@ -502,6 +502,6 @@ int main(int argc, char **argv) {
 
   cout << endl;
 
-  img.Save(string("image_patches.ppm"));
-  img_interpolated.Save(string("image_smooth.ppm"));
+  img.save(string("image_patches.ppm"));
+  img_interpolated.save(string("image_smooth.ppm"));
 }

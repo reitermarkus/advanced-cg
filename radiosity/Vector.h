@@ -17,14 +17,14 @@ struct Vector {
 
     friend Vector operator*(double c, const Vector &b) { return b * c; }
 
-    Vector MultComponents(const Vector &b) const;
+    Vector entrywiseProduct(const Vector &b) const;
 
-    const double LengthSquared() const;
-    const double Length() const;
+    const double lengthSquared() const;
+    const double length() const;
     const double distance(const Vector &b) const;
-    const Vector Normalized() const;
-    const double Dot(const Vector &b) const;
-    const Vector Cross(const Vector &b) const;
+    const Vector normalize() const;
+    const double dotProduct(const Vector &b) const;
+    const Vector crossProduct(const Vector &b) const;
 
     double x, y, z;
 };

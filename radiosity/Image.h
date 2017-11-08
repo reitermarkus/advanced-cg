@@ -17,7 +17,7 @@ struct Image {
   void setColor(int x, int y, const Color &c);
   void addColor(int x, int y, const Color &c);
   int toInteger(double x);
-  void Save(const string &filename);
+  void save(const string &filename);
 };
 
 #endif //__IMAGE_H__
