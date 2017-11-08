@@ -3,8 +3,9 @@ TARGET = Radiosity
 
 CXXFLAGS = -O3 -Wall -std=c++1z
 
-ifeq ($(shell command -v module 2> /dev/null), module)
-  CXX := module load gcc/7.2.0 || true && ${CXX}
+ifeq ($(shell command -v module 2>/dev/null), module)
+  CXXFLAGS += -static-libstdc++
+  CXX := module load gcc/7.2.0 || true && $(CXX)
 endif
 
 # Rules
