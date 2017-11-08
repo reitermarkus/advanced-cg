@@ -3,6 +3,7 @@ language: cpp
 matrix:
   include:
     - os: osx
+      osx_image: xcode9.1
     - os: linux
       compiler: g++-7
       env:
