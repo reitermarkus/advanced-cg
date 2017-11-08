@@ -3,6 +3,18 @@
 #include "Ray.h"
 #include "Vector.h"
 
+static Vector calculateFaceNormal(const Vector a, const Vector b, const Vector c) {
+  Vector u = b - a;    
+  Vector v = c - a;
+  
+  return u.Cross(v);
+}
+
+Triangle::Triangle(const Vector &a_, const Vector &b_, const Vector &c_,
+           const Color &emission, const Color &color): Shape(emission, color), a(a_), b(b_), c(c_) {
+  normal = calculateFaceNormal(a_, b_, c_).Normalized();
+}
+
 //  Tests whether a Ray intersects with a Triangle using the Möller-Trumbore algorithm.
 //  Either returns a pointer to the intersection Vector or null.
 //
