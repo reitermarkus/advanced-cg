@@ -1,7 +1,11 @@
 OBJ = $(patsubst %.cpp, %.o, $(wildcard *.cpp))
 TARGET = Radiosity
 
-CXXFLAGS = -O3 -Wall -std=c++1y
+CXXFLAGS = -O3 -Wall -std=c++1z
+
+ifeq ($(shell command -v module 2> /dev/null), module)
+  CXX := module load gcc/7.2.0 || true && ${CXX}
+endif
 
 # Rules
 all: $(TARGET)

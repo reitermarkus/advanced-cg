@@ -2,21 +2,23 @@ language: cpp
 
 matrix:
   include:
-   - os: osx
-   - os: linux
-     compiler: g++-4.8
+    - os: osx
+    - os: linux
+      env:
+        - MATRIX_EVAL="export CXX='g++-7'"
 
 addons:
   apt:
     sources:
-     - ubuntu-toolchain-r-test
+      - ubuntu-toolchain-r-test
     packages:
-     - g++-4.8
+      - g++-7
 
 env:
   - CXXFLAGS='-Werror'
 
 before_script:
+  - eval "${MATRIX_EVAL}"
   - cd radiosity
 
 script:
