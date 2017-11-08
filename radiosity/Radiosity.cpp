@@ -26,6 +26,7 @@
  *******************************************************************/
 
 /* Standard includes */
+#include <algorithm>
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
@@ -38,8 +39,6 @@
 #include "Ray.h"
 
 using namespace std;
-
-const double Over_M_PI = 1.0 / M_PI;
 
 static double *form_factor;
 static int patch_num = 0;
@@ -401,21 +400,12 @@ Color Radiance(const Ray &ray, const int depth, bool interpolation = true) {
 
     int ia0 = int(da - 0.5);
     int ib0 = int(db - 0.5);
-    double dx = da - ia0 - 0.5;
-    double dy = db - ib0 - 0.5;
+    double dx = clamp(da - ia0 - 0.5, 0.0, 1.0);
+    double dy = clamp(db - ib0 - 0.5, 0.0, 1.0);
 
-    if (dx < 0.0)
-      dx = 0.0;
-    if (dx >= 1.0)
-      dx = 1.0;
-    if (dy < 0.0)
-      dy = 0.0;
-    if (dy >= 1.0)
-      dy = 1.0;
-
-    return bicubicInterpolate(c, dx, dy) * Over_M_PI;
+    return bicubicInterpolate(c, dx, dy) / M_PI;
   } else {
-    return obj.patch[ia * obj.b_num + ib] * Over_M_PI;
+    return obj.patch[ia * obj.b_num + ib] / M_PI;
   }
 }
 

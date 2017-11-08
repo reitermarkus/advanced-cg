@@ -4,6 +4,7 @@ matrix:
   include:
     - os: osx
     - os: linux
+      compiler: g++-7
       env:
         - MATRIX_EVAL="export CXX='g++-7'"
 
