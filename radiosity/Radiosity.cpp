@@ -119,27 +119,25 @@ void Calculate_Form_Factors(const int a_div_num, const int b_div_num,
   const int n = recs.size();
   for (int i = 0; i < n; i++) {
     recs[i].init_patchs(a_div_num, b_div_num);
-    patch_num += recs[i].a_num * recs[i].b_num;
+    patch_num += recs[i].patch.size();
   }
 
   cout << "Number of rectangles: " << n << endl;
   cout << "Number of patches: " << patch_num << endl;
-  int form_factor_num = patch_num * patch_num;
+  int form_factor_num = pow(patch_num, 2);
   cout << "Number of form factors: " << form_factor_num << endl;
 
   /* 1D-array to hold form factor pairs */
-  form_factor = new double[form_factor_num];
-  memset(form_factor, 0.0, sizeof(double) * form_factor_num);
+  form_factor = new double[form_factor_num] { 0.0 };
 
   /* 1D-array with patch areas */
-  double *patch_area = new double[patch_num];
-  memset(patch_area, 0.0, sizeof(double) * patch_num);
+  double *patch_area = new double[patch_num] { 0.0 };
 
   /* Precompute patch areas, assuming same size for each rectangle */
   for (int i = 0; i < n; i++) {
     int patch_i = 0;
     for (int k = 0; k < i; k++)
-      patch_i += recs[k].a_num * recs[k].b_num;
+      patch_i += recs[k].patch.size();
 
     for (int ia = 0; ia < recs[i].a_num; ia++) {
       for (int ib = 0; ib < recs[i].b_num; ib++) {
@@ -152,13 +150,11 @@ void Calculate_Form_Factors(const int a_div_num, const int b_div_num,
   }
 
   /* Offsets for indexing of patches in 1D-array */
-  int *offset = new int[n];
+  int *offset = new int[n] { 0 };
 
-  for (int i = 0; i < n; i++) {
-    offset[i] = 0;
+  for (int i = 0; i < n; i++)
     for (int k = 0; k < i; k++)
       offset[i] += recs[k].a_num * recs[k].b_num;
-  }
 
   /* Loop over all rectangles in scene */
   for (int i = 0; i < n; i++) {
