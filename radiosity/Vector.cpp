@@ -24,7 +24,7 @@ Vector Vector::MultComponents(const Vector &b) const {
 }
 
 const double Vector::LengthSquared() const {
-  return x * x + y * y + z * z;
+  return Dot(*this);
 }
 
 const double Vector::Length() const {
@@ -32,11 +32,11 @@ const double Vector::Length() const {
 }
 
 const double Vector::distance(const Vector &b) const {
-  return sqrt(pow(x - b.x, 2) + pow(y - b.y, 2) + pow(z - b.z, 2));
+  return (*this - b).Length();
 }
 
 const Vector Vector::Normalized() const {
-  return Vector(x, y, z) / sqrt(x * x + y * y + z * z);
+  return Vector(x, y, z) / Length();
 }
 
 const double Vector::Dot(const Vector &b) const {
@@ -44,6 +44,9 @@ const double Vector::Dot(const Vector &b) const {
 }
 
 const Vector Vector::Cross(const Vector &b) const {
-  return Vector((y * b.z) - (z * b.y), (z * b.x) - (x * b.z),
-                (x * b.y) - (y * b.x));
+  return Vector(
+    (y * b.z) - (z * b.y),
+    (z * b.x) - (x * b.z),
+    (x * b.y) - (y * b.x)
+  );
 }
