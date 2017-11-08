@@ -31,6 +31,10 @@ const double Vector::Length() const {
   return sqrt(LengthSquared());
 }
 
+const double Vector::distance(const Vector &b) const {
+  return sqrt(pow(x - b.x, 2) + pow(y - b.y, 2) + pow(z - b.z, 2));
+}
+
 const Vector Vector::Normalized() const {
   return Vector(x, y, z) / sqrt(x * x + y * y + z * z);
 }

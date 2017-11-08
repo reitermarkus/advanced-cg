@@ -21,6 +21,7 @@ struct Vector {
 
     const double LengthSquared() const;
     const double Length() const;
+    const double distance(const Vector &b) const;
     const Vector Normalized() const;
     const double Dot(const Vector &b) const;
     const Vector Cross(const Vector &b) const;
