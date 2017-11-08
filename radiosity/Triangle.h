@@ -1,6 +1,8 @@
 #ifndef __TRIANGLE_H__
 #define __TRIANGLE_H__
 
+#include <memory>
+
 #include "Shape.h"
 
 struct Triangle: public Shape {
@@ -10,7 +12,7 @@ struct Triangle: public Shape {
            const Color &emission, const Color &color):
     Shape(emission, color), a(a_), b(b_), c(c_) {}
 
-  const Vector* intersect(const Ray &ray) const;
+  const unique_ptr<Vector> intersect(const Ray &ray) const;
 };
 
 #endif // __TRIANGLE_H__

@@ -6,7 +6,7 @@
 //  Tests whether a Ray intersects with a Triangle using the Möller-Trumbore algorithm.
 //  Either returns a pointer to the intersection Vector or null.
 //
-const Vector* Triangle::intersect(const Ray &ray) const {
+const unique_ptr<Vector> Triangle::intersect(const Ray &ray) const {
   static const double EPSILON = 0.0000001;
 
   Vector edge_1 = this->b - this->a;
@@ -36,5 +36,5 @@ const Vector* Triangle::intersect(const Ray &ray) const {
   if (t <= EPSILON)
     return nullptr;
 
-  return new Vector(ray.org + ray.dir * t);
+  return make_unique<Vector>(ray.org + ray.dir * t);
 }
