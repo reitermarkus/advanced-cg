@@ -1,18 +1,28 @@
 #include "Triangle.h"
 
+#include <cmath>
+
 #include "Ray.h"
 #include "Vector.h"
 
 static Vector calculateFaceNormal(const Vector a, const Vector b, const Vector c) {
-  Vector u = b - a;    
+  Vector u = b - a;
   Vector v = c - a;
-  
+
   return u.Cross(v);
 }
 
 Triangle::Triangle(const Vector &a_, const Vector &b_, const Vector &c_,
            const Color &emission, const Color &color): Shape(emission, color), a(a_), b(b_), c(c_) {
   normal = calculateFaceNormal(a_, b_, c_).Normalized();
+
+  ab = a.distance(b);
+  bc = b.distance(c);
+  ca = c.distance(a);
+
+  // Calculate area of triangle using Heron's Formula.
+  auto s = (ab + bc + ca) / 2.0;
+  area = sqrt(s * (s - ab) * (s - bc) * (s - ca));
 }
 
 //  Tests whether a Ray intersects with a Triangle using the Möller-Trumbore algorithm.
