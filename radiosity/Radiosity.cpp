@@ -118,7 +118,7 @@ void Calculate_Form_Factors(const int a_div_num, const int b_div_num,
   /* Total number of patches in scene */
   const int n = recs.size();
   for (int i = 0; i < n; i++) {
-    recs[i].init_patchs(a_div_num, b_div_num);
+    recs[i].init_patches(a_div_num, b_div_num);
     patch_num += recs[i].patch.size();
   }
 

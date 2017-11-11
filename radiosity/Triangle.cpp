@@ -60,3 +60,13 @@ const unique_ptr<Vector> Triangle::intersect(const Ray &ray) const {
 
   return make_unique<Vector>(ray.org + ray.dir * t);
 }
+
+void Triangle::init_patches(const int division_number) {
+  this->division_number = division_number;
+  this->patch.clear();
+  this->patch.resize(pow(division_number, 2));
+}
+
+Color Triangle::sample_patch(int ia, int ib) const {
+  return this->patch[0];
+}

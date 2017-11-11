@@ -9,7 +9,7 @@ Rectangle::Rectangle(const Vector p0_, const Vector &a_, const Vector &b_,
   area = a_len * b_len;
 }
 
-void Rectangle::init_patchs(const int a_num_, const int b_num_) {
+void Rectangle::init_patches(const int a_num_, const int b_num_) {
   a_num = a_num_;
   b_num = b_num_;
   patch.clear();

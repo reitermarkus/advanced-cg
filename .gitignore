@@ -1,5 +1,6 @@
 /radiosity/Radiosity
 /radiosity/*.ppm
+/radiosity/test/run
 
 # Prerequisites
 *.d

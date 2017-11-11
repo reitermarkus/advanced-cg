@@ -1,7 +1,12 @@
-OBJ = $(patsubst %.cpp, %.o, $(wildcard *.cpp))
 TARGET = Radiosity
+TARGET_TEST = test/run
 
-CXXFLAGS = -O3 -Wall -std=c++1z
+OBJ = $(filter-out $(TARGET).o, $(patsubst %.cpp, %.o, $(wildcard *.cpp)))
+OBJ_TEST = $(patsubst %.cpp, %.o, $(wildcard test/*.cpp))
+
+INCLUDES = -Iinclude -I./
+
+CXXFLAGS = -O3 -Wall -std=c++1z $(INCLUDES)
 
 ifeq ($(shell command -v module 2>/dev/null), module)
   CXXFLAGS += -static-libstdc++
@@ -11,15 +16,20 @@ endif
 # Rules
 all: $(TARGET)
 
-$(TARGET): $(OBJ)
+$(TARGET): $(TARGET).o $(OBJ)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $^ -o $@
 
+.PHONY: test
+test: $(OBJ_TEST) $(OBJ)
+	$(CXX) $(CXXFLAGS) $^ -o $(TARGET_TEST)
+	./$(TARGET_TEST)
+
 .PHONY: clean
 clean:
-	$(RM) $(TARGET) *.o
+	$(RM) $(TARGET) *.o */*.o
 
 run: all
 	./$(TARGET)
