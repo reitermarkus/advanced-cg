@@ -148,17 +148,8 @@ void Calculate_Form_Factors(const int a_div_num, const int b_div_num,
     fill_n(patch_area[&rec], rec.patch.size(), area);
   }
 
-  /* Offsets for indexing of patches in 1D-array */
-  int *offset = new int[n] { 0 };
-
-  for (int i = 0; i < n; i++)
-    for (int k = 0; k < i; k++)
-      offset[i] += recs[k].a_num * recs[k].b_num;
-
   /* Loop over all rectangles in scene */
   for (int i = 0; i < n; i++) {
-    int patch_i = offset[i];
-
     cout << i << " ";
 
     /* Loop over all patches in rectangle i */
@@ -166,8 +157,6 @@ void Calculate_Form_Factors(const int a_div_num, const int b_div_num,
       cout << "*" << flush;
       for (int ib = 0; ib < recs[i].b_num; ib++) {
         const Vector normal_i = recs[i].normal;
-
-        int patch_j = 0;
 
         /* Loop over all rectangles in scene for rectangle i */
         for (int j = 0; j < n; j++) {
@@ -246,11 +235,9 @@ void Calculate_Form_Factors(const int a_div_num, const int b_div_num,
                 form_factor[&recs[i]][ia * recs[i].b_num + ib][&recs[j]][ja * recs[j].b_num + jb] = F;
                 form_factor[&recs[j]][ja * recs[j].b_num + jb][&recs[i]][ia * recs[i].b_num + ib] = F;
               }
-              patch_j++;
             }
           }
         }
-        patch_i++;
       }
     }
 
@@ -261,8 +248,9 @@ void Calculate_Form_Factors(const int a_div_num, const int b_div_num,
   for (auto &rec_a : recs) {
     for (auto p_a = 0; p_a < rec_a.patch.size(); p_a++) {
       for (auto &rec_b : recs) {
-        for (auto p_b = 0; p_b < rec_a.patch.size(); p_b++) {
-          form_factor[&rec_a][p_a][&rec_b][p_b] = clamp(form_factor[&rec_a][p_a][&rec_b][p_b] / patch_area[&rec_a][p_a], 0.0, 1.0);
+        for (auto p_b = 0; p_b < rec_b.patch.size(); p_b++) {
+          const auto area = patch_area[&rec_a][p_a];
+          form_factor[&rec_a][p_a][&rec_b][p_b] = clamp(form_factor[&rec_a][p_a][&rec_b][p_b] / area, 0.0, 1.0);
         }
       }
     }
@@ -276,34 +264,28 @@ void Calculate_Form_Factors(const int a_div_num, const int b_div_num,
  *******************************************************************/
 
 void Calculate_Radiosity(const int iteration) {
-  const int n = recs.size();
-  int patch_i = 0;
-
-  for (int i = 0; i < n; i++) {
-    for (int ia = 0; ia < recs[i].a_num; ia++) {
-      for (int ib = 0; ib < recs[i].b_num; ib++) {
+  for (auto &rec_a : recs) {
+    for (int ia = 0; ia < rec_a.a_num; ia++) {
+      for (int ib = 0; ib < rec_a.b_num; ib++) {
         Color B;
 
-        int patch_j = 0;
-        for (int j = 0; j < n; j++) {
-          for (int ja = 0; ja < recs[j].a_num; ja++) {
-            for (int jb = 0; jb < recs[j].b_num; jb++) {
-              const double Fij = form_factor[&recs[i]][ia * recs[i].b_num + ib][&recs[j]][ja * recs[j].b_num + jb];
+        for (auto &rec_b : recs) {
+          for (int ja = 0; ja < rec_b.a_num; ja++) {
+            for (int jb = 0; jb < rec_b.b_num; jb++) {
+              const double Fij = form_factor[&rec_a][ia * rec_a.b_num + ib][&rec_b][ja * rec_b.b_num + jb];
 
               /* Add form factor multiplied with radiosity of previous step */
               if (Fij > 0.0)
-                B = B + Fij * recs[j].patch[ja * recs[j].b_num + jb];
-
-              patch_j++;
+                B = B + Fij * rec_b.patch[ja * rec_b.b_num + jb];
             }
           }
         }
+
         /* Multiply sum with color of patch and add emission */
-        B = recs[i].color.entrywiseProduct(B) + recs[i].emission;
+        B = rec_a.color.entrywiseProduct(B) + rec_a.emission;
 
         /* Store overall patch radiosity of current iteration */
-        recs[i].patch[ia * recs[i].b_num + ib] = B;
-        patch_i++;
+        rec_a.patch[ia * rec_a.b_num + ib] = B;
       }
     }
   }
