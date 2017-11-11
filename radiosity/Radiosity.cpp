@@ -31,6 +31,7 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <vector>
 
 #include "Vector.h"
@@ -128,22 +129,16 @@ void Calculate_Form_Factors(const int a_div_num, const int b_div_num,
   cout << "Number of form factors: " << form_factor_num << endl;
 
   /* 1D-array to hold form factor pairs */
-  form_factor = new double[form_factor_num] { 0.0 };
+  form_factor = new double[form_factor_num];
+  fill_n(form_factor, form_factor_num, 0.0);
 
-  /* 1D-array with patch areas */
-  double *patch_area = new double[patch_num] { 0.0 };
+  map<Rectangle*, double*> patch_area;
 
   /* Precompute patch areas, assuming same size for each rectangle */
-  for (int i = 0; i < n; i++) {
-    int patch_i = 0;
-    for (int k = 0; k < i; k++)
-      patch_i += recs[k].patch.size();
-
-    auto rec = recs[i];
-    auto area = rec.area / (rec.a_num * rec.b_num);
-
-    for (auto p = 0; p < rec.patch.size(); p++)
-      patch_area[patch_i + p] = area;
+  for (auto &rec : recs) {
+    patch_area[&rec] = new double[rec.patch.size()];
+    const auto area = rec.area / rec.patch.size();
+    fill_n(patch_area[&rec], rec.patch.size(), area);
   }
 
   /* Offsets for indexing of patches in 1D-array */
@@ -185,8 +180,8 @@ void Calculate_Form_Factors(const int a_div_num, const int b_div_num,
 
                 /* Uniform PDF for Monte Carlo (1/Ai)x(1/Aj) */
                 const double pdf =
-                    (1.0 / patch_area[offset[i] + ia * recs[i].b_num + ib]) *
-                    (1.0 / patch_area[offset[j] + ja * recs[j].b_num + jb]);
+                    (1.0 / patch_area[&recs[i]][ia * recs[i].b_num + ib]) *
+                    (1.0 / patch_area[&recs[j]][ja * recs[j].b_num + jb]);
 
                 /* Determine rays of NixNi uniform samples of patch
                    on i to NjxNj uniform samples of patch on j */
@@ -242,6 +237,7 @@ void Calculate_Form_Factors(const int a_div_num, const int b_div_num,
                 F /= (Ni) * (Ni) * (Nj) * (Nj);
 
                 form_factor[patch_i * patch_num + patch_j] = F;
+                form_factor[patch_j * patch_num + patch_i] = F;
               }
               patch_j++;
             }
@@ -254,21 +250,15 @@ void Calculate_Form_Factors(const int a_div_num, const int b_div_num,
     cout << endl;
   }
 
-  /* Copy upper to lower triangular values */
-  for (int i = 0; i < patch_num - 1; i++) {
-    for (int j = i + 1; j < patch_num; j++) {
-      form_factor[j * patch_num + i] = form_factor[i * patch_num + j];
-    }
-  }
-
   /* Divide by area to get final form factors */
-  for (int i = 0; i < patch_num; i++) {
-    for (int j = 0; j < patch_num; j++) {
-      form_factor[i * patch_num + j] /= patch_area[i];
-
-      /* Clamp to [0,1] */
-      if (form_factor[i * patch_num + j] > 1.0)
-        form_factor[i * patch_num + j] = 1.0;
+  auto patches_per_rectangle = a_div_num * b_div_num;
+  for (auto r = 0; r < recs.size(); r++) {
+    for (auto p = 0; p < recs[r].patch.size(); p++) {
+      for (int j = 0; j < patch_num; j++) {
+        auto i = r * patches_per_rectangle + p;
+        auto idx = i * patch_num + j;
+        form_factor[idx] = clamp(form_factor[idx] / patch_area[&recs[r]][p], 0.0, 1.0);
+      }
     }
   }
 }
