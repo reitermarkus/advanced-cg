@@ -41,7 +41,7 @@
 
 using namespace std;
 
-static double *form_factor;
+static map<Rectangle*, vector<map<Rectangle*, double*>>> form_factor;
 static int patch_num = 0;
 
 const Color BackgroundColor(0.0, 0.0, 0.0);
@@ -128,9 +128,16 @@ void Calculate_Form_Factors(const int a_div_num, const int b_div_num,
   int form_factor_num = pow(patch_num, 2);
   cout << "Number of form factors: " << form_factor_num << endl;
 
-  /* 1D-array to hold form factor pairs */
-  form_factor = new double[form_factor_num];
-  fill_n(form_factor, form_factor_num, 0.0);
+  for (auto &rec_a : recs) {
+    form_factor[&rec_a] = vector<map<Rectangle*, double*>>(rec_a.patch.size());
+    for (auto p = 0; p < rec_a.patch.size(); p++) {
+      form_factor[&rec_a][p] = map<Rectangle*, double*>();
+      for (auto &rec_b : recs) {
+        form_factor[&rec_a][p][&rec_b] = new double[rec_b.patch.size()];
+        fill_n(form_factor[&rec_a][p][&rec_b], rec_b.patch.size(), 0.0);
+      }
+    }
+  }
 
   map<Rectangle*, double*> patch_area;
 
@@ -236,8 +243,8 @@ void Calculate_Form_Factors(const int a_div_num, const int b_div_num,
                 /* Divide by number of samples */
                 F /= (Ni) * (Ni) * (Nj) * (Nj);
 
-                form_factor[patch_i * patch_num + patch_j] = F;
-                form_factor[patch_j * patch_num + patch_i] = F;
+                form_factor[&recs[i]][ia * recs[i].b_num + ib][&recs[j]][ja * recs[j].b_num + jb] = F;
+                form_factor[&recs[j]][ja * recs[j].b_num + jb][&recs[i]][ia * recs[i].b_num + ib] = F;
               }
               patch_j++;
             }
@@ -251,13 +258,12 @@ void Calculate_Form_Factors(const int a_div_num, const int b_div_num,
   }
 
   /* Divide by area to get final form factors */
-  auto patches_per_rectangle = a_div_num * b_div_num;
-  for (auto r = 0; r < recs.size(); r++) {
-    for (auto p = 0; p < recs[r].patch.size(); p++) {
-      for (int j = 0; j < patch_num; j++) {
-        auto i = r * patches_per_rectangle + p;
-        auto idx = i * patch_num + j;
-        form_factor[idx] = clamp(form_factor[idx] / patch_area[&recs[r]][p], 0.0, 1.0);
+  for (auto &rec_a : recs) {
+    for (auto p_a = 0; p_a < rec_a.patch.size(); p_a++) {
+      for (auto &rec_b : recs) {
+        for (auto p_b = 0; p_b < rec_a.patch.size(); p_b++) {
+          form_factor[&rec_a][p_a][&rec_b][p_b] = clamp(form_factor[&rec_a][p_a][&rec_b][p_b] / patch_area[&rec_a][p_a], 0.0, 1.0);
+        }
       }
     }
   }
@@ -282,7 +288,7 @@ void Calculate_Radiosity(const int iteration) {
         for (int j = 0; j < n; j++) {
           for (int ja = 0; ja < recs[j].a_num; ja++) {
             for (int jb = 0; jb < recs[j].b_num; jb++) {
-              const double Fij = form_factor[patch_i * patch_num + patch_j];
+              const double Fij = form_factor[&recs[i]][ia * recs[i].b_num + ib][&recs[j]][ja * recs[j].b_num + jb];
 
               /* Add form factor multiplied with radiosity of previous step */
               if (Fij > 0.0)
