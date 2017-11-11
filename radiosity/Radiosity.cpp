@@ -139,12 +139,11 @@ void Calculate_Form_Factors(const int a_div_num, const int b_div_num,
     for (int k = 0; k < i; k++)
       patch_i += recs[k].patch.size();
 
-    for (int ia = 0; ia < recs[i].a_num; ia++) {
-      for (int ib = 0; ib < recs[i].b_num; ib++) {
-        patch_area[patch_i + ia * recs[i].b_num + ib] =
-          recs[i].area / (recs[i].a_num * recs[i].b_num);
-      }
-    }
+    auto rec = recs[i];
+    auto area = rec.area / (rec.a_num * rec.b_num);
+
+    for (auto p = 0; p < rec.patch.size(); p++)
+      patch_area[patch_i + p] = area;
   }
 
   /* Offsets for indexing of patches in 1D-array */
