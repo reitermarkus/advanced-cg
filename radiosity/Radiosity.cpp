@@ -203,16 +203,12 @@ void Calculate_Form_Factors(const int a_div_num, const int b_div_num,
 
                         const Vector xi =
                             recs[i].p0 +
-                            recs[i].edge_a *
-                                ((double)(ia + u0) / recs[i].a_num) +
-                            recs[i].edge_b *
-                                ((double)(ib + u1) / recs[i].b_num);
+                            recs[i].edge_a * ((double)(ia + u0) / recs[i].a_num) +
+                            recs[i].edge_b * ((double)(ib + u1) / recs[i].b_num);
                         const Vector xj =
                             recs[j].p0 +
-                            recs[j].edge_a *
-                                ((double)(ja + u2) / recs[j].a_num) +
-                            recs[j].edge_b *
-                                ((double)(jb + u3) / recs[j].b_num);
+                            recs[j].edge_a * ((double)(ja + u2) / recs[j].a_num) +
+                            recs[j].edge_b * ((double)(jb + u3) / recs[j].b_num);
 
                         /* Check for visibility between sample points */
                         const Vector ij = (xj - xi).normalize();
