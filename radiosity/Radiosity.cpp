@@ -41,7 +41,7 @@
 
 using namespace std;
 
-static map<Rectangle*, vector<map<Rectangle*, double*>>> form_factor;
+static map<Rectangle*, vector<map<Rectangle*, vector<double>>>> form_factor;
 static int patch_num = 0;
 
 const Color BackgroundColor(0.0, 0.0, 0.0);
@@ -118,34 +118,34 @@ void Calculate_Form_Factors(const int a_div_num, const int b_div_num,
                             const int mc_sample) {
   /* Total number of patches in scene */
   const int n = recs.size();
-  for (int i = 0; i < n; i++) {
-    recs[i].init_patches(a_div_num, b_div_num);
-    patch_num += recs[i].patch.size();
+  for (auto &rec : recs) {
+    rec.init_patches(a_div_num, b_div_num);
+    patch_num += rec.patch.size();
   }
+  int form_factor_num = pow(patch_num, 2);
 
   cout << "Number of rectangles: " << n << endl;
   cout << "Number of patches: " << patch_num << endl;
-  int form_factor_num = pow(patch_num, 2);
   cout << "Number of form factors: " << form_factor_num << endl;
 
   for (auto &rec_a : recs) {
-    form_factor[&rec_a] = vector<map<Rectangle*, double*>>(rec_a.patch.size());
+    form_factor[&rec_a] = vector<map<Rectangle*, vector<double>>>(rec_a.patch.size());
     for (auto p = 0; p < rec_a.patch.size(); p++) {
-      form_factor[&rec_a][p] = map<Rectangle*, double*>();
+      form_factor[&rec_a][p] = map<Rectangle*, vector<double>>();
       for (auto &rec_b : recs) {
-        form_factor[&rec_a][p][&rec_b] = new double[rec_b.patch.size()];
-        fill_n(form_factor[&rec_a][p][&rec_b], rec_b.patch.size(), 0.0);
+        form_factor[&rec_a][p][&rec_b] = vector<double>(rec_b.patch.size());
+        fill(form_factor[&rec_a][p][&rec_b].begin(), form_factor[&rec_a][p][&rec_b].end(), 0.0);
       }
     }
   }
 
-  map<Rectangle*, double*> patch_area;
+  map<Rectangle*, vector<double>> patch_area;
 
   /* Precompute patch areas, assuming same size for each rectangle */
   for (auto &rec : recs) {
-    patch_area[&rec] = new double[rec.patch.size()];
+    patch_area[&rec] = vector<double>(rec.patch.size());
     const auto area = rec.area / rec.patch.size();
-    fill_n(patch_area[&rec], rec.patch.size(), area);
+    fill(patch_area[&rec].begin(), patch_area[&rec].end(), area);
   }
 
   /* Loop over all rectangles in scene */
