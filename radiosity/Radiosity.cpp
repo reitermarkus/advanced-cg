@@ -35,6 +35,7 @@
 #include <vector>
 
 #include "Vector.h"
+#include "ColorUtils.h"
 #include "Image.h"
 #include "Rectangle.h"
 #include "Ray.h"
@@ -265,8 +266,7 @@ void calculateFormFactors(const int a_div_num, const int b_div_num,
  * run-time O(n^2)
  *******************************************************************/
 
-void calculateRadiosity(const int iteration)
-{
+void calculateRadiosity(const int iteration) {
   for (auto &rec_a : recs) {
     for (int ia = 0; ia < rec_a.a_num; ia++) {
       for (int ib = 0; ib < rec_a.b_num; ib++) {
@@ -292,30 +292,6 @@ void calculateRadiosity(const int iteration)
       }
     }
   }
-}
-
-/******************************************************************
- * Helper functions for smooth bicubic (Catmull-Rom) interpolation
- * using 4x4 color patches;
- * First interpolate in y, followed by interpolation of results in x
- *******************************************************************/
-
-Color bicubicInterpolate(Color p[4][4], double x, double y) {
-  Color arr[4];
-
-  auto cubicInterpolate = [] (Color p[4], double x) -> Color {
-    return p[1] + 0.5 * x *
-                  (p[2] - p[0] +
-                    x * (2.0 * p[0] - 5.0 * p[1] + 4.0 * p[2] - p[3] +
-                        x * (3.0 * (p[1] - p[2]) + p[3] - p[0])));
-  };
-
-  arr[0] = cubicInterpolate(p[0], y);
-  arr[1] = cubicInterpolate(p[1], y);
-  arr[2] = cubicInterpolate(p[2], y);
-  arr[3] = cubicInterpolate(p[3], y);
-
-  return cubicInterpolate(arr, x);
 }
 
 /******************************************************************
@@ -373,7 +349,7 @@ Color radiance(const Ray &ray, const int depth, bool interpolation = true) {
     double dx = clamp(da - ia0 - 0.5, 0.0, 1.0);
     double dy = clamp(db - ib0 - 0.5, 0.0, 1.0);
 
-    return bicubicInterpolate(c, dx, dy) / M_PI;
+    return ColorUtils::bicubicInterpolate(c, dx, dy) / M_PI;
   } else {
     return obj.patch[ia * obj.b_num + ib] / M_PI;
   }
