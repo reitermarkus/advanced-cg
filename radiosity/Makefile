@@ -6,25 +6,36 @@ OBJ_TEST = $(patsubst %.cpp, %.o, $(wildcard test/*.cpp))
 
 INCLUDES = -Iinclude -I./
 
-CXXFLAGS += -O3 -Wall -std=c++1z -fopenmp $(INCLUDES)
-
-ifeq ($(shell command -v module 2>/dev/null), module)
-  CXXFLAGS += -static-libstdc++
-  CXX := module load gcc/7.2.0 || true && $(CXX)
+ifeq ($(shell uname -s), Darwin)
+  ifeq ($(shell brew ls llvm &>/dev/null; echo $$?), 0)
+	  LLVM_PREFIX = $(shell brew --prefix llvm)
+	  CXX = $(LLVM_PREFIX)/bin/clang++
+		INCLUDES += -I$(LLVM_PREFIX)/include
+	  LDFLAGS += -L$(LLVM_PREFIX)/lib
+  else
+    $(error "LLVM is not installed, run `brew install llvm`")
+  endif
+else
+  ifeq ($(shell command -v module &>/dev/null; echo $$?), 0)
+    CXXFLAGS += -static-libstdc++
+    CXX := module load gcc/7.2.0 || true && $(CXX)
+  endif
 endif
+
+CXXFLAGS += -O3 -Wall -std=c++1z -fopenmp
 
 # Rules
 all: $(TARGET)
 
 $(TARGET): $(TARGET).o $(OBJ)
-	$(CXX) $(CXXFLAGS) $^ -o $@
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $@
 
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c $^ -o $@
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $^ -o $@
 
 .PHONY: test
 test: $(OBJ_TEST) $(OBJ)
-	$(CXX) $(CXXFLAGS) $^ -o $(TARGET_TEST)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $(TARGET_TEST)
 	./$(TARGET_TEST)
 
 .PHONY: clean

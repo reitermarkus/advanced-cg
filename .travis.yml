@@ -4,6 +4,8 @@ matrix:
   include:
     - os: osx
       osx_image: xcode9.1
+      env:
+        - MATRIX_EVAL="brew install llvm"
     - os: linux
       compiler: g++-7
       env:
