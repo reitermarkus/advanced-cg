@@ -130,7 +130,7 @@ void Calculate_Form_Factors(const int a_div_num, const int b_div_num,
 
   for (auto &rec_a : recs) {
     form_factor[&rec_a] = vector<map<Rectangle*, vector<double>>>(rec_a.patch.size());
-    for (auto p = 0; p < rec_a.patch.size(); p++) {
+    for (uint p = 0; p < rec_a.patch.size(); p++) {
       form_factor[&rec_a][p] = map<Rectangle*, vector<double>>();
       for (auto &rec_b : recs) {
         form_factor[&rec_a][p][&rec_b] = vector<double>(rec_b.patch.size());
@@ -246,9 +246,9 @@ void Calculate_Form_Factors(const int a_div_num, const int b_div_num,
 
   /* Divide by area to get final form factors */
   for (auto &rec_a : recs) {
-    for (auto p_a = 0; p_a < rec_a.patch.size(); p_a++) {
+    for (uint p_a = 0; p_a < rec_a.patch.size(); p_a++) {
       for (auto &rec_b : recs) {
-        for (auto p_b = 0; p_b < rec_b.patch.size(); p_b++) {
+        for (uint p_b = 0; p_b < rec_b.patch.size(); p_b++) {
           const auto area = patch_area[&rec_a][p_a];
           form_factor[&rec_a][p_a][&rec_b][p_b] = clamp(form_factor[&rec_a][p_a][&rec_b][p_b] / area, 0.0, 1.0);
         }
