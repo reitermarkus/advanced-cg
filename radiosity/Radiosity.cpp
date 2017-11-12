@@ -408,6 +408,7 @@ int main(int argc, char **argv) {
     srand(y * y * y);
 
     /* Loop over row pixels */
+    #pragma omp parallel for
     for (int x = 0; x < width; x++) {
       img.setColor(x, y, Color());
       img_interpolated.setColor(x, y, Color());
