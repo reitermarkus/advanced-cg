@@ -91,7 +91,7 @@ vector<Rectangle> recs = {
  * Returns true if intersection is found, as well as ray parameter
  * of intersection and id of intersected object
  *******************************************************************/
-bool Intersect_Scene(const Ray &ray, double *t, int *id, Vector *normal) {
+bool intersectScene(const Ray &ray, double *t, int *id, Vector *normal) {
   const int n = recs.size();
   *t = 1e20;
   *id = -1;
@@ -116,7 +116,7 @@ bool Intersect_Scene(const Ray &ray, double *t, int *id, Vector *normal) {
  * Computation accelerated by exploiting symmetries of form factor
  * estimation;
  *******************************************************************/
-void Calculate_Form_Factors(const int a_div_num, const int b_div_num,
+void calculateFormFactors(const int a_div_num, const int b_div_num,
                             const int mc_sample) {
   /* Total number of patches in scene */
   const int n = recs.size();
@@ -208,7 +208,7 @@ void Calculate_Form_Factors(const int a_div_num, const int b_div_num,
                         double t;
                         int id;
                         Vector normal;
-                        if (Intersect_Scene(Ray(xi, ij), &t, &id, &normal) &&
+                        if (intersectScene(Ray(xi, ij), &t, &id, &normal) &&
                             id != j) {
                           continue; /* If intersection with other rectangle */
                         }
@@ -265,7 +265,8 @@ void Calculate_Form_Factors(const int a_div_num, const int b_div_num,
  * run-time O(n^2)
  *******************************************************************/
 
-void Calculate_Radiosity(const int iteration) {
+void calculateRadiosity(const int iteration)
+{
   for (auto &rec_a : recs) {
     for (int ia = 0; ia < rec_a.a_num; ia++) {
       for (int ib = 0; ib < rec_a.b_num; ib++) {
@@ -325,13 +326,13 @@ Color bicubicInterpolate(Color p[4][4], double x, double y) {
  * smoothly interpolated color of 4x4 neighboring patches
  *******************************************************************/
 
-Color Radiance(const Ray &ray, const int depth, bool interpolation = true) {
+Color radiance(const Ray &ray, const int depth, bool interpolation = true) {
   double t;
   int id;
   Vector normal;
 
   /* Find intersected rectangle */
-  if (!Intersect_Scene(ray, &t, &id, &normal)) {
+  if (!intersectScene(ray, &t, &id, &normal)) {
     return BackgroundColor;
   }
 
@@ -412,14 +413,14 @@ int main(int argc, char **argv) {
   int patches_b = 12;
   int MC_samples = 3;
 
-  Calculate_Form_Factors(patches_a, patches_b, MC_samples);
+  calculateFormFactors(patches_a, patches_b, MC_samples);
 
   /* Iterative solution of radiosity linear system */
   cout << "Calculating radiosity" << endl;
   int iterations = 40;
   for (int i = 0; i < iterations; i++) {
     cout << i << " ";
-    Calculate_Radiosity(i);
+    calculateRadiosity(i);
   }
   cout << endl;
 
@@ -460,12 +461,12 @@ int main(int argc, char **argv) {
             /* Determine constant radiance */
             accumulated_radiance =
                 accumulated_radiance +
-                Radiance(Ray(start, dir.normalize()), 0, false) / samples;
+                radiance(Ray(start, dir.normalize()), 0, false) / samples;
 
             /* Determine interpolated radiance */
             accumulated_radiance2 =
                 accumulated_radiance2 +
-                Radiance(Ray(start, dir.normalize()), 0, true) / samples;
+                radiance(Ray(start, dir.normalize()), 0, true) / samples;
           }
 
           img.addColor(x, y, accumulated_radiance);
