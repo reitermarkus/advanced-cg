@@ -6,7 +6,7 @@ OBJ_TEST = $(patsubst %.cpp, %.o, $(wildcard test/*.cpp))
 
 INCLUDES = -Iinclude -I./
 
-CXXFLAGS += -O3 -Wall -std=c++1z $(INCLUDES)
+CXXFLAGS += -O3 -Wall -std=c++1z -fopenmp $(INCLUDES)
 
 ifeq ($(shell command -v module 2>/dev/null), module)
   CXXFLAGS += -static-libstdc++

@@ -156,6 +156,7 @@ void calculateFormFactors(const int a_div_num, const int b_div_num,
     cout << i << " ";
 
     /* Loop over all patches in rectangle i */
+    #pragma omp parallel for
     for (int ia = 0; ia < recs[i].a_num; ia++) {
       cout << "*" << flush;
       for (int ib = 0; ib < recs[i].b_num; ib++) {
