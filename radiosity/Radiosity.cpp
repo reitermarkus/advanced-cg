@@ -39,6 +39,8 @@
 #include "Rectangle.h"
 #include "Ray.h"
 
+#include "macro.h"
+
 using namespace std;
 
 static map<Rectangle*, vector<map<Rectangle*, vector<double>>>> form_factor;
