@@ -16,10 +16,8 @@ addons:
     packages:
       - g++-7
 
-env:
-  - CXXFLAGS='-Werror'
-
 before_script:
+  - export CXXFLAGS='-Werror'
   - eval "${MATRIX_EVAL}"
   - cd radiosity
 
