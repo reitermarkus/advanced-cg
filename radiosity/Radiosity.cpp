@@ -41,6 +41,8 @@
 #include "Triangle.h"
 #include "Ray.h"
 
+#include "macro.h"
+
 #undef M_PI
 const double M_PI = atan(1) * 4;
 

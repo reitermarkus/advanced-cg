@@ -20,7 +20,9 @@ Vector Vector::operator*(double c) const {
 }
 
 bool Vector::operator==(const Vector &b) const {
-  return x == b.x && y == b.y && z == b.z;
+  return fabs(x - b.x) <= numeric_limits<double>::epsilon() &&
+         fabs(y - b.y) <= numeric_limits<double>::epsilon() &&
+         fabs(z - b.z) <= numeric_limits<double>::epsilon();
 }
 
 Vector Vector::entrywiseProduct(const Vector &b) const {
