@@ -95,3 +95,23 @@ SCENARIO("Testing Triangle division.", "[Triangle]") {
     }
   }
 }
+
+
+SCENARIO("Testing Triangle sample point.", "[Triangle]") {
+  GIVEN("a right Triangle at (0,0), (1,0), (0,1)") {
+    auto p0 = Vector(0.0, 0.0, 0.0);
+    auto p1 = Vector(1.0, 0.0, 0.0);
+    auto p2 = Vector(0.0, 1.0, 0.0);
+
+    auto triangle = Triangle(p0, p1, p2, Color(), Color());
+
+    WHEN("generating a random sample point") {
+      THEN("it is inside the triangle") {
+        auto q = Triangle::sample(p0, p1, p2);
+        auto intersection = triangle.intersect(Ray(q + Vector(0.0, 0.0, -1), Vector(0.0, 0.0, 1.0)));
+        cout << q << endl;
+        REQUIRE(intersection > 0.0);
+      }
+    }
+  }
+}

@@ -2,6 +2,8 @@
 
 #include <cmath>
 
+#include "macro.h"
+
 #include "Ray.h"
 #include "Vector.h"
 
@@ -105,4 +107,19 @@ unique_ptr<vector<vector<Vector>>> Triangle::divide(int divisions) const {
   }
 
   return subTriangles;
+}
+
+Vector Triangle::sample(Vector &p0, Vector &p1, Vector &p2) {
+  srand(time(nullptr));
+
+  auto epsilon_0 = drand48();
+  auto epsilon_1 = drand48();
+
+  auto delta_0 = 1.0 - sqrt(epsilon_0);
+  auto delta_1 = epsilon_1 * sqrt(epsilon_0);
+  auto delta_2 = 1 - delta_0 - delta_1; // = sqrt(epsilon_0) * (1.0 - epsilon_1)
+
+  Vector q = delta_0 * p0 + delta_1 * p1 + delta_2 * p2;
+
+  return q;
 }
