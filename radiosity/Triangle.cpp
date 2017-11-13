@@ -88,9 +88,9 @@ void Triangle::divide(int divisions) const {
 
       auto offset = row % 2;
 
-      auto v1 = (x + offset) * delta_x + y * delta_y;
-      auto v2 = (x + 1) * delta_x + (y + offset) * delta_y;
-      auto v3 = x * delta_x + (y + 1) * delta_y;
+      auto v1 = a + (x + offset) * delta_x + y * delta_y;
+      auto v2 = a + (x + 1) * delta_x + (y + offset) * delta_y;
+      auto v3 = a + x * delta_x + (y + 1) * delta_y;
 
       subTriangles->push_back({v1, v2, v3});
 
