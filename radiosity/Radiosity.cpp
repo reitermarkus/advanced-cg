@@ -40,7 +40,8 @@
 #include "Rectangle.h"
 #include "Ray.h"
 
-#include "macro.h"
+#undef M_PI
+const double M_PI = atan(1) * 4;
 
 using namespace std;
 
@@ -421,8 +422,9 @@ int main(int argc, char **argv) {
 
           /* Computes radiance at subpixel using multiple samples */
           for (int s = 0; s < samples; s++) {
-            const double r1 = 2.0 * drand48();
-            const double r2 = 2.0 * drand48();
+            auto drand48 = (double)rand() / (double)RAND_MAX;
+            const double r1 = 2.0 * drand48;
+            const double r2 = 2.0 * drand48;
 
             /* Transform uniform into non-uniform filter samples */
             double dx = r1 < 1.0 ? (sqrt(r1) - 1.0) : (1.0 - sqrt(2.0 - r1));
