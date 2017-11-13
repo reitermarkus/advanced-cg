@@ -2,7 +2,6 @@
 #define __RECTANGLE_H__
 
 #include "Shape.h"
-#include <algorithm>
 
 struct Rectangle: public Shape {
   Vector p0;

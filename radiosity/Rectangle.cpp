@@ -1,5 +1,7 @@
 #include "Rectangle.h"
 
+#include <algorithm>
+
 Rectangle::Rectangle(const Vector p0_, const Vector &a_, const Vector &b_,
           const Color &emission_, const Color &color_): Shape(emission_, color_), p0(p0_), edge_a(a_), edge_b(b_) {
   normal = edge_a.crossProduct(edge_b);
