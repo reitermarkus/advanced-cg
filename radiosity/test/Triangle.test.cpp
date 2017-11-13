@@ -42,6 +42,19 @@ SCENARIO("Calculating Triangle patch count.", "[Triangle]") {
 }
 
 SCENARIO("Testing Triangle for Ray intersection.", "[Triangle, Ray]") {
+  GIVEN("a right Triangle at (2,2), (-2,0), (0,-2)") {
+    auto triangle = Triangle(Vector(2.0, 2.0, 0.0), Vector(2.0, 0.0, 0.0), Vector(0.0, 2.0, 0.0), Color(), Color());
+
+    WHEN("when a Ray is pointing towards it from the front") {
+      auto ray = Ray(Vector(2.25, 2.25, -1.0), Vector(0.0, 0.0, 1.0).normalize());
+
+      THEN("there is an intersection") {
+        auto intersection = triangle.intersect(ray);
+        REQUIRE(intersection > 0.0);
+      }
+    }
+  }
+
   GIVEN("a right Triangle at (0,0), (2,0), (0,2)") {
     auto triangle = Triangle(Vector(0.0, 0.0, 0.0), Vector(2.0, 0.0, 0.0), Vector(0.0, 2.0, 0.0), Color(), Color());
 

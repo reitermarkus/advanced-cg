@@ -39,8 +39,8 @@ Triangle::Triangle(const Vector &a_, const Vector &b_, const Vector &c_,
 double Triangle::intersect(const Ray &ray) const {
   static const double EPSILON = 0.0000001;
 
-  Vector edge_1 = this->b - this->a;
-  Vector edge_2 = this->c - this->a;
+  Vector edge_1 = this->b_rel;
+  Vector edge_2 = this->c_rel;
 
   Vector h = ray.dir.crossProduct(edge_2);
   double a = edge_1.dotProduct(h);
@@ -48,8 +48,8 @@ double Triangle::intersect(const Ray &ray) const {
   if (a > -EPSILON && a < EPSILON)
     return 0.0;
 
-  double f = 1 / a;
-  Vector s = ray.org;
+  double f = 1.0 / a;
+  Vector s = ray.org - this->a;
   double u = f * s.dotProduct(h);
 
   if (u < 0.0 || u > 1.0)
