@@ -16,6 +16,7 @@ struct Vector {
     Vector operator-(const Vector &b) const;
     Vector operator/(double c) const;
     Vector operator*(double c) const;
+    bool operator==(const Vector &b) const;
 
     friend Vector operator*(double c, const Vector &b) { return b * c; }
 

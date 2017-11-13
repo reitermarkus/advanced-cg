@@ -19,6 +19,10 @@ Vector Vector::operator*(double c) const {
   return Vector(x * c, y * c, z * c);
 }
 
+bool Vector::operator==(const Vector &b) const {
+  return x == b.x && y == b.y && z == b.z;
+}
+
 Vector Vector::entrywiseProduct(const Vector &b) const {
   return Vector(x * b.x, y * b.y, z * b.z);
 }
