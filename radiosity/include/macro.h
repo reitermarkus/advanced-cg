@@ -1,24 +1,23 @@
 #ifndef __MACRO_H__
 #define __MACRO_H__
 
-#ifndef M_PI
-    #define M_PI 3.14159265358979323846
-#endif
+#undef M_PI
+const double M_PI = atan(1) * 4;
 
 #ifndef drand48
-		#define drand48() (rand() / (RAND_MAX + 1.0))
+  #define drand48() ((double)rand() / (double)RAND_MAX)
 #endif
 
 #ifndef MIN
-	#define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
+  #define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
 #endif
 
 #ifndef MAX
-	#define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
+  #define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
 #endif
 
 #ifndef clamp
-		#define clamp(x, upper, lower) (MIN(upper, MAX(x, lower)))
+  #define clamp(x, min, max) (MIN(max, MAX(x, min)))
 #endif
 
 #endif //__MACRO_H__
