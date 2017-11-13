@@ -72,7 +72,7 @@ vector<Rectangle> recs = {
   Rectangle(Vector(30.0,  0.0, 100.0), Vector(  0.0, 0.0, -20.0), Vector(0.0,  40.0,  0.0), Color(), Color(0.75, 0.75, 0.75)), /* Right */
   Rectangle(Vector(10.0,  0.0,  80.0), Vector(  0.0, 0.0,  20.0), Vector(0.0,  40.0,  0.0), Color(), Color(0.75, 0.75, 0.75)), /* Left */
   Rectangle(Vector(10.0,  0.0, 100.0), Vector( 20.0, 0.0,   0.0), Vector(0.0,  40.0,  0.0), Color(), Color(0.75, 0.75, 0.75)), /* Front */
-  Rectangle(Vector(30.0,  0.0,  80.0), Vector(-20.0, 0.0,   0.0), Vector(0.0, -40.0,  0.0), Color(), Color(0.75, 0.75, 0.75)), /* Back */
+  Rectangle(Vector(30.0,  0.0,  80.0), Vector(-20.0, 0.0,   0.0), Vector(0.0,  40.0,  0.0), Color(), Color(0.75, 0.75, 0.75)), /* Back */
   Rectangle(Vector(10.0, 40.0, 100.0), Vector( 20.0, 0.0,   0.0), Vector(0.0,  0.0, -20.0), Color(), Color(0.75, 0.75, 0.75)), /* Top */
 };
 
