@@ -6,20 +6,24 @@ OBJ_TEST = $(patsubst %.cpp, %.o, $(wildcard test/*.cpp))
 
 INCLUDES = -Iinclude -I./
 
-ifeq ($(shell uname -s), Darwin)
-  ifeq ($(shell brew ls llvm &>/dev/null; echo $$?), 0)
-	  LLVM_PREFIX = $(shell brew --prefix llvm)
-	  CXX = $(LLVM_PREFIX)/bin/clang++
-		INCLUDES += -I$(LLVM_PREFIX)/include
-	  LDFLAGS += -L$(LLVM_PREFIX)/lib
-  else
-    $(error "LLVM is not installed, run `brew install llvm`")
-  endif
+ifneq ($(OS), Windows_NT)
+	ifeq ($(shell uname -s), Darwin)
+		ifeq ($(shell brew ls llvm &>/dev/null; echo $$?), 0)
+			LLVM_PREFIX = $(shell brew --prefix llvm)
+			CXX = $(LLVM_PREFIX)/bin/clang++
+			INCLUDES += -I$(LLVM_PREFIX)/include
+			LDFLAGS += -L$(LLVM_PREFIX)/lib
+		else
+			$(error "LLVM is not installed, run `brew install llvm`")
+		endif
+	else
+		ifeq ($(shell command -v module &>/dev/null; echo $$?), 0)
+			CXXFLAGS += -static-libstdc++
+			CXX := module load gcc/7.2.0 || true && $(CXX)
+		endif
+	endif
 else
-  ifeq ($(shell command -v module &>/dev/null; echo $$?), 0)
-    CXXFLAGS += -static-libstdc++
-    CXX := module load gcc/7.2.0 || true && $(CXX)
-  endif
+	CXX = g++-7.2.0
 endif
 
 CXXFLAGS += -O3 -Wall -std=c++1z -fopenmp
