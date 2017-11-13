@@ -21,12 +21,12 @@ struct Vector {
 
     Vector entrywiseProduct(const Vector &b) const;
 
-    const double lengthSquared() const;
-    const double length() const;
-    const double distance(const Vector &b) const;
-    const Vector normalize() const;
-    const double dotProduct(const Vector &b) const;
-    const Vector crossProduct(const Vector &b) const;
+    double lengthSquared() const;
+    double length() const;
+    double distance(const Vector &b) const;
+    Vector normalize() const;
+    double dotProduct(const Vector &b) const;
+    Vector crossProduct(const Vector &b) const;
 
     double x, y, z;
 };

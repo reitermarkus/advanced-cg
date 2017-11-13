@@ -106,7 +106,3 @@ void Triangle::divide(int divisions) const {
 
   cout << subTriangles->size() << endl;
 }
-
-Color Triangle::sample_patch(int ia, int ib) const {
-  return this->patch[0];
-}

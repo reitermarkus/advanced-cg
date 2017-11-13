@@ -268,7 +268,7 @@ void calculateFormFactors(const int a_div_num, const int b_div_num,
  * run-time O(n^2)
  *******************************************************************/
 
-void calculateRadiosity(const int iteration) {
+void calculateRadiosity() {
   for (auto &rec_a : recs) {
     for (int ia = 0; ia < rec_a.a_num; ia++) {
       for (int ib = 0; ib < rec_a.b_num; ib++) {
@@ -304,7 +304,7 @@ void calculateRadiosity(const int iteration) {
  * smoothly interpolated color of 4x4 neighboring patches
  *******************************************************************/
 
-Color radiance(const Ray &ray, const int depth, bool interpolation = true) {
+Color radiance(const Ray &ray, bool interpolation = true) {
   double t;
   int id;
   Vector normal;
@@ -368,7 +368,7 @@ Color radiance(const Ray &ray, const int depth, bool interpolation = true) {
  * Rendered result saved as PPM image file
  *******************************************************************/
 
-int main(int argc, char **argv) {
+int main(void) {
   int width = 640;
   int height = 480;
   int samples = 4;
@@ -398,7 +398,7 @@ int main(int argc, char **argv) {
   int iterations = 40;
   for (int i = 0; i < iterations; i++) {
     cout << i << " ";
-    calculateRadiosity(i);
+    calculateRadiosity();
   }
   cout << endl;
 
@@ -441,12 +441,12 @@ int main(int argc, char **argv) {
             /* Determine constant radiance */
             accumulated_radiance =
                 accumulated_radiance +
-                radiance(Ray(start, dir.normalize()), 0, false) / samples;
+                radiance(Ray(start, dir.normalize()), false) / samples;
 
             /* Determine interpolated radiance */
             accumulated_radiance2 =
                 accumulated_radiance2 +
-                radiance(Ray(start, dir.normalize()), 0, true) / samples;
+                radiance(Ray(start, dir.normalize()), true) / samples;
           }
 
           img.addColor(x, y, accumulated_radiance);

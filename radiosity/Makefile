@@ -26,7 +26,7 @@ else
 	CXX = g++-7.2.0
 endif
 
-CXXFLAGS += -O3 -Wall -std=c++1z -fopenmp
+CXXFLAGS += -O3 -Wall -Wextra -std=c++1z -fopenmp
 
 # Rules
 all: $(TARGET)

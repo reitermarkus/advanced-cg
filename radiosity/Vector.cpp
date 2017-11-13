@@ -23,27 +23,27 @@ Vector Vector::entrywiseProduct(const Vector &b) const {
   return Vector(x * b.x, y * b.y, z * b.z);
 }
 
-const double Vector::lengthSquared() const {
+double Vector::lengthSquared() const {
   return dotProduct(*this);
 }
 
-const double Vector::length() const {
+double Vector::length() const {
   return sqrt(lengthSquared());
 }
 
-const double Vector::distance(const Vector &b) const {
+double Vector::distance(const Vector &b) const {
   return (*this - b).length();
 }
 
-const Vector Vector::normalize() const {
+Vector Vector::normalize() const {
   return Vector(x, y, z) / length();
 }
 
-const double Vector::dotProduct(const Vector &b) const {
+double Vector::dotProduct(const Vector &b) const {
   return x * b.x + y * b.y + z * b.z;
 }
 
-const Vector Vector::crossProduct(const Vector &b) const {
+Vector Vector::crossProduct(const Vector &b) const {
   return Vector(
     (y * b.z) - (z * b.y),
     (z * b.x) - (x * b.z),

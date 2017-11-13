@@ -17,18 +17,12 @@ void Rectangle::init_patches(const int a_num_, const int b_num_) {
 }
 
 Color Rectangle::sample_patch(int ia, int ib) const {
-  if (ia < 0)
-    ia = 0;
-  if (ia >= a_num)
-    ia = a_num - 1;
-  if (ib < 0)
-    ib = 0;
-  if (ib >= b_num)
-    ib = b_num - 1;
+  ia = clamp(ia, 0, a_num - 1);
+  ib = clamp(ib, 0, b_num - 1);
   return patch[ia * b_num + ib];
 }
 
-const double Rectangle::intersect(const Ray &ray) const {
+double Rectangle::intersect(const Ray &ray) const {
   const double t = (p0 - ray.org).dotProduct(normal) / ray.dir.dotProduct(normal);
   if (t <= 0.00001)
     return 0.0;

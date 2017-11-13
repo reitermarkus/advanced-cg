@@ -15,7 +15,7 @@ struct Rectangle: public Shape {
 
   void init_patches(const int a_num_, const int b_num_);
   Color sample_patch(int ia, int ib) const;
-  const double intersect(const Ray &ray) const;
+  double intersect(const Ray &ray) const;
 };
 
 #endif // __RECTANGLE_H__
