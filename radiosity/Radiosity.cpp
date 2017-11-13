@@ -49,7 +49,7 @@ using namespace std;
 static map<Rectangle*, vector<map<Rectangle*, vector<double>>>> form_factor;
 static int patch_num = 0;
 
-const Color BackgroundColor(0.0, 0.0, 0.0);
+const Color backgroundColor(0.0, 0.0, 0.0);
 
 /******************************************************************
  * Hard-coded scene definition: the geometry is composed of triangles.
@@ -338,7 +338,7 @@ Color radiance(const Ray &ray, bool interpolation = true) {
 
   /* Find intersected rectangle */
   if (!intersectScene(ray, &t, &id, &normal)) {
-    return BackgroundColor;
+    return backgroundColor;
   }
 
   /* Determine intersection point on rectangle */
