@@ -73,7 +73,7 @@ void Triangle::init_patches(const int division_number) {
   this->patch.resize(pow(division_number, 2));
 }
 
-void Triangle::divide(int divisions) const {
+unique_ptr<vector<vector<Vector>>> Triangle::divide(int divisions) const {
   auto delta_x = b_rel / divisions;
   auto delta_y = c_rel / divisions;
 
@@ -104,5 +104,5 @@ void Triangle::divide(int divisions) const {
     }
   }
 
-  cout << subTriangles->size() << endl;
+  return subTriangles;
 }
