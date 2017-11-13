@@ -42,7 +42,7 @@ SCENARIO("Calculating Triangle patch count.", "[Triangle]") {
 }
 
 SCENARIO("Testing Triangle for Ray intersection.", "[Triangle, Ray]") {
-  GIVEN("a right Triangle at (0,0), (0,2), (2,0)") {
+  GIVEN("a right Triangle at (0,0), (2,0), (0,2)") {
     auto triangle = Triangle(Vector(0.0, 0.0, 0.0), Vector(2.0, 0.0, 0.0), Vector(0.0, 2.0, 0.0), Color(), Color());
 
     WHEN("when a Ray is pointing towards it from the front") {
@@ -78,6 +78,19 @@ SCENARIO("Testing Triangle for Ray intersection.", "[Triangle, Ray]") {
       THEN("there is no intersection") {
         auto intersection = triangle.intersect(ray);
         REQUIRE(intersection == nullptr);
+      }
+    }
+  }
+}
+
+
+SCENARIO("Testing Triangle division.", "[Triangle]") {
+  GIVEN("a right Triangle at (0,0), (1,0), (0,1)") {
+    auto triangle = Triangle(Vector(0.0, 0.0, 0.0), Vector(1.0, 0.0, 0.0), Vector(0.0, 1.0, 0.0), Color(), Color());
+
+    WHEN("divided by 3") {
+      THEN("it should output all coordinates") {
+        triangle.divide(3);
       }
     }
   }

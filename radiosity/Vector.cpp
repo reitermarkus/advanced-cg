@@ -50,3 +50,7 @@ const Vector Vector::crossProduct(const Vector &b) const {
     (x * b.y) - (y * b.x)
   );
 }
+
+ostream& operator<<(std::ostream &strm, const Vector &v) {
+  return strm << "Vector(" << v.x << ", " << v.y << ", " << v.z << ")";
+}

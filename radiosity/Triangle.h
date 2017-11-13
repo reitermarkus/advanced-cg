@@ -7,6 +7,7 @@
 
 struct Triangle: public Shape {
   Vector a, b, c;
+  Vector b_rel, c_rel;
   double ab, bc, ca;
   int division_number;
 
@@ -16,6 +17,7 @@ struct Triangle: public Shape {
   const unique_ptr<Vector> intersect(const Ray &ray) const;
   void init_patches(const int division_number);
   Color sample_patch(int ia, int ib) const;
+  void divide(int divisions) const;
 };
 
 #endif // __TRIANGLE_H__

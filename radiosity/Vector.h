@@ -2,6 +2,8 @@
 #define __VECTOR_H__
 
 #include <cmath>
+#include <iostream>
+
 using namespace std;
 
 typedef struct Vector Color;
@@ -28,5 +30,7 @@ struct Vector {
 
     double x, y, z;
 };
+
+ostream& operator<<(std::ostream &strm, const Vector &v);
 
 #endif //__VECTOR_H__

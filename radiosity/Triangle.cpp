@@ -13,8 +13,14 @@ static Vector calculateFaceNormal(const Vector a, const Vector b, const Vector c
 }
 
 Triangle::Triangle(const Vector &a_, const Vector &b_, const Vector &c_,
-           const Color &emission, const Color &color): Shape(emission, color), a(a_), b(b_), c(c_) {
-  normal = calculateFaceNormal(a_, b_, c_).normalize();
+           const Color &emission, const Color &color): Shape(emission, color) {
+  a = a_;
+  b = a_ + b_; // b_ is given relative to a_
+  c = a_ + c_; // c_ is given relative to a_
+  b_rel = b_;
+  c_rel = c_;
+
+  normal = calculateFaceNormal(a, b, c).normalize();
 
   ab = a.distance(b);
   bc = b.distance(c);
@@ -65,6 +71,40 @@ void Triangle::init_patches(const int division_number) {
   this->division_number = division_number;
   this->patch.clear();
   this->patch.resize(pow(division_number, 2));
+}
+
+void Triangle::divide(int divisions) const {
+  auto delta_x = b_rel / divisions;
+  auto delta_y = c_rel / divisions;
+
+  unique_ptr<vector<vector<Vector>>> subTriangles = make_unique<vector<vector<Vector>>>();
+
+  // Loop through patches, from bottom to top, left to right.
+  auto row_size = divisions;
+  auto row = 0;
+  while (row_size > 0) {
+    for (auto x = 0; x < row_size; x++) {
+      auto y = int(row / 2);
+
+      auto offset = row % 2;
+
+      auto v1 = (x + offset) * delta_x + y * delta_y;
+      auto v2 = (x + 1) * delta_x + (y + offset) * delta_y;
+      auto v3 = x * delta_x + (y + 1) * delta_y;
+
+      subTriangles->push_back({v1, v2, v3});
+
+      cout << v1 << ", " << v2 << ", " << v3 << ", " << endl;
+    }
+
+    row++;
+
+    if (row % 2 == 1) {
+      row_size--;
+    }
+  }
+
+  cout << subTriangles->size() << endl;
 }
 
 Color Triangle::sample_patch(int ia, int ib) const {
