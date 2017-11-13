@@ -422,13 +422,15 @@ int main(void) {
 
           /* Computes radiance at subpixel using multiple samples */
           for (int s = 0; s < samples; s++) {
-            auto drand48 = (double)rand() / (double)RAND_MAX;
-            const double r1 = 2.0 * drand48;
-            const double r2 = 2.0 * drand48;
+            auto nu_filter_samples = [] {
+              auto drand = [] {return 2.0 * (double)rand() / (double)RAND_MAX; };
 
-            /* Transform uniform into non-uniform filter samples */
-            double dx = r1 < 1.0 ? (sqrt(r1) - 1.0) : (1.0 - sqrt(2.0 - r1));
-            double dy = r2 < 1.0 ? (sqrt(r2) - 1.0) : (1.0 - sqrt(2.0 - r2));
+              /* Transform uniform into non-uniform filter samples */
+              return drand() < 1.0 ? (sqrt(drand()) - 1.0) : (1.0 - sqrt(2.0 - drand()));
+            };
+
+            double dx = nu_filter_samples();
+            double dy = nu_filter_samples();
 
             /* Ray direction into scene from camera through sample */
             Vector dir = cx * ((x + (sx + 0.5 + dx) / 2.0) / width - 0.5) +
