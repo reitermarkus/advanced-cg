@@ -109,7 +109,6 @@ SCENARIO("Testing Triangle sample point.", "[Triangle]") {
       THEN("it is inside the triangle") {
         auto q = Triangle::sample(p0, p1, p2);
         auto intersection = triangle.intersect(Ray(q + Vector(0.0, 0.0, -1), Vector(0.0, 0.0, 1.0)));
-        cout << q << endl;
         REQUIRE(intersection > 0.0);
       }
     }
