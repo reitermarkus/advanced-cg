@@ -96,8 +96,6 @@ vector<vector<Vector>> Triangle::divide(const int divisions) {
       auto v3 = a + x * delta_x + (y + 1) * delta_y;
 
       this->subTriangles.push_back({v1, v2, v3});
-
-      cout << v1 << ", " << v2 << ", " << v3 << ", " << endl;
     }
 
     row++;
