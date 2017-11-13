@@ -69,17 +69,18 @@ double Triangle::intersect(const Ray &ray) const {
   return t;
 }
 
-void Triangle::init_patches(const int division_number) {
-  this->division_number = division_number;
+void Triangle::init_patches(const int divisions) {
+  this->divisions = divisions;
   this->patch.clear();
-  this->patch.resize(pow(division_number, 2));
+  this->patch.resize(pow(divisions, 2));
+  this->divide(divisions);
 }
 
-unique_ptr<vector<vector<Vector>>> Triangle::divide(int divisions) const {
+vector<vector<Vector>> Triangle::divide(const int divisions) {
   auto delta_x = b_rel / divisions;
   auto delta_y = c_rel / divisions;
 
-  unique_ptr<vector<vector<Vector>>> subTriangles = make_unique<vector<vector<Vector>>>();
+  this->subTriangles.clear();
 
   // Loop through patches, from bottom to top, left to right.
   auto row_size = divisions;
@@ -94,7 +95,7 @@ unique_ptr<vector<vector<Vector>>> Triangle::divide(int divisions) const {
       auto v2 = a + (x + 1) * delta_x + (y + offset) * delta_y;
       auto v3 = a + x * delta_x + (y + 1) * delta_y;
 
-      subTriangles->push_back({v1, v2, v3});
+      this->subTriangles.push_back({v1, v2, v3});
 
       cout << v1 << ", " << v2 << ", " << v3 << ", " << endl;
     }
@@ -106,7 +107,7 @@ unique_ptr<vector<vector<Vector>>> Triangle::divide(int divisions) const {
     }
   }
 
-  return subTriangles;
+  return this->subTriangles;
 }
 
 Vector Triangle::sample(Vector &p0, Vector &p1, Vector &p2) {
