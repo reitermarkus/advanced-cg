@@ -32,9 +32,9 @@ Triangle::Triangle(const Vector &a_, const Vector &b_, const Vector &c_,
 }
 
 //  Tests whether a Ray intersects with a Triangle using the Möller-Trumbore algorithm.
-//  Either returns a pointer to the intersection Vector or null.
+//  Either returns 0.0 or the distance on the Ray.
 //
-const unique_ptr<Vector> Triangle::intersect(const Ray &ray) const {
+double Triangle::intersect(const Ray &ray) const {
   static const double EPSILON = 0.0000001;
 
   Vector edge_1 = this->b - this->a;
@@ -44,27 +44,27 @@ const unique_ptr<Vector> Triangle::intersect(const Ray &ray) const {
   double a = edge_1.dotProduct(h);
 
   if (a > -EPSILON && a < EPSILON)
-    return nullptr;
+    return 0.0;
 
   double f = 1 / a;
   Vector s = ray.org;
   double u = f * s.dotProduct(h);
 
   if (u < 0.0 || u > 1.0)
-    return nullptr;
+    return 0.0;
 
   Vector q = s.crossProduct(edge_1);
   double v = f * ray.dir.dotProduct(q);
 
   if (v < 0.0 || u + v > 1.0)
-    return nullptr;
+    return 0.0;
 
   double t = f * edge_2.dotProduct(q);
 
   if (t <= EPSILON)
-    return nullptr;
+    return 0.0;
 
-  return make_unique<Vector>(ray.org + ray.dir * t);
+  return t;
 }
 
 void Triangle::init_patches(const int division_number) {

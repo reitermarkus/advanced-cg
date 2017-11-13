@@ -14,7 +14,7 @@ struct Triangle: public Shape {
   Triangle(const Vector &a_, const Vector &b_, const Vector &c_,
            const Color &emission, const Color &color);
 
-  const unique_ptr<Vector> intersect(const Ray &ray) const;
+  double intersect(const Ray &ray) const;
   void init_patches(const int division_number);
   unique_ptr<vector<vector<Vector>>> divide(int divisions) const;
 };
