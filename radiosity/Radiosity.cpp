@@ -450,10 +450,9 @@ int main(void) {
           /* Computes radiance at subpixel using multiple samples */
           for (int s = 0; s < samples; s++) {
             auto nu_filter_samples = [] {
-              auto drand = [] {return 2.0 * (double)rand() / (double)RAND_MAX; };
-
               /* Transform uniform into non-uniform filter samples */
-              return drand() < 1.0 ? (sqrt(drand()) - 1.0) : (1.0 - sqrt(2.0 - drand()));
+              auto r = 2.0 * drand48();
+              return r < 1.0 ? (sqrt(r) - 1.0) : (1.0 - sqrt(2.0 - r));
             };
 
             double dx = nu_filter_samples();
