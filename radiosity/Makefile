@@ -5,6 +5,7 @@ OBJ = $(filter-out $(TARGET).o, $(patsubst %.cpp, %.o, $(wildcard *.cpp)))
 OBJ_TEST = $(patsubst %.cpp, %.o, $(wildcard test/*.cpp))
 
 INCLUDES = -Iinclude -I./
+CXXFLAGS = -O3 -Wall -Wextra -std=c++1z -fopenmp
 
 ifneq ($(OS), Windows_NT)
 	ifeq ($(shell uname -s), Darwin)
@@ -26,7 +27,9 @@ else
 	CXX = g++-7.2.0
 endif
 
-CXXFLAGS += -O3 -Wall -Wextra -std=c++1z -fopenmp
+ifeq ($(shell ccache -V &>/dev/null; echo $$?), 0)
+	CXX := ccache $(CXX)
+endif
 
 # Rules
 all: $(TARGET)
