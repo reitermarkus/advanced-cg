@@ -50,7 +50,7 @@ SCENARIO("Testing Triangle for Ray intersection.", "[Triangle, Ray]") {
 
       THEN("there is an intersection") {
         auto intersection = triangle.intersect(ray);
-        REQUIRE(intersection != nullptr);
+        REQUIRE(intersection > 0.0);
       }
     }
 
@@ -59,7 +59,7 @@ SCENARIO("Testing Triangle for Ray intersection.", "[Triangle, Ray]") {
 
       THEN("there is an intersection") {
         auto intersection = triangle.intersect(ray);
-        REQUIRE(intersection != nullptr);
+        REQUIRE(intersection > 0.0);
       }
     }
 
@@ -68,7 +68,7 @@ SCENARIO("Testing Triangle for Ray intersection.", "[Triangle, Ray]") {
 
       THEN("there is no intersection") {
         auto intersection = triangle.intersect(ray);
-        REQUIRE(intersection == nullptr);
+        REQUIRE(intersection == 0.0);
       }
     }
 
@@ -77,7 +77,7 @@ SCENARIO("Testing Triangle for Ray intersection.", "[Triangle, Ray]") {
 
       THEN("there is no intersection") {
         auto intersection = triangle.intersect(ray);
-        REQUIRE(intersection == nullptr);
+        REQUIRE(intersection == 0.0);
       }
     }
   }
