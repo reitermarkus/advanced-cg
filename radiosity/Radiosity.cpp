@@ -161,7 +161,9 @@ void calculateFormFactors(const int a_div_num, const int mc_sample) {
     /* Loop over all patches in rectangle i */
     #pragma omp parallel for
     for (unsigned long p_i = 0; p_i < tris[i].patch.size(); p_i++) {
-      cout << "*" << flush;
+      if (p_i % tris[i].divisions == 0) {
+        cout << "*" << flush;
+      }
 
       /* Loop over all triangles in scene for triangles i */
       for (int j = 0; j < n; j++) {
