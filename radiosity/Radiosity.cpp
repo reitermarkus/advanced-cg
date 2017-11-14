@@ -252,6 +252,7 @@ void calculateFormFactors(const int a_div_num, const int mc_sample) {
 
 void calculateRadiosity() {
   for (auto &tri_a : tris) {
+    #pragma omp parallel for
     for (unsigned long p_a = 0; p_a < tri_a.patch.size(); p_a++) {
       Color B;
 
