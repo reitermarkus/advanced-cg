@@ -18,9 +18,9 @@ ifneq ($(OS), Windows_NT)
 			$(error "LLVM is not installed, run `brew install llvm`")
 		endif
 	else
-		ifeq ($(shell command -v module &>/dev/null; echo $$?), 0)
+		ifeq ($(shell module avail gcc 2>&1 | grep -q gcc/7.2.0; echo $$?), 0)
 			CXXFLAGS += -static-libstdc++
-			CXX := module load gcc/7.2.0 || true && $(CXX)
+			CXX := module load gcc/7.2.0 && $(CXX)
 		endif
 	endif
 else
@@ -50,4 +50,4 @@ clean:
 	$(RM) $(TARGET) *.o */*.o
 
 run: all
-	./$(TARGET)
+	time ./$(TARGET)
