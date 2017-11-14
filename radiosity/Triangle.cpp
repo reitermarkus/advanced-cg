@@ -15,10 +15,7 @@ static Vector calculateFaceNormal(const Vector a, const Vector b, const Vector c
 }
 
 Triangle::Triangle(const Vector &a_, const Vector &b_, const Vector &c_,
-           const Color &emission, const Color &color): Shape(emission, color) {
-  a = a_;
-  b = a_ + b_; // b_ is given relative to a_
-  c = a_ + c_; // c_ is given relative to a_
+           const Color &emission, const Color &color): SimpleTriangle(a_, b_, c_, emission, color) {
   b_rel = b_;
   c_rel = c_;
 

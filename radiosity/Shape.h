@@ -14,6 +14,7 @@ struct Shape {
   vector<Color> patch;
 
   Shape(const Color &emission_, const Color &color_);
+  Shape() = default;
 };
 
 #endif // __SHAPE_H__

@@ -5,9 +5,9 @@
 
 #include "Shape.h"
 #include "PatchTriangle.h"
+#include "SimpleTriangle.h"
 
-struct Triangle: public Shape {
-  Vector a, b, c;
+struct Triangle: public SimpleTriangle {
   Vector b_rel, c_rel;
   double ab, bc, ca;
   int divisions;
