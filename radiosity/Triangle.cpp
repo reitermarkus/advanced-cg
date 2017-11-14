@@ -76,7 +76,7 @@ void Triangle::init_patches(const int divisions) {
   this->divide(divisions);
 }
 
-vector<vector<Vector>> Triangle::divide(const int divisions) {
+vector<PatchTriangle> Triangle::divide(const int divisions) {
   auto delta_x = b_rel / divisions;
   auto delta_y = c_rel / divisions;
 
@@ -95,7 +95,8 @@ vector<vector<Vector>> Triangle::divide(const int divisions) {
       auto v2 = a + (x + 1) * delta_x + (y + offset) * delta_y;
       auto v3 = a + x * delta_x + (y + 1) * delta_y;
 
-      this->subTriangles.push_back({v1, v2, v3});
+      auto patch_triangle = PatchTriangle(v1, v2, v3);
+      this->subTriangles.push_back(patch_triangle);
     }
 
     row++;

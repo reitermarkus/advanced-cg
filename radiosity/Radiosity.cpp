@@ -40,6 +40,7 @@
 #include "Rectangle.h"
 #include "Triangle.h"
 #include "Ray.h"
+#include "PatchTriangle.h"
 
 #include "macro.h"
 
@@ -186,11 +187,11 @@ void calculateFormFactors(const int a_div_num, const int mc_sample) {
                on i to NjxNj uniform samples of patch on j */
             for (auto ii = 0; ii < mc_sample; ii++) {
               for (auto jj = 0; jj < mc_sample; jj++) {
-                vector<Vector> t_i = tris[i].subTriangles[p_i];
-                vector<Vector> t_j = tris[j].subTriangles[p_j];
+                PatchTriangle t_i = tris[i].subTriangles[p_i];
+                PatchTriangle t_j = tris[j].subTriangles[p_j];
 
-                const Vector xi = Triangle::sample(t_i[0], t_i[1], t_i[2]);
-                const Vector xj = Triangle::sample(t_j[0], t_j[1], t_j[2]);
+                const Vector xi = Triangle::sample(t_i.a, t_i.b, t_i.c);
+                const Vector xj = Triangle::sample(t_j.a, t_j.b, t_j.c);
 
                 /* Check for visibility between sample points */
                 const Vector ij = (xj - xi).normalize();
