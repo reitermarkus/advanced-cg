@@ -190,12 +190,8 @@ void calculateFormFactors(const int a_div_num, const int b_div_num,
     for (int ia = 0; ia < recs[i].a_num; ia++) {
       cout << "*" << flush;
       for (int ib = 0; ib < recs[i].b_num; ib++) {
-        const Vector normal_i = recs[i].normal;
-
         /* Loop over all rectangles in scene for rectangle i */
         for (int j = 0; j < n; j++) {
-          const Vector normal_j = recs[j].normal;
-
           /* Loop over all patches in rectangle j */
           for (int ja = 0; ja < recs[j].a_num; ja++) {
             for (int jb = 0; jb < recs[j].b_num; jb++) {
@@ -246,8 +242,8 @@ void calculateFormFactors(const int a_div_num, const int b_div_num,
                         }
 
                         /* Cosines of angles beteen normals and ray inbetween */
-                        const double d0 = normal_i.dotProduct(ij);
-                        const double d1 = normal_j.dotProduct(-1.0 * ij);
+                        const double d0 = recs[i].normal.dotProduct(ij);
+                        const double d1 = recs[j].normal.dotProduct(-1.0 * ij);
 
                         /* Continue if patches facing each other */
                         if (d0 > 0.0 && d1 > 0.0) {
