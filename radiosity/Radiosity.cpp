@@ -236,8 +236,7 @@ void calculateFormFactors(const int a_div_num, const int b_div_num,
                         double t;
                         int id;
                         Vector normal;
-                        if (intersectScene(Ray(xi, ij), &t, &id, &normal) &&
-                            id != j) {
+                        if (intersectScene(Ray(xi, ij), &t, &id, &normal) && id != j) {
                           continue; /* If intersection with other rectangle */
                         }
 
