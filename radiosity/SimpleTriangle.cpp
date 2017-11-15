@@ -1,5 +1,7 @@
 #include "SimpleTriangle.h"
 
+#include <limits>
+
 SimpleTriangle::SimpleTriangle(const Vector& a_, const Vector& b_, const Vector& c_) : a(a_), b(b_), c(c_) { }
 
 SimpleTriangle::SimpleTriangle(const Vector &a_, const Vector &b_,
@@ -13,7 +15,7 @@ SimpleTriangle::SimpleTriangle(const Vector &a_, const Vector &b_,
 //  Either returns 0.0 or the distance on the Ray.
 //
 double SimpleTriangle::intersect(const Ray &ray) const {
-  static const double EPSILON = 0.0000001;
+  static const double EPSILON = numeric_limits<double>::epsilon();
 
   Vector edge_1 = this->b - this->a;
   Vector edge_2 = this->c - this->a;
