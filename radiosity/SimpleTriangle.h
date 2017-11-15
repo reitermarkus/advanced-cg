@@ -9,6 +9,8 @@ struct SimpleTriangle : public Shape {
   SimpleTriangle(const Vector& a_, const Vector& b_, const Vector& c_);
   SimpleTriangle(const Vector &a_, const Vector &b_,
     const Vector &c_, const Color &emission, const Color &color);
+
+  double intersect(const Ray &ray) const;
 };
 
 #endif //  __SIMPLE_TRIANGLE_H__
