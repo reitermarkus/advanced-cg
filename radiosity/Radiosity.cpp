@@ -129,7 +129,7 @@ void calculateFormFactors(const int a_div_num, const int mc_sample) {
     tri.init_patches(a_div_num);
     patch_num += tri.patch.size();
   }
-  int form_factor_num = pow(patch_num, 2);
+  unsigned long form_factor_num = pow(patch_num, 2);
 
   cout << "Number of triangles: " << n << endl;
   cout << "Number of patches: " << patch_num << endl;
