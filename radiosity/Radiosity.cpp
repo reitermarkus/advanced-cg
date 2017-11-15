@@ -283,56 +283,35 @@ void calculateRadiosity() {
  * smoothly interpolated color of 4x4 neighboring patches
  *******************************************************************/
 
+static int findPatchIndex(const Triangle &triangle, const Ray &ray) {
+  for (unsigned long p = 0; p < triangle.subTriangles.size(); p++) {
+    if (triangle.subTriangles[p].intersect(ray)) {
+      return p;
+    }
+  }
+
+  return -1;
+}
+
 Color radiance(const Ray &ray, bool interpolation = true) {
   double t;
   int id;
   Vector normal;
 
-  /* Find intersected rectangle */
+  /* Find intersected triangle. */
   if (!intersectScene(ray, &t, &id, &normal)) {
     return backgroundColor;
   }
 
-  /* Determine intersection point on rectangle */
+  /* Find intersected patch. */
   const Triangle &obj = tris[id];
-  const Vector hitpoint = ray.org + t * ray.dir;
+  int idx = findPatchIndex(obj, ray);
 
-  /* Determine intersected patch */
-  const Vector v = hitpoint - obj.a;
-  const double ab = v.dotProduct(obj.b_rel.normalize());
-  const double ca = v.dotProduct(obj.c_rel.normalize());
-
-  double da = obj.divisions * ab / obj.ab;
-  double db = obj.divisions * ca / obj.ca;
-
-  int ia = int(da);
-  if (ia >= obj.divisions)
-    ia--;
-  int ib = int(db);
-  if (ib >= obj.divisions)
-    ib--;
-
-  /* Bicubic interpolation for smooth image */
   if (interpolation) {
-    //Color c[4][4];
-    //
-    //int ia = int(da - 0.5);
-    //int ib = int(db - 0.5);
-    //
-    //for (int i = 0; i < 4; i++) {
-    //  for (int j = 0; j < 4; j++) {
-    //    c[i][j] = obj.sample_patch(ia + i - 1, ib + j - 1);
-    //  }
-    //}
-    //
-    //int ia0 = int(da - 0.5);
-    //int ib0 = int(db - 0.5);
-    //double dx = clamp(da - ia0 - 0.5, 0.0, 1.0);
-    //double dy = clamp(db - ib0 - 0.5, 0.0, 1.0);
-
-    return Color();
+    // TODO
+    return obj.patch[idx];
   } else {
-    return obj.patch[ib * obj.divisions + ia] / M_PI;
+    return obj.patch[idx];
   }
 }
 
