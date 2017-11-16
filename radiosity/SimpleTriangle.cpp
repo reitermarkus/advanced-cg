@@ -16,8 +16,6 @@ static Vector calculateFaceNormal(const Vector a, const Vector b, const Vector c
 SimpleTriangle::SimpleTriangle(const Vector& a_, const Vector& b_, const Vector& c_) : a(a_), b(b_), c(c_) {
   normal = calculateFaceNormal(a, b, c).normalize();
   area = calculateArea(a, b, c);
-
-  cout << "area " << area << endl;
 }
 
 //  Tests whether a Ray intersects with a Triangle using the Möller-Trumbore algorithm.
