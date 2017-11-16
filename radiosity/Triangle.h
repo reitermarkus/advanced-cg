@@ -9,7 +9,6 @@
 
 struct Triangle: public SimpleTriangle {
   Vector b_rel, c_rel;
-  double ab, bc, ca;
   int divisions;
   vector<PatchTriangle> subTriangles;
 

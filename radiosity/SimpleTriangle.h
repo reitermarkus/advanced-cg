@@ -11,6 +11,7 @@ struct SimpleTriangle : public Shape {
     const Vector &c_, const Color &emission, const Color &color);
 
   double intersect(const Ray &ray) const;
+  const Vector barycentricCoordinatesAt(const Vector &p) const;
 };
 
 #endif //  __SIMPLE_TRIANGLE_H__

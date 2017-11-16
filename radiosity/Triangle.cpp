@@ -7,27 +7,9 @@
 #include "Ray.h"
 #include "Vector.h"
 
-static Vector calculateFaceNormal(const Vector a, const Vector b, const Vector c) {
-  Vector u = b - a;
-  Vector v = c - a;
-
-  return u.crossProduct(v);
-}
-
-Triangle::Triangle(const Vector &a_, const Vector &b_, const Vector &c_,
-           const Color &emission, const Color &color): SimpleTriangle(a_, b_, c_, emission, color) {
-  b_rel = b_;
-  c_rel = c_;
-
-  normal = calculateFaceNormal(a, b, c).normalize();
-
-  ab = a.distance(b);
-  bc = b.distance(c);
-  ca = c.distance(a);
-
-  // Calculate area of triangle using Heron's Formula.
-  auto s = (ab + bc + ca) / 2.0;
-  area = sqrt(s * (s - ab) * (s - bc) * (s - ca));
+Triangle::Triangle(const Vector &a_, const Vector &b_, const Vector &c_, const Color &emission_, const Color &color_): SimpleTriangle(a_, a_ + b_, a_ + c_), b_rel(b_), c_rel(c_) {
+             emission = emission_;
+             color = color_;
 }
 
 void Triangle::init_patches(const int divisions) {

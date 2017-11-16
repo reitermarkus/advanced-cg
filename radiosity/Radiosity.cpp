@@ -365,24 +365,15 @@ Color radiance(const Ray &ray, bool interpolation = true) {
   int idx = findPatchIndex(obj, ray);
 
   if (interpolation) {
-    if (getVertexCounts()[obj.normal][obj.subTriangles[idx].a] == 0) {
-      cout << "Never saw this before: Normal " << obj.normal << ", Vertex " << obj.subTriangles[idx].a << endl;
-    }
+    const Vector hitpoint = ray.org + t * ray.dir;
 
-    if (getVertexCounts()[obj.normal][obj.subTriangles[idx].b] == 0) {
-      cout << "Never saw this before: Normal " << obj.normal << ", Vertex " << obj.subTriangles[idx].b << endl;
-    }
+    Vector bary = obj.subTriangles[idx].barycentricCoordinatesAt(hitpoint);
 
-    if (getVertexCounts()[obj.normal][obj.subTriangles[idx].c] == 0) {
-      cout << "Never saw this before: Normal " << obj.normal << ", Vertex " << obj.subTriangles[idx].c << endl;
-    }
+    Color a = getVertexColors()[obj.normal][obj.subTriangles[idx].a];
+    Color b = getVertexColors()[obj.normal][obj.subTriangles[idx].b];
+    Color c = getVertexColors()[obj.normal][obj.subTriangles[idx].c];
 
-    Color mixed =
-      getVertexColors()[obj.normal][obj.subTriangles[idx].a] +
-      getVertexColors()[obj.normal][obj.subTriangles[idx].b] +
-      getVertexColors()[obj.normal][obj.subTriangles[idx].c];
-    // TODO
-    return mixed / 3.0;
+    return a * bary.x + b * bary.z + c * bary.y;
   } else {
     return obj.patch[idx];
   }
