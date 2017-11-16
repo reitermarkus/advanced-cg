@@ -50,9 +50,17 @@ const double M_PI = atan(1) * 4;
 using namespace std;
 
 static map<Triangle*, vector<map<Triangle*, vector<double>>>> form_factor;
-static map<Vector, map<Vector, Color>> vertex_colors;
-static map<Vector, map<Vector, int>> vertex_counts;
 static int patch_num = 0;
+
+map<Vector, map<Vector, Color>> getVertexColors() {
+  static map<Vector, map<Vector, Color>> vertex_colors;
+  return vertex_colors;
+}
+
+map<Vector, map<Vector, int>> getVertexCounts() {
+  static map<Vector, map<Vector, int>> vertex_counts;
+  return vertex_counts;
+}
 
 const Color backgroundColor(0.0, 0.0, 0.0);
 
@@ -249,12 +257,12 @@ void calculateFormFactors(const int a_div_num, const int mc_sample) {
 void calculateVertexColors() {
   for (auto &tri : tris) {
     for (size_t p = 0; p < tri.patch.size(); p++) {
-      vertex_colors[tri.normal][tri.subTriangles[p].a] = Color(0, 0, 0);
-      vertex_colors[tri.normal][tri.subTriangles[p].b] = Color(0, 0, 0);
-      vertex_colors[tri.normal][tri.subTriangles[p].c] = Color(0, 0, 0);
-      vertex_counts[tri.normal][tri.subTriangles[p].a] = 0;
-      vertex_counts[tri.normal][tri.subTriangles[p].b] = 0;
-      vertex_counts[tri.normal][tri.subTriangles[p].c] = 0;
+      getVertexColors()[tri.normal][tri.subTriangles[p].a] = Color(0, 0, 0);
+      getVertexColors()[tri.normal][tri.subTriangles[p].b] = Color(0, 0, 0);
+      getVertexColors()[tri.normal][tri.subTriangles[p].c] = Color(0, 0, 0);
+      getVertexCounts()[tri.normal][tri.subTriangles[p].a] = 0;
+      getVertexCounts()[tri.normal][tri.subTriangles[p].b] = 0;
+      getVertexCounts()[tri.normal][tri.subTriangles[p].c] = 0;
     }
   }
 
@@ -265,9 +273,9 @@ void calculateVertexColors() {
       cout << "Normal " << tri.normal << ", Vertex " << tri.subTriangles[p].c << endl;
 
 
-      vertex_counts[tri.normal][tri.subTriangles[p].a] += 1;
-      vertex_counts[tri.normal][tri.subTriangles[p].b] += 1;
-      vertex_counts[tri.normal][tri.subTriangles[p].c] += 1;
+      getVertexCounts()[tri.normal][tri.subTriangles[p].a] += 1;
+      getVertexCounts()[tri.normal][tri.subTriangles[p].b] += 1;
+      getVertexCounts()[tri.normal][tri.subTriangles[p].c] += 1;
     }
   }
 
@@ -277,18 +285,18 @@ void calculateVertexColors() {
       Vector vertex_a = tri.subTriangles[p].a;
       Vector vertex_b = tri.subTriangles[p].b;
       Vector vertex_c = tri.subTriangles[p].c;
-      vertex_colors[normal][vertex_a] = vertex_colors[normal][vertex_a] + tri.patch[p];
-      vertex_colors[normal][vertex_b] = vertex_colors[normal][vertex_b] + tri.patch[p];
-      vertex_colors[normal][vertex_c] = vertex_colors[normal][vertex_c] + tri.patch[p];
+      getVertexColors()[normal][vertex_a] = getVertexColors()[normal][vertex_a] + tri.patch[p];
+      getVertexColors()[normal][vertex_b] = getVertexColors()[normal][vertex_b] + tri.patch[p];
+      getVertexColors()[normal][vertex_c] = getVertexColors()[normal][vertex_c] + tri.patch[p];
     }
   }
 
-  for (auto const &entry_1 : vertex_colors) {
+  for (auto const &entry_1 : getVertexColors()) {
     Vector normal = entry_1.first;
 
     for (auto const &entry_2 : entry_1.second) {
       Vector vertex = entry_2.first;
-      vertex_colors[normal][vertex] = vertex_colors[normal][vertex] / (double)vertex_counts[normal][vertex];
+      getVertexColors()[normal][vertex] = getVertexColors()[normal][vertex] / (double)getVertexCounts()[normal][vertex];
     }
   }
 }
@@ -357,22 +365,22 @@ Color radiance(const Ray &ray, bool interpolation = true) {
   int idx = findPatchIndex(obj, ray);
 
   if (interpolation) {
-    if (vertex_counts[obj.normal][obj.subTriangles[idx].a] == 0) {
+    if (getVertexCounts()[obj.normal][obj.subTriangles[idx].a] == 0) {
       cout << "Never saw this before: Normal " << obj.normal << ", Vertex " << obj.subTriangles[idx].a << endl;
     }
 
-    if (vertex_counts[obj.normal][obj.subTriangles[idx].b] == 0) {
+    if (getVertexCounts()[obj.normal][obj.subTriangles[idx].b] == 0) {
       cout << "Never saw this before: Normal " << obj.normal << ", Vertex " << obj.subTriangles[idx].b << endl;
     }
 
-    if (vertex_counts[obj.normal][obj.subTriangles[idx].c] == 0) {
+    if (getVertexCounts()[obj.normal][obj.subTriangles[idx].c] == 0) {
       cout << "Never saw this before: Normal " << obj.normal << ", Vertex " << obj.subTriangles[idx].c << endl;
     }
 
     Color mixed =
-      vertex_colors[obj.normal][obj.subTriangles[idx].a] +
-      vertex_colors[obj.normal][obj.subTriangles[idx].b] +
-      vertex_colors[obj.normal][obj.subTriangles[idx].c];
+      getVertexColors()[obj.normal][obj.subTriangles[idx].a] +
+      getVertexColors()[obj.normal][obj.subTriangles[idx].b] +
+      getVertexColors()[obj.normal][obj.subTriangles[idx].c];
     // TODO
     return mixed / 3.0;
   } else {
