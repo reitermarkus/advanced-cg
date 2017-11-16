@@ -19,10 +19,16 @@ Vector Vector::operator*(double c) const {
   return Vector(x * c, y * c, z * c);
 }
 
-bool Vector::operator==(const Vector &b) const {
-  return fabs(x - b.x) <= numeric_limits<double>::epsilon() &&
-         fabs(y - b.y) <= numeric_limits<double>::epsilon() &&
-         fabs(z - b.z) <= numeric_limits<double>::epsilon();
+bool Vector::operator<(const Vector &other) const {
+  if (x < other.x) {
+    return true;
+  } else if (y < other.y) {
+    return true;
+  } else if (z < other.z) {
+    return true;
+  }
+
+  return false;
 }
 
 Vector Vector::entrywiseProduct(const Vector &b) const {

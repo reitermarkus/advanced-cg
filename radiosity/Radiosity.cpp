@@ -50,6 +50,8 @@ const double M_PI = atan(1) * 4;
 using namespace std;
 
 static map<Triangle*, vector<map<Triangle*, vector<double>>>> form_factor;
+static map<Vector, map<Vector, Color>> vertex_colors;
+static map<Vector, map<Vector, int>> vertex_counts;
 static int patch_num = 0;
 
 const Color backgroundColor(0.0, 0.0, 0.0);
@@ -244,6 +246,53 @@ void calculateFormFactors(const int a_div_num, const int mc_sample) {
   }
 }
 
+void calculateVertexColors() {
+  for (auto &tri : tris) {
+    for (size_t p = 0; p < tri.patch.size(); p++) {
+      vertex_colors[tri.normal][tri.subTriangles[p].a] = Color(0, 0, 0);
+      vertex_colors[tri.normal][tri.subTriangles[p].b] = Color(0, 0, 0);
+      vertex_colors[tri.normal][tri.subTriangles[p].c] = Color(0, 0, 0);
+      vertex_counts[tri.normal][tri.subTriangles[p].a] = 0;
+      vertex_counts[tri.normal][tri.subTriangles[p].b] = 0;
+      vertex_counts[tri.normal][tri.subTriangles[p].c] = 0;
+    }
+  }
+
+  for (auto &tri : tris) {
+    for (size_t p = 0; p < tri.patch.size(); p++) {
+      cout << "Normal " << tri.normal << ", Vertex " << tri.subTriangles[p].a << endl;
+      cout << "Normal " << tri.normal << ", Vertex " << tri.subTriangles[p].b << endl;
+      cout << "Normal " << tri.normal << ", Vertex " << tri.subTriangles[p].c << endl;
+
+
+      vertex_counts[tri.normal][tri.subTriangles[p].a] += 1;
+      vertex_counts[tri.normal][tri.subTriangles[p].b] += 1;
+      vertex_counts[tri.normal][tri.subTriangles[p].c] += 1;
+    }
+  }
+
+  for (auto &tri : tris) {
+    for (size_t p = 0; p < tri.patch.size(); p++) {
+      Vector normal = tri.normal;
+      Vector vertex_a = tri.subTriangles[p].a;
+      Vector vertex_b = tri.subTriangles[p].b;
+      Vector vertex_c = tri.subTriangles[p].c;
+      vertex_colors[normal][vertex_a] = vertex_colors[normal][vertex_a] + tri.patch[p];
+      vertex_colors[normal][vertex_b] = vertex_colors[normal][vertex_b] + tri.patch[p];
+      vertex_colors[normal][vertex_c] = vertex_colors[normal][vertex_c] + tri.patch[p];
+    }
+  }
+
+  for (auto const &entry_1 : vertex_colors) {
+    Vector normal = entry_1.first;
+
+    for (auto const &entry_2 : entry_1.second) {
+      Vector vertex = entry_2.first;
+      vertex_colors[normal][vertex] = vertex_colors[normal][vertex] / (double)vertex_counts[normal][vertex];
+    }
+  }
+}
+
 /******************************************************************
  * Iterative computation of radiosity via Gathering; i.e. solution
  * using Gauss-Seidel iteration - reuse already computed values;
@@ -308,8 +357,24 @@ Color radiance(const Ray &ray, bool interpolation = true) {
   int idx = findPatchIndex(obj, ray);
 
   if (interpolation) {
+    if (vertex_counts[obj.normal][obj.subTriangles[idx].a] == 0) {
+      cout << "Never saw this before: Normal " << obj.normal << ", Vertex " << obj.subTriangles[idx].a << endl;
+    }
+
+    if (vertex_counts[obj.normal][obj.subTriangles[idx].b] == 0) {
+      cout << "Never saw this before: Normal " << obj.normal << ", Vertex " << obj.subTriangles[idx].b << endl;
+    }
+
+    if (vertex_counts[obj.normal][obj.subTriangles[idx].c] == 0) {
+      cout << "Never saw this before: Normal " << obj.normal << ", Vertex " << obj.subTriangles[idx].c << endl;
+    }
+
+    Color mixed =
+      vertex_colors[obj.normal][obj.subTriangles[idx].a] +
+      vertex_colors[obj.normal][obj.subTriangles[idx].b] +
+      vertex_colors[obj.normal][obj.subTriangles[idx].c];
     // TODO
-    return obj.patch[idx];
+    return mixed / 3.0;
   } else {
     return obj.patch[idx];
   }
@@ -345,7 +410,7 @@ int main(void) {
   Image img_interpolated(width, height);
 
   cout << "Calculating form factors" << endl;
-  int patches_a = 12;
+  int patches_a = 8;
   int MC_samples = 3;
 
   calculateFormFactors(patches_a, MC_samples);
@@ -359,6 +424,8 @@ int main(void) {
   }
   cout << endl;
 
+  calculateVertexColors();
+
   /* Loop over image rows */
   for (int y = 0; y < height; y++) {
     cout << "\rRendering (" << samples * 4 << " spp) "
@@ -366,7 +433,7 @@ int main(void) {
     srand(y * y * y);
 
     /* Loop over row pixels */
-    #pragma omp parallel for
+    //#pragma omp parallel for
     for (int x = 0; x < width; x++) {
       img.setColor(x, y, Color());
       img_interpolated.setColor(x, y, Color());
