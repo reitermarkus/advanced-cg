@@ -50,7 +50,6 @@ const double M_PI = atan(1) * 4;
 using namespace std;
 
 static map<Triangle*, vector<map<Triangle*, vector<double>>>> form_factor;
-static map<Vector, map<Vector, Color>> vertex_colors;
 static int patch_num = 0;
 
 
@@ -246,17 +245,23 @@ void calculateFormFactors(const int a_div_num, const int mc_sample) {
   }
 }
 
-void calculateVertexColors() {
-  map<Vector, map<Vector, int>> vertex_counts;
+map<Vector, map<Vector, Color>> calculateVertexColors() {
+  map<Vector, map<Vector, Color>> vertex_colors = map<Vector, map<Vector, Color>>();
+  map<Vector, map<Vector, int>> vertex_counts = map<Vector, map<Vector, int>>();
+
+  for (auto &tri : tris) {
+    vertex_colors.insert(pair<Vector, map<Vector, Color>>(tri.normal, map<Vector, Color>()));
+    vertex_counts.insert(pair<Vector, map<Vector, int>>(tri.normal, map<Vector, int>()));
+  }
 
   for (auto &tri : tris) {
     for (size_t p = 0; p < tri.patch.size(); p++) {
-      vertex_colors[tri.normal][tri.subTriangles[p].a] = Color(0, 0, 0);
-      vertex_colors[tri.normal][tri.subTriangles[p].b] = Color(0, 0, 0);
-      vertex_colors[tri.normal][tri.subTriangles[p].c] = Color(0, 0, 0);
-      vertex_counts[tri.normal][tri.subTriangles[p].a] = 0;
-      vertex_counts[tri.normal][tri.subTriangles[p].b] = 0;
-      vertex_counts[tri.normal][tri.subTriangles[p].c] = 0;
+      vertex_colors[tri.normal].insert(pair<Vector, Color>(tri.subTriangles[p].a, Color(0, 0, 0)));
+      vertex_colors[tri.normal].insert(pair<Vector, Color>(tri.subTriangles[p].b, Color(0, 0, 0)));
+      vertex_colors[tri.normal].insert(pair<Vector, Color>(tri.subTriangles[p].c, Color(0, 0, 0)));
+      vertex_counts[tri.normal].insert(pair<Vector, int>(tri.subTriangles[p].a, 0));
+      vertex_counts[tri.normal].insert(pair<Vector, int>(tri.subTriangles[p].b, 0));
+      vertex_counts[tri.normal].insert(pair<Vector, int>(tri.subTriangles[p].c, 0));
     }
   }
 
@@ -279,6 +284,8 @@ void calculateVertexColors() {
       vertex_colors[normal][vertex_c] = vertex_colors[normal][vertex_c] + (tri.patch[p] / (double)(vertex_counts[normal][vertex_c]));
     }
   }
+
+  return vertex_colors;
 }
 
 /******************************************************************
@@ -349,6 +356,8 @@ Color radiance(const Ray &ray, bool interpolation = true) {
 
     Vector bary = obj.subTriangles[idx].barycentricCoordinatesAt(hitpoint);
 
+    static map<Vector, map<Vector, Color>> vertex_colors = calculateVertexColors();
+
     Color a = vertex_colors[obj.normal][obj.subTriangles[idx].a];
     Color b = vertex_colors[obj.normal][obj.subTriangles[idx].b];
     Color c = vertex_colors[obj.normal][obj.subTriangles[idx].c];
@@ -402,8 +411,6 @@ int main(void) {
     calculateRadiosity();
   }
   cout << endl;
-
-  calculateVertexColors();
 
   /* Loop over image rows */
   for (int y = 0; y < height; y++) {
