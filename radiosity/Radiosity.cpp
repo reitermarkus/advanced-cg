@@ -405,8 +405,8 @@ int main(void) {
   Image img_interpolated(width, height);
 
   cout << "Calculating form factors" << endl;
-  int patches_a = 12;
-  int MC_samples = 3;
+  int patches_a = 10;
+  int MC_samples = 4;
 
   calculateFormFactors(patches_a, MC_samples);
 
