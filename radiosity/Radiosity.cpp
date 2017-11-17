@@ -344,35 +344,31 @@ static int findPatchIndex(const Triangle &triangle, const Ray &ray) {
   return -1;
 }
 
-Color radiance(const Ray &ray, bool interpolation = true) {
+pair<Color, Color> radiance(const Ray &ray, unordered_map<Vector, unordered_map<Vector, Color>> &vertex_colors) {
   double t;
   int id;
   Vector normal;
 
   /* Find intersected triangle. */
   if (!intersectScene(ray, &t, &id, &normal)) {
-    return backgroundColor;
+    return make_pair(backgroundColor, backgroundColor);
   }
 
   /* Find intersected patch. */
   const Triangle &obj = tris[id];
   int idx = findPatchIndex(obj, ray);
 
-  if (interpolation) {
-    const Vector hitpoint = ray.org + t * ray.dir;
+  const Vector hitpoint = ray.org + t * ray.dir;
 
-    Vector bary = obj.subTriangles[idx].barycentricCoordinatesAt(hitpoint);
+  Vector bary = obj.subTriangles[idx].barycentricCoordinatesAt(hitpoint);
 
-    static auto vertex_colors = calculateVertexColors();
+  Color a = vertex_colors[obj.normal][obj.subTriangles[idx].a];
+  Color b = vertex_colors[obj.normal][obj.subTriangles[idx].b];
+  Color c = vertex_colors[obj.normal][obj.subTriangles[idx].c];
 
-    Color a = vertex_colors[obj.normal][obj.subTriangles[idx].a];
-    Color b = vertex_colors[obj.normal][obj.subTriangles[idx].b];
-    Color c = vertex_colors[obj.normal][obj.subTriangles[idx].c];
+  Color interpolated = a * bary.x + b * bary.z + c * bary.y;
 
-    return a * bary.x + b * bary.z + c * bary.y;
-  } else {
-    return obj.patch[idx];
-  }
+  return make_pair(obj.patch[idx], interpolated);
 }
 
 /******************************************************************
@@ -419,6 +415,8 @@ int main(void) {
   }
   cout << endl;
 
+  auto vertex_colors = calculateVertexColors();
+
   /* Loop over image rows */
   for (int y = 0; y < height; y++) {
     cout << "\rRendering (" << samples * 4 << " spp) "
@@ -456,15 +454,17 @@ int main(void) {
             /* Extend camera ray to start inside box */
             Vector start = camera.org + dir * 130.0;
 
+            auto colors = radiance(Ray(start, dir.normalize()), vertex_colors);
+
             /* Determine constant radiance */
             accumulated_radiance =
                 accumulated_radiance +
-                radiance(Ray(start, dir.normalize()), false) / samples;
+                colors.first / samples;
 
             /* Determine interpolated radiance */
             accumulated_radiance2 =
                 accumulated_radiance2 +
-                radiance(Ray(start, dir.normalize()), true) / samples;
+                colors.second / samples;
           }
 
           img.addColor(x, y, accumulated_radiance);
