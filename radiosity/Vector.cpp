@@ -3,20 +3,32 @@
 Vector::Vector(const Vector &b) : x(b.x), y(b.y), z(b.z) {}
 Vector::Vector(double x_, double y_, double z_) : x(x_), y(y_), z(z_) {}
 
-Vector Vector::operator+(const Vector &b) const {
-  return Vector(x + b.x, y + b.y, z + b.z);
+Vector& Vector::operator+=(const Vector &b) {
+  x += b.x;
+  y += b.y;
+  z += b.z;
+
+  return *this;
 }
 
 Vector Vector::operator-(const Vector &b) const {
   return Vector(x - b.x, y - b.y, z - b.z);
 }
 
-Vector Vector::operator/(double c) const {
-  return Vector(x / c, y / c, z / c);
+Vector& Vector::operator/=(double c) {
+  x /= c;
+  y /= c;
+  z /= c;
+
+  return *this;
 }
 
 Vector Vector::operator*(double c) const {
   return Vector(x * c, y * c, z * c);
+}
+
+bool Vector::operator==(const Vector &other) const {
+  return x == other.x && y == other.y && z == other.z;
 }
 
 bool Vector::operator<(const Vector &other) const {
