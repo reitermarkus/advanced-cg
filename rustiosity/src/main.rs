@@ -1,3 +1,4 @@
+mod color;
 mod vector;
 mod triangular;
 mod triangle;
@@ -16,38 +17,39 @@ use triangular::Triangular;
 use triangle::Triangle;
 use patch_triangle::PatchTriangle;
 use vector::Vector;
+use color::Color;
 
 fn tris() -> Vec<Triangle> {
   vec![
   /* Cornell Box walls */
-    Triangle::new(Vector::new(  0.0,  0.0,   0.0), Vector::new( 100.0, 0.0,    0.0), Vector::new(0.0,  80.0,    0.0), Vector::new(0.0, 0.0, 0.0), Vector::new(0.75, 0.75, 0.75)), // Back:   bottom-left
-    Triangle::new(Vector::new(100.0, 80.0,   0.0), Vector::new(-100.0, 0.0,    0.0), Vector::new(0.0, -80.0,    0.0), Vector::new(0.0, 0.0, 0.0), Vector::new(0.75, 0.75, 0.75)), // Back:   top-right
-    Triangle::new(Vector::new(  0.0,  0.0, 170.0), Vector::new( 100.0, 0.0,    0.0), Vector::new(0.0,   0.0, -170.0), Vector::new(0.0, 0.0, 0.0), Vector::new(0.75, 0.75, 0.75)), // Bottom: front-left
-    Triangle::new(Vector::new(100.0,  0.0,   0.0), Vector::new(-100.0, 0.0,    0.0), Vector::new(0.0,   0.0,  170.0), Vector::new(0.0, 0.0, 0.0), Vector::new(0.75, 0.75, 0.75)), // Bottom: back-right
-    Triangle::new(Vector::new(  0.0, 80.0,   0.0), Vector::new( 100.0, 0.0,    0.0), Vector::new(0.0,   0.0,  170.0), Vector::new(0.0, 0.0, 0.0), Vector::new(0.75, 0.75, 0.75)), // Top:    back-left
-    Triangle::new(Vector::new(100.0, 80.0, 170.0), Vector::new(-100.0, 0.0,    0.0), Vector::new(0.0,   0.0, -170.0), Vector::new(0.0, 0.0, 0.0), Vector::new(0.75, 0.75, 0.75)), // Top:    front-right
-    Triangle::new(Vector::new(  0.0,  0.0, 170.0), Vector::new(   0.0, 0.0, -170.0), Vector::new(0.0,  80.0,    0.0), Vector::new(0.0, 0.0, 0.0), Vector::new(0.75, 0.25, 0.25)), // Left:   front-bottom
-    Triangle::new(Vector::new(  0.0, 80.0,   0.0), Vector::new(   0.0, 0.0,  170.0), Vector::new(0.0, -80.0,    0.0), Vector::new(0.0, 0.0, 0.0), Vector::new(0.75, 0.25, 0.25)), // Left:   back-top
-    Triangle::new(Vector::new(100.0,  0.0,   0.0), Vector::new(   0.0, 0.0,  170.0), Vector::new(0.0,  80.0,    0.0), Vector::new(0.0, 0.0, 0.0), Vector::new(0.25, 0.25, 0.75)), // Right:  back-bottom
-    Triangle::new(Vector::new(100.0, 80.0, 170.0), Vector::new(   0.0, 0.0, -170.0), Vector::new(0.0, -80.0,    0.0), Vector::new(0.0, 0.0, 0.0), Vector::new(0.25, 0.25, 0.75)), // Right:  front-top
-    Triangle::new(Vector::new(100.0,  0.0, 170.0), Vector::new(-100.0, 0.0,    0.0), Vector::new(0.0,  80.0,    0.0), Vector::new(0.0, 0.0, 0.0), Vector::new(0.0,  1.0,  0.0)),  // Front:  bottom-right (not visible)
-    Triangle::new(Vector::new(  0.0, 80.0, 170.0), Vector::new( 100.0, 0.0,    0.0), Vector::new(0.0, -80.0,    0.0), Vector::new(0.0, 0.0, 0.0), Vector::new(0.0,  1.0,  0.0)),  // Front:  top-left (not visible)
+    Triangle::new(Vector::new(  0.0,  0.0,   0.0), Vector::new( 100.0, 0.0,    0.0), Vector::new(0.0,  80.0,    0.0), Color::new(0.0, 0.0, 0.0), Color::new(0.75, 0.75, 0.75)), // Back:   bottom-left
+    Triangle::new(Vector::new(100.0, 80.0,   0.0), Vector::new(-100.0, 0.0,    0.0), Vector::new(0.0, -80.0,    0.0), Color::new(0.0, 0.0, 0.0), Color::new(0.75, 0.75, 0.75)), // Back:   top-right
+    Triangle::new(Vector::new(  0.0,  0.0, 170.0), Vector::new( 100.0, 0.0,    0.0), Vector::new(0.0,   0.0, -170.0), Color::new(0.0, 0.0, 0.0), Color::new(0.75, 0.75, 0.75)), // Bottom: front-left
+    Triangle::new(Vector::new(100.0,  0.0,   0.0), Vector::new(-100.0, 0.0,    0.0), Vector::new(0.0,   0.0,  170.0), Color::new(0.0, 0.0, 0.0), Color::new(0.75, 0.75, 0.75)), // Bottom: back-right
+    Triangle::new(Vector::new(  0.0, 80.0,   0.0), Vector::new( 100.0, 0.0,    0.0), Vector::new(0.0,   0.0,  170.0), Color::new(0.0, 0.0, 0.0), Color::new(0.75, 0.75, 0.75)), // Top:    back-left
+    Triangle::new(Vector::new(100.0, 80.0, 170.0), Vector::new(-100.0, 0.0,    0.0), Vector::new(0.0,   0.0, -170.0), Color::new(0.0, 0.0, 0.0), Color::new(0.75, 0.75, 0.75)), // Top:    front-right
+    Triangle::new(Vector::new(  0.0,  0.0, 170.0), Vector::new(   0.0, 0.0, -170.0), Vector::new(0.0,  80.0,    0.0), Color::new(0.0, 0.0, 0.0), Color::new(0.75, 0.25, 0.25)), // Left:   front-bottom
+    Triangle::new(Vector::new(  0.0, 80.0,   0.0), Vector::new(   0.0, 0.0,  170.0), Vector::new(0.0, -80.0,    0.0), Color::new(0.0, 0.0, 0.0), Color::new(0.75, 0.25, 0.25)), // Left:   back-top
+    Triangle::new(Vector::new(100.0,  0.0,   0.0), Vector::new(   0.0, 0.0,  170.0), Vector::new(0.0,  80.0,    0.0), Color::new(0.0, 0.0, 0.0), Color::new(0.25, 0.25, 0.75)), // Right:  back-bottom
+    Triangle::new(Vector::new(100.0, 80.0, 170.0), Vector::new(   0.0, 0.0, -170.0), Vector::new(0.0, -80.0,    0.0), Color::new(0.0, 0.0, 0.0), Color::new(0.25, 0.25, 0.75)), // Right:  front-top
+    Triangle::new(Vector::new(100.0,  0.0, 170.0), Vector::new(-100.0, 0.0,    0.0), Vector::new(0.0,  80.0,    0.0), Color::new(0.0, 0.0, 0.0), Color::new(0.0,  1.0,  0.0)),  // Front:  bottom-right (not visible)
+    Triangle::new(Vector::new(  0.0, 80.0, 170.0), Vector::new( 100.0, 0.0,    0.0), Vector::new(0.0, -80.0,    0.0), Color::new(0.0, 0.0, 0.0), Color::new(0.0,  1.0,  0.0)),  // Front:  top-left (not visible)
 
     /* Area light source on top */
-    Triangle::new(Vector::new(40.0, 79.99, 65.0), Vector::new( 20.0, 0.0, 0.0), Vector::new(0.0, 0.0,  20.0), Vector::new(12.0, 12.0, 12.0), Vector::new(0.75, 0.75, 0.75)), // back-left
-    Triangle::new(Vector::new(60.0, 79.99, 85.0), Vector::new(-20.0, 0.0, 0.0), Vector::new(0.0, 0.0, -20.0), Vector::new(12.0, 12.0, 12.0), Vector::new(0.75, 0.75, 0.75)), // front-right
+    Triangle::new(Vector::new(40.0, 79.99, 65.0), Vector::new( 20.0, 0.0, 0.0), Vector::new(0.0, 0.0,  20.0), Color::new(12.0, 12.0, 12.0), Color::new(0.75, 0.75, 0.75)), // back-left
+    Triangle::new(Vector::new(60.0, 79.99, 85.0), Vector::new(-20.0, 0.0, 0.0), Vector::new(0.0, 0.0, -20.0), Color::new(12.0, 12.0, 12.0), Color::new(0.75, 0.75, 0.75)), // front-right
 
     /* Cuboid in room */
-    Triangle::new(Vector::new(30.0,  0.0, 100.0), Vector::new(  0.0, 0.0, -20.0), Vector::new(0.0,  40.0,   0.0), Vector::new(0.0, 0.0, 0.0), Vector::new(0.75, 0.75, 0.75)), // Right: front-bottom
-    Triangle::new(Vector::new(30.0, 40.0,  80.0), Vector::new(  0.0, 0.0,  20.0), Vector::new(0.0, -40.0,   0.0), Vector::new(0.0, 0.0, 0.0), Vector::new(0.75, 0.75, 0.75)), // Right: back-top
-    Triangle::new(Vector::new(10.0,  0.0,  80.0), Vector::new(  0.0, 0.0,  20.0), Vector::new(0.0,  40.0,   0.0), Vector::new(0.0, 0.0, 0.0), Vector::new(0.75, 0.75, 0.75)), // Left:  back-bottom
-    Triangle::new(Vector::new(10.0, 40.0, 100.0), Vector::new(  0.0, 0.0, -20.0), Vector::new(0.0, -40.0,   0.0), Vector::new(0.0, 0.0, 0.0), Vector::new(0.75, 0.75, 0.75)), // Left:  front-top
-    Triangle::new(Vector::new(10.0,  0.0, 100.0), Vector::new( 20.0, 0.0,   0.0), Vector::new(0.0,  40.0,   0.0), Vector::new(0.0, 0.0, 0.0), Vector::new(0.75, 0.75, 0.75)), // Front: bottom-left
-    Triangle::new(Vector::new(30.0, 40.0, 100.0), Vector::new(-20.0, 0.0,   0.0), Vector::new(0.0, -40.0,   0.0), Vector::new(0.0, 0.0, 0.0), Vector::new(0.75, 0.75, 0.75)), // Front: top-right
-    Triangle::new(Vector::new(30.0,  0.0,  80.0), Vector::new(-20.0, 0.0,   0.0), Vector::new(0.0,  40.0,   0.0), Vector::new(0.0, 0.0, 0.0), Vector::new(0.75, 0.75, 0.75)), // Back:  bottom-right
-    Triangle::new(Vector::new(10.0,  4.0,  80.0), Vector::new( 20.0, 0.0,   0.0), Vector::new(0.0, -40.0,   0.0), Vector::new(0.0, 0.0, 0.0), Vector::new(0.75, 0.75, 0.75)), // Back:  top-left
-    Triangle::new(Vector::new(10.0, 40.0, 100.0), Vector::new( 20.0, 0.0,   0.0), Vector::new(0.0,   0.0, -20.0), Vector::new(0.0, 0.0, 0.0), Vector::new(0.75, 0.75, 0.75)), // Top:   front-left
-    Triangle::new(Vector::new(30.0, 40.0,  80.0), Vector::new(-20.0, 0.0,   0.0), Vector::new(0.0,   0.0,  20.0), Vector::new(0.0, 0.0, 0.0), Vector::new(0.75, 0.75, 0.75)), // Top:   back-right
+    Triangle::new(Vector::new(30.0,  0.0, 100.0), Vector::new(  0.0, 0.0, -20.0), Vector::new(0.0,  40.0,   0.0), Color::new(0.0, 0.0, 0.0), Color::new(0.75, 0.75, 0.75)), // Right: front-bottom
+    Triangle::new(Vector::new(30.0, 40.0,  80.0), Vector::new(  0.0, 0.0,  20.0), Vector::new(0.0, -40.0,   0.0), Color::new(0.0, 0.0, 0.0), Color::new(0.75, 0.75, 0.75)), // Right: back-top
+    Triangle::new(Vector::new(10.0,  0.0,  80.0), Vector::new(  0.0, 0.0,  20.0), Vector::new(0.0,  40.0,   0.0), Color::new(0.0, 0.0, 0.0), Color::new(0.75, 0.75, 0.75)), // Left:  back-bottom
+    Triangle::new(Vector::new(10.0, 40.0, 100.0), Vector::new(  0.0, 0.0, -20.0), Vector::new(0.0, -40.0,   0.0), Color::new(0.0, 0.0, 0.0), Color::new(0.75, 0.75, 0.75)), // Left:  front-top
+    Triangle::new(Vector::new(10.0,  0.0, 100.0), Vector::new( 20.0, 0.0,   0.0), Vector::new(0.0,  40.0,   0.0), Color::new(0.0, 0.0, 0.0), Color::new(0.75, 0.75, 0.75)), // Front: bottom-left
+    Triangle::new(Vector::new(30.0, 40.0, 100.0), Vector::new(-20.0, 0.0,   0.0), Vector::new(0.0, -40.0,   0.0), Color::new(0.0, 0.0, 0.0), Color::new(0.75, 0.75, 0.75)), // Front: top-right
+    Triangle::new(Vector::new(30.0,  0.0,  80.0), Vector::new(-20.0, 0.0,   0.0), Vector::new(0.0,  40.0,   0.0), Color::new(0.0, 0.0, 0.0), Color::new(0.75, 0.75, 0.75)), // Back:  bottom-right
+    Triangle::new(Vector::new(10.0,  4.0,  80.0), Vector::new( 20.0, 0.0,   0.0), Vector::new(0.0, -40.0,   0.0), Color::new(0.0, 0.0, 0.0), Color::new(0.75, 0.75, 0.75)), // Back:  top-left
+    Triangle::new(Vector::new(10.0, 40.0, 100.0), Vector::new( 20.0, 0.0,   0.0), Vector::new(0.0,   0.0, -20.0), Color::new(0.0, 0.0, 0.0), Color::new(0.75, 0.75, 0.75)), // Top:   front-left
+    Triangle::new(Vector::new(30.0, 40.0,  80.0), Vector::new(-20.0, 0.0,   0.0), Vector::new(0.0,   0.0,  20.0), Color::new(0.0, 0.0, 0.0), Color::new(0.75, 0.75, 0.75)), // Top:   back-right
   ]
 }
 
@@ -219,6 +221,60 @@ fn calculate_radiosity(tris: &mut [Triangle], form_factors: &HashMap<usize, Vec<
   }
 }
 
+fn calculate_vertex_colors(tris: &[Triangle]) -> HashMap<Vector, HashMap<Vector, Color>> {
+  let mut vertex_colors: HashMap<Vector, HashMap<Vector, Color>> = HashMap::new();
+  let mut vertex_counts: HashMap<Vector, HashMap<Vector, u64>> = HashMap::new();
+
+  for tri in tris {
+    vertex_colors.insert(tri.normal, HashMap::with_capacity(tri.patches.len()));
+    vertex_counts.insert(tri.normal, HashMap::with_capacity(tri.patches.len()));
+  }
+
+  for tri in tris {
+    for p in 0..tri.patches.len() {
+      vertex_colors.get_mut(&tri.normal).unwrap().insert(tri.sub_triangles[p].a, Vector::new(0.0, 0.0, 0.0));
+      vertex_colors.get_mut(&tri.normal).unwrap().insert(tri.sub_triangles[p].b, Vector::new(0.0, 0.0, 0.0));
+      vertex_colors.get_mut(&tri.normal).unwrap().insert(tri.sub_triangles[p].c, Vector::new(0.0, 0.0, 0.0));
+      vertex_counts.get_mut(&tri.normal).unwrap().insert(tri.sub_triangles[p].a, 0);
+      vertex_counts.get_mut(&tri.normal).unwrap().insert(tri.sub_triangles[p].b, 0);
+      vertex_counts.get_mut(&tri.normal).unwrap().insert(tri.sub_triangles[p].c, 0);
+    }
+  }
+
+  for tri in tris {
+    for p in 0..tri.patches.len() {
+      *vertex_counts.get_mut(&tri.normal).unwrap().get_mut(&tri.sub_triangles[p].a).unwrap() += 1;
+      *vertex_counts.get_mut(&tri.normal).unwrap().get_mut(&tri.sub_triangles[p].b).unwrap() += 1;
+      *vertex_counts.get_mut(&tri.normal).unwrap().get_mut(&tri.sub_triangles[p].c).unwrap() += 1;
+    }
+  }
+
+  for tri in tris {
+    for p in 0..tri.patches.len() {
+      *vertex_colors.get_mut(&tri.normal).unwrap().get_mut(&tri.sub_triangles[p].a).unwrap() += tri.patches[p];
+      *vertex_colors.get_mut(&tri.normal).unwrap().get_mut(&tri.sub_triangles[p].b).unwrap() += tri.patches[p];
+      *vertex_colors.get_mut(&tri.normal).unwrap().get_mut(&tri.sub_triangles[p].c).unwrap() += tri.patches[p];
+    }
+  }
+
+  for tri in tris {
+    for p in 0..tri.patches.len() {
+      *vertex_colors.get_mut(&tri.normal).unwrap().get_mut(&tri.sub_triangles[p].a).unwrap() += tri.patches[p];
+      *vertex_colors.get_mut(&tri.normal).unwrap().get_mut(&tri.sub_triangles[p].b).unwrap() += tri.patches[p];
+      *vertex_colors.get_mut(&tri.normal).unwrap().get_mut(&tri.sub_triangles[p].c).unwrap() += tri.patches[p];
+    }
+  }
+
+  for (normal, colors) in vertex_colors.iter_mut() {
+    for (vertex, color) in colors.iter_mut() {
+      *color /= *vertex_counts.get(&normal).unwrap().get(&vertex).unwrap() as f64;
+    }
+  }
+
+  return vertex_colors;
+}
+
+
 fn main() {
   let mut tris = tris();
 
@@ -228,6 +284,9 @@ fn main() {
   let form_factors = calculate_form_factors(&mut tris, divisions, samples);
 
   calculate_radiosity(&mut tris, &form_factors);
+
+  println!("Calculating vertex colors ...");
+  let vertex_colors = calculate_vertex_colors(&tris);
 
   let image_width = 640;
   let image_height = 480;

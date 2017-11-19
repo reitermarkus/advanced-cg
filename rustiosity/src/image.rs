@@ -10,7 +10,9 @@ pub struct Image {
   pixels: Vec<Vector>,
 }
 
-fn to_integer(mut x: f64) -> usize {
+fn to_integer<T: Into<f64>>(x: T) -> usize {
+  let mut x = x.into();
+
   if x < 0.0 { x = 0.0; } else
   if x > 1.0 { x = 1.0; };
 

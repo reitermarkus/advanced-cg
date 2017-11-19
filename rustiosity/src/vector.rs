@@ -1,16 +1,20 @@
+extern crate ordered_float;
+
+use self::ordered_float::NotNaN;
+
 use std::ops;
 use std::fmt;
 
-#[derive(Clone, Copy)]
+#[derive(Hash, PartialEq, Eq, Clone, Copy)]
 pub struct Vector {
-  pub x: f64,
-  pub y: f64,
-  pub z: f64,
+  pub x: NotNaN<f64>,
+  pub y: NotNaN<f64>,
+  pub z: NotNaN<f64>,
 }
 
 impl Vector {
-  pub fn new(x: f64, y: f64, z: f64) -> Vector {
-    Vector { x: x, y: y, z: z }
+  pub fn new<T: Into<NotNaN<f64>>>(x: T, y: T, z: T) -> Vector {
+    Vector { x: x.into(), y: y.into(), z: z.into() }
   }
 
   pub fn entrywise_product(&self, other: &Vector) -> Vector {
@@ -22,7 +26,7 @@ impl Vector {
   }
 
   pub fn dot_product(&self, other: &Vector) -> f64 {
-    self.x * other.x + self.y * other.y + self.z * other.z
+    (self.x * other.x + self.y * other.y + self.z * other.z).into_inner()
   }
 
   pub fn cross_product(&self, other: &Vector) -> Vector {

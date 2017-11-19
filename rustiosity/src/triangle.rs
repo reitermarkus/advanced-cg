@@ -1,5 +1,6 @@
 use std::vec::Vec;
 
+use color::Color;
 use vector::Vector;
 use triangular::Triangular;
 use patch_triangle::PatchTriangle;
@@ -21,7 +22,7 @@ pub struct Triangle {
 
   pub divisions: u64,
 
-  pub patches: Vec<Vector>,
+  pub patches: Vec<Color>,
   pub sub_triangles: Vec<PatchTriangle>,
 }
 
@@ -35,7 +36,7 @@ impl Triangular for Triangle {
 }
 
 impl Triangle {
-  pub fn new(a: Vector, b_rel: Vector, c_rel: Vector, emission: Vector, color: Vector) -> Triangle {
+  pub fn new(a: Vector, b_rel: Vector, c_rel: Vector, emission: Color, color: Color) -> Triangle {
     let b = a + b_rel;
     let c = a + c_rel;
 
@@ -54,7 +55,7 @@ impl Triangle {
 
   pub fn init_patches(&mut self, divisions: u64) {
     self.divisions = divisions;
-    self.patches = vec![Vector::new(0.0, 0.0, 0.0); divisions.pow(2) as usize];
+    self.patches = vec![Color::new(0.0, 0.0, 0.0); divisions.pow(2) as usize];
     self.divide(divisions)
   }
 
