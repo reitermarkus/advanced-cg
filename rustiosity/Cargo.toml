@@ -1,0 +1,7 @@
+[package]
+name = "rustiosity"
+version = "0.0.1"
+authors = ["Markus Reiter <me@reitermark.us>"]
+
+[dependencies]
+rand = "0.3.18"
