@@ -14,6 +14,7 @@ use std::vec::Vec;
 use std::collections::HashMap;
 use std::f64::consts::PI;
 use std::io::{self, Write};
+use std::time::Instant;
 
 use image::Image;
 use ray::Ray;
@@ -337,6 +338,8 @@ fn main() {
   let between = Range::new(0.0, 1.0);
   let mut rng = rand::thread_rng();
 
+  let start = Instant::now();
+
   // Loop over image rows.
   for y in 0..height {
     // Loop over image columns.
@@ -380,6 +383,11 @@ fn main() {
       }
     }
   }
+
+  let elapsed = start.elapsed();
+  println!("Rendering took {} ms",
+           (elapsed.as_secs() * 1_000) + (elapsed.subsec_nanos() / 1_000_000) as u64);
+
 
   println!("Saving images ...");
 
