@@ -6,6 +6,10 @@ mod image;
 mod patch_triangle;
 mod ray;
 
+extern crate rand;
+
+use self::rand::distributions::{IndependentSample, Range};
+
 use std::vec::Vec;
 use std::collections::HashMap;
 use std::f64::consts::PI;
@@ -57,8 +61,7 @@ fn intersect_scene(tris: &[Triangle], ray: &Ray, t: &mut f64, id: &mut i64, norm
   *t = 1e20;
   *id = -1;
 
-  let n = tris.len();
-  for i in 0..n {
+  for i in 0..tris.len() {
     let d = tris[i].intersect(ray);
     if d > 0.0 && d < *t {
       *t = d;
@@ -132,43 +135,41 @@ fn calculate_form_factors(tris: &mut [Triangle], divisions: u64, mc_sample: i64)
             let pdf = (1.0 / patch_area[&i][p_i]) *
                       (1.0 / patch_area[&j][p_j]);
 
+            let t_i: &PatchTriangle = &tris[i].sub_triangles[p_i];
+            let t_j: &PatchTriangle = &tris[j].sub_triangles[p_j];
+
             // Determine rays of NixNi uniform samples of patch
             // on i to NjxNj uniform samples of patch on j.
-            for ii in 0..mc_sample {
-              for jj in 0..mc_sample {
-                let t_i: &PatchTriangle = &tris[i].sub_triangles[p_i];
-                let t_j: &PatchTriangle = &tris[j].sub_triangles[p_j];
+            for _ in 0..mc_sample {
+              let xi: Vector = t_i.random_sample();
+              let xj: Vector = t_j.random_sample();
 
-                let xi: Vector = t_i.random_sample();
-                let xj: Vector = t_j.random_sample();
+              // Check for visibility between sample points.
+              let ij: Vector = (&xj - &xi).normalize();
 
-                // Check for visibility between sample points.
-                let ij: Vector = (&xj - &xi).normalize();
+              let mut t = 0.0;
+              let mut id = -1;
+              let mut normal = Vector::new(0.0, 0.0, 0.0);
+              if intersect_scene(&tris, &Ray::new(&xi, &ij), &mut t, &mut id, &mut normal) && id != j as i64 {
+                continue; // If intersection with other triangle.
+              }
 
-                let mut t = 0.0;
-                let mut id = -1;
-                let mut normal = Vector::new(0.0, 0.0, 0.0);
-                if intersect_scene(&tris, &Ray::new(&xi, &ij), &mut t, &mut id, &mut normal) && id != j as i64 {
-                  continue; // If intersection with other triangle.
-                }
+              // Cosines of angles beteen normals and ray inbetween.
+              let d0 = tris[i].normal.dot_product(&ij);
+              let d1 = tris[j].normal.dot_product(&(-1.0 * ij));
 
-                // Cosines of angles beteen normals and ray inbetween.
-                let d0 = tris[i].normal.dot_product(&ij);
-                let d1 = tris[j].normal.dot_product(&(-1.0 * ij));
+              // Continue if patches facing each other.
+              if d0 > 0.0 && d1 > 0.0 {
+                // Sample form factor.
+                let k = d0 * d1 / (PI * (&xj - &xi).length_squared());
 
-                // Continue if patches facing each other.
-                if d0 > 0.0 && d1 > 0.0 {
-                  // Sample form factor.
-                  let k = d0 * d1 / (PI * (&xj - &xi).length_squared());
-
-                  // Add weighted sample to estimate.
-                  form_factor += k / pdf;
-                }
+                // Add weighted sample to estimate.
+                form_factor += k / pdf;
               }
             }
 
             // Divide by number of samples.
-            form_factor /= mc_sample.pow(2) as f64;
+            form_factor /= mc_sample as f64;
 
             form_factors.get_mut(&i).unwrap()[p_i].get_mut(&j).unwrap().insert(p_j, form_factor);
             form_factors.get_mut(&j).unwrap()[p_j].get_mut(&i).unwrap().insert(p_i, form_factor);
@@ -177,7 +178,7 @@ fn calculate_form_factors(tris: &mut [Triangle], divisions: u64, mc_sample: i64)
       }
     }
 
-    println!("");
+    println!();
   }
 
   // Divide by area to get final form factors.
@@ -199,7 +200,7 @@ fn calculate_form_factors(tris: &mut [Triangle], divisions: u64, mc_sample: i64)
 fn calculate_radiosity(tris: &mut [Triangle], form_factors: &HashMap<usize, Vec<HashMap<usize, Vec<f64>>>>) {
   for i in 0..tris.len() {
     for p_a in 0..tris[i].patches.len() {
-      let mut color = Vector::new(0.0, 0.0, 0.0);
+      let mut color = Color::new(0.0, 0.0, 0.0);
 
       for j in 0..tris.len() {
         for p_b in 0..tris[j].patches.len() {
@@ -207,7 +208,7 @@ fn calculate_radiosity(tris: &mut [Triangle], form_factors: &HashMap<usize, Vec<
 
           // Add form factor multiplied with radiosity of previous step.
           if form_factor_ij > 0.0 {
-            color = color + form_factor_ij * tris[j].patches[p_b];
+            color += form_factor_ij * tris[j].patches[p_b];
           }
         }
       }
@@ -232,9 +233,9 @@ fn calculate_vertex_colors(tris: &[Triangle]) -> HashMap<Vector, HashMap<Vector,
 
   for tri in tris {
     for p in 0..tri.patches.len() {
-      vertex_colors.get_mut(&tri.normal).unwrap().insert(tri.sub_triangles[p].a, Vector::new(0.0, 0.0, 0.0));
-      vertex_colors.get_mut(&tri.normal).unwrap().insert(tri.sub_triangles[p].b, Vector::new(0.0, 0.0, 0.0));
-      vertex_colors.get_mut(&tri.normal).unwrap().insert(tri.sub_triangles[p].c, Vector::new(0.0, 0.0, 0.0));
+      vertex_colors.get_mut(&tri.normal).unwrap().insert(tri.sub_triangles[p].a, Color::new(0.0, 0.0, 0.0));
+      vertex_colors.get_mut(&tri.normal).unwrap().insert(tri.sub_triangles[p].b, Color::new(0.0, 0.0, 0.0));
+      vertex_colors.get_mut(&tri.normal).unwrap().insert(tri.sub_triangles[p].c, Color::new(0.0, 0.0, 0.0));
       vertex_counts.get_mut(&tri.normal).unwrap().insert(tri.sub_triangles[p].a, 0);
       vertex_counts.get_mut(&tri.normal).unwrap().insert(tri.sub_triangles[p].b, 0);
       vertex_counts.get_mut(&tri.normal).unwrap().insert(tri.sub_triangles[p].c, 0);
@@ -257,14 +258,6 @@ fn calculate_vertex_colors(tris: &[Triangle]) -> HashMap<Vector, HashMap<Vector,
     }
   }
 
-  for tri in tris {
-    for p in 0..tri.patches.len() {
-      *vertex_colors.get_mut(&tri.normal).unwrap().get_mut(&tri.sub_triangles[p].a).unwrap() += tri.patches[p];
-      *vertex_colors.get_mut(&tri.normal).unwrap().get_mut(&tri.sub_triangles[p].b).unwrap() += tri.patches[p];
-      *vertex_colors.get_mut(&tri.normal).unwrap().get_mut(&tri.sub_triangles[p].c).unwrap() += tri.patches[p];
-    }
-  }
-
   for (normal, colors) in vertex_colors.iter_mut() {
     for (vertex, color) in colors.iter_mut() {
       *color /= *vertex_counts.get(&normal).unwrap().get(&vertex).unwrap() as f64;
@@ -274,11 +267,50 @@ fn calculate_vertex_colors(tris: &[Triangle]) -> HashMap<Vector, HashMap<Vector,
   return vertex_colors;
 }
 
+fn find_patch_index(triangle: &Triangle, ray: &Ray) -> Option<usize> {
+  for p in 0..triangle.sub_triangles.len() {
+    if triangle.sub_triangles[p].intersect(ray) != 0.0 {
+      return Some(p);
+    }
+  }
+
+  None
+}
+
+fn radiance(tris: &[Triangle], ray: &Ray, vertex_colors: &HashMap<Vector, HashMap<Vector, Color>>) -> (Color, Color) {
+  let background_color = Color::new(0.0, 0.0, 0.0);
+
+  let mut t = -1.0;
+  let mut id = -1;
+  let mut normal = Vector::new(0.0, 0.0, 0.0);
+
+  /* Find intersected triangle. */
+  if !intersect_scene(tris, ray, &mut t, &mut id, &mut normal) {
+    return (background_color, background_color);
+  }
+
+  /* Find intersected patch. */
+  let obj: &Triangle = &tris[id as usize];
+  let idx = find_patch_index(obj, ray).unwrap();
+
+  let hitpoint = ray.org + t * ray.dir;
+
+  let bary = obj.sub_triangles[idx].barycentric_coordinates_at(&hitpoint);
+
+  let a: Color = vertex_colors[&obj.normal][&obj.sub_triangles[idx].a];
+  let b: Color = vertex_colors[&obj.normal][&obj.sub_triangles[idx].b];
+  let c: Color = vertex_colors[&obj.normal][&obj.sub_triangles[idx].c];
+
+  let interpolated: Color = a * bary.x.into_inner() + b * bary.z.into_inner() + c * bary.y.into_inner();
+
+  return (obj.patches[idx], interpolated);
+}
+
 
 fn main() {
   let mut tris = tris();
 
-  let divisions: u64 = 8;
+  let divisions: u64 = 4;
   let samples = 4;
 
   let form_factors = calculate_form_factors(&mut tris, divisions, samples);
@@ -288,21 +320,70 @@ fn main() {
   println!("Calculating vertex colors ...");
   let vertex_colors = calculate_vertex_colors(&tris);
 
-  let image_width = 640;
-  let image_height = 480;
+  let width = 640;
+  let height = 480;
 
-  let image = Image::new(image_width, image_height);
+  let camera = Ray::new(&Vector::new(50.0, 52.0, 295.6), &Vector::new(0.0, -0.042612, -1.0).normalize());
 
+  // Image edge vectors for pixel sampling.
+  let cx: Vector = Vector::new(width as f64 * 0.5135 / height as f64, 0.0, 0.0);
+  let cy: Vector = cx.cross_product(&camera.dir).normalize() * 0.5135;
 
-  let v1 = Vector::new(1.0, 2.0, 3.0);
-  let v2 = Vector::new(3.0, 2.0, 1.0);
+  let mut image = Image::new(width, height);
+  let mut image_interpolated = Image::new(width, height);
 
+  let between = Range::new(0.0, 1.0);
+  let mut rng = rand::thread_rng();
 
-  println!("Hello, world!");
-  println!("{:?}", (v1 + v2));
+  // Loop over image rows.
+  for y in 0..height {
+    // Loop over image columns.
+    for x in 0..width {
+      // 2 x 2 subsampling per pixel.
+      for sy in 0..2 {
+        for sx in 0..2 {
+          let mut accumulated_radiance = Color::new(0.0, 0.0, 0.0);
+          let mut accumulated_radiance_interpolated = Color::new(0.0, 0.0, 0.0);
 
+          // Computes radiance at subpixel using multiple samples.
+          for _ in 0..samples {
+            let mut nu_filter_samples = || -> f64 {
+              let r = 2.0 * between.ind_sample(&mut rng) as f64;
+              if r < 1.0 { r.sqrt() - 1.0 } else { 1.0 - (2.0 - r).sqrt() }
+            };
 
-  if let Err(e) = image.save(&"yolo.ppm".to_string()) {
+            let dx = nu_filter_samples();
+            let dy = nu_filter_samples();
+
+            // Ray direction into scene from camera through sample.
+            let dir: Vector = cx * (((x as f64) + ((sx as f64) + 0.5 + dx) / 2.0) / (width as f64) - 0.5) +
+                              cy * (((y as f64) + ((sy as f64) + 0.5 + dy) / 2.0) / (height as f64) - 0.5) +
+                              camera.dir;
+
+            // Extend camera ray to start inside box.
+            let start: Vector = camera.org + dir * 130.0;
+
+            let (color, color_interpolated) = radiance(&tris, &Ray::new(&start, &dir.normalize()), &vertex_colors);
+
+            // Determine constant radiance.
+            accumulated_radiance += color / samples as f64;
+
+            // Determine interpolated radiance.
+            accumulated_radiance_interpolated += color_interpolated / samples as f64;
+          }
+
+          image.add_color(x, y, &accumulated_radiance);
+          image_interpolated.add_color(x, y, &accumulated_radiance_interpolated);
+        }
+      }
+    }
+  }
+
+  if let Err(e) = image.save(&"image.ppm".to_string()) {
+    panic!("{:?}", e)
+  }
+
+  if let Err(e) = image_interpolated.save(&"image_smooth.ppm".to_string()) {
     panic!("{:?}", e)
   }
 }

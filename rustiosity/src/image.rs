@@ -1,13 +1,12 @@
 use std::vec::Vec;
 use std::fs::File;
 use std::io::{BufWriter, Write, Error};
-use std::io::prelude::*;
-use vector::Vector;
+use color::Color;
 
 pub struct Image {
   width: i64,
   height: i64,
-  pixels: Vec<Vector>,
+  pixels: Vec<Color>,
 }
 
 fn to_integer<T: Into<f64>>(x: T) -> usize {
@@ -23,24 +22,14 @@ fn to_integer<T: Into<f64>>(x: T) -> usize {
 impl Image {
   pub fn new(width: i64, height: i64) -> Image {
     let size = (width * height) as usize;
-    Image { width: width, height: height, pixels: vec![Vector::new(0.0, 0.0, 0.0); size] }
+    Image { width: width, height: height, pixels: vec![Color::new(0.0, 0.0, 0.0); size] }
   }
 
   fn index(&self, x: i64, y: i64) -> usize {
     ((self.height - y - 1) * self.width + x) as usize
   }
 
-  pub fn get_color(&self, x: i64, y: i64) -> Vector {
-    let image_index = self.index(x, y);
-    self.pixels[image_index]
-  }
-
-  pub fn set_color(&mut self, x: i64, y: i64, color: &Vector) {
-    let image_index = self.index(x, y);
-    self.pixels[image_index] = color.to_owned();
-  }
-
-  pub fn add_color(&mut self, x: i64, y: i64, color: &Vector) {
+  pub fn add_color(&mut self, x: i64, y: i64, color: &Color) {
     let image_index = self.index(x, y);
     self.pixels[image_index] = self.pixels[image_index] + color;
   }
