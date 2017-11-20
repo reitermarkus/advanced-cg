@@ -6,14 +6,17 @@ mod image;
 mod patch_triangle;
 mod ray;
 
+extern crate rayon;
 extern crate rand;
 
-use self::rand::distributions::{IndependentSample, Range};
+use rayon::prelude::*;
+use rand::distributions::{IndependentSample, Range};
 
 use std::vec::Vec;
 use std::collections::HashMap;
 use std::f64::consts::PI;
 use std::io::{self, Write};
+use std::sync::{mpsc, Mutex};
 use std::time::Instant;
 
 use image::Image;
@@ -75,7 +78,6 @@ fn intersect_scene(tris: &[Triangle], ray: &Ray, t: &mut f64, id: &mut i64, norm
 }
 
 fn calculate_form_factors(tris: &mut [Triangle], divisions: u64, mc_sample: i64) -> HashMap<usize, Vec<HashMap<usize, Vec<f64>>>> {
-  let mut form_factors: HashMap<usize, Vec<HashMap<usize, Vec<f64>>>> = HashMap::new();
   let mut patch_num = 0;
 
   // Total number of patches in scene.
@@ -91,23 +93,23 @@ fn calculate_form_factors(tris: &mut [Triangle], divisions: u64, mc_sample: i64)
   println!("Number of patches: {}", patch_num);
   println!("Number of form factors: {}", form_factor_num);
 
-  for i in 0..n {
-    form_factors.insert(i, vec![HashMap::new(); tris[i].patches.len()]);
+  let mut form_factors: HashMap<_, _> = (0..n).into_par_iter().map(|i| {
+    let mut maps: Vec<HashMap<usize, Vec<f64>>> = vec![HashMap::new(); tris[i].patches.len()];
 
     for p in 0..tris[i].patches.len() {
       for j in 0..n {
-        form_factors.get_mut(&i).unwrap()[p].insert(j, vec![0.0; tris[j].patches.len()]);
+        maps[p].insert(j, vec![0.0; tris[j].patches.len()]);
       }
     }
-  }
 
-  let mut patch_area: HashMap<usize, Vec<f64>> = HashMap::new();
+    (i, maps)
+  }).collect();
 
   // Precompute patch areas, assuming same size for each triangle.
-  for i in 0..n {
+  let patch_area: HashMap<usize, Vec<f64>> = (0..n).into_par_iter().map(|i| {
     let area = tris[i].area / tris[i].patches.len() as f64;
-    patch_area.insert(i, vec![area; tris[i].patches.len()]);
-  }
+    (i, vec![area; tris[i].patches.len()])
+  }).collect();
 
   // Loop over all triangles in scene.
   for i in 0..n {
@@ -124,8 +126,6 @@ fn calculate_form_factors(tris: &mut [Triangle], divisions: u64, mc_sample: i64)
       for j in (i + 1)..n {
         // Loop over all patches in rectangle j.
         for p_j in 0..tris[j].patches.len() {
-          let mut form_factor = 0.0;
-
           // Monte Carlo integration of form factor double integral.
 
           // Uniform PDF for Monte Carlo (1 / Ai) x (1 / Aj).
@@ -137,7 +137,7 @@ fn calculate_form_factors(tris: &mut [Triangle], divisions: u64, mc_sample: i64)
 
           // Determine rays of NixNi uniform samples of patch
           // on i to NjxNj uniform samples of patch on j.
-          for _ in 0..mc_sample {
+          let mut form_factor = (0..mc_sample).into_iter().map(|_| {
             let xi: Vector = t_i.random_sample();
             let xj: Vector = t_j.random_sample();
 
@@ -148,7 +148,7 @@ fn calculate_form_factors(tris: &mut [Triangle], divisions: u64, mc_sample: i64)
             let mut id = -1;
             let mut normal = Vector::new(0.0, 0.0, 0.0);
             if intersect_scene(&tris, &Ray::new(&xi, &ij), &mut t, &mut id, &mut normal) && id != j as i64 {
-              continue; // If intersection with other triangle.
+              return 0.0; // If intersection with other triangle.
             }
 
             // Cosines of angles beteen normals and ray inbetween.
@@ -161,9 +161,11 @@ fn calculate_form_factors(tris: &mut [Triangle], divisions: u64, mc_sample: i64)
               let k = d0 * d1 / (PI * (&xj - &xi).length_squared());
 
               // Add weighted sample to estimate.
-              form_factor += k / pdf;
+              return k / pdf;
             }
-          }
+
+            0.0
+          }).sum();
 
           // Divide by number of samples.
           form_factor /= mc_sample as f64;
@@ -335,20 +337,24 @@ fn main() {
   let mut image = Image::new(width, height);
   let mut image_interpolated = Image::new(width, height);
 
-  let between = Range::new(0.0, 1.0);
-  let mut rng = rand::thread_rng();
+  let (tx, rx) = mpsc::channel();
+  let sender = Mutex::new(tx);
 
   let start = Instant::now();
 
   // Loop over image rows.
-  for y in 0..height {
+  (0..height).into_par_iter().for_each(move |y| {
+    let between = Range::new(0.0, 1.0);
+    let mut rng = rand::thread_rng();
+
     // Loop over image columns.
     for x in 0..width {
+      let mut accumulated_radiance = Color::new(0.0, 0.0, 0.0);
+      let mut accumulated_radiance_interpolated = Color::new(0.0, 0.0, 0.0);
+
       // 2 x 2 subsampling per pixel.
       for sy in 0..2 {
         for sx in 0..2 {
-          let mut accumulated_radiance = Color::new(0.0, 0.0, 0.0);
-          let mut accumulated_radiance_interpolated = Color::new(0.0, 0.0, 0.0);
 
           // Computes radiance at subpixel using multiple samples.
           for _ in 0..samples {
@@ -376,12 +382,17 @@ fn main() {
             // Determine interpolated radiance.
             accumulated_radiance_interpolated += color_interpolated / samples as f64;
           }
-
-          image.add_color(x, y, &accumulated_radiance);
-          image_interpolated.add_color(x, y, &accumulated_radiance_interpolated);
         }
       }
+
+      sender.lock().unwrap()
+        .send((x, y, accumulated_radiance, accumulated_radiance_interpolated)).unwrap();
     }
+  });
+
+  for (x, y, radiance, radiance_interpolated) in rx {
+    image.add_color(x, y, &radiance);
+    image_interpolated.add_color(x, y, &radiance_interpolated);
   }
 
   let elapsed = start.elapsed();

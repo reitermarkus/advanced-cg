@@ -6,3 +6,4 @@ authors = ["Markus Reiter <me@reitermark.us>"]
 [dependencies]
 rand = "0.3.18"
 ordered-float = "0.5.0"
+rayon = "0.9"
