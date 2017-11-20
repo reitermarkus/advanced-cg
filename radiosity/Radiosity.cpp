@@ -74,8 +74,8 @@ vector<Triangle> tris = {
   Triangle(Vector(  0.0, 80.0,   0.0), Vector(   0.0, 0.0,  170.0), Vector(0.0, -80.0,    0.0), Color(), Color(0.75, 0.25, 0.25)), // Left:   back-top
   Triangle(Vector(100.0,  0.0,   0.0), Vector(   0.0, 0.0,  170.0), Vector(0.0,  80.0,    0.0), Color(), Color(0.25, 0.25, 0.75)), // Right:  back-bottom
   Triangle(Vector(100.0, 80.0, 170.0), Vector(   0.0, 0.0, -170.0), Vector(0.0, -80.0,    0.0), Color(), Color(0.25, 0.25, 0.75)), // Right:  front-top
-  Triangle(Vector(100.0,  0.0, 170.0), Vector(-100.0, 0.0,    0.0), Vector(0.0,  80.0,    0.0), Color(), Color(0.0,  1.0,  0.0)),  // Front:  bottom-right (not visible)
-  Triangle(Vector(  0.0, 80.0, 170.0), Vector( 100.0, 0.0,    0.0), Vector(0.0, -80.0,    0.0), Color(), Color(0.0,  1.0,  0.0)),  // Front:  top-left (not visible)
+  Triangle(Vector(100.0,  0.0, 170.0), Vector(-100.0, 0.0,    0.0), Vector(0.0,  80.0,    0.0), Color(), Color(0.25, 0.75, 0.25)),  // Front:  bottom-right (not visible)
+  Triangle(Vector(  0.0, 80.0, 170.0), Vector( 100.0, 0.0,    0.0), Vector(0.0, -80.0,    0.0), Color(), Color(0.25, 0.75, 0.25)),  // Front:  top-left (not visible)
 
   /* Area light source on top */
   Triangle(Vector(40.0, 79.99, 65.0), Vector( 20.0, 0.0, 0.0), Vector(0.0, 0.0,  20.0), Color(12, 12, 12), Color(0.75, 0.75, 0.75)), // back-left
@@ -169,63 +169,54 @@ void calculateFormFactors(const int a_div_num, const int mc_sample) {
       }
 
       /* Loop over all triangles in scene for triangles i */
-      for (int j = 0; j < n; j++) {
+      for (int j = i + 1; j < n; j++) {
         /* Loop over all patches in rectangle j */
         for (unsigned long p_j = 0; p_j < tris[j].patch.size(); p_j++) {
-          /* Do not compute form factors for patches on same rectangle;
-             also exploit symmetry to reduce computation;
-             intemediate values; will be divided by patch area below */
-          if (i < j) {
-            double F = 0;
+          double F = 0;
 
-            /* Monte Carlo integration of form factor double integral */
+          /* Monte Carlo integration of form factor double integral */
 
-            /* Uniform PDF for Monte Carlo (1/Ai)x(1/Aj) */
-            const double pdf =
-                (1.0 / patch_area[&tris[i]][p_i]) *
-                (1.0 / patch_area[&tris[j]][p_j]);
+          /* Uniform PDF for Monte Carlo (1/Ai)x(1/Aj) */
+          const double pdf =
+              (1.0 / patch_area[&tris[i]][p_i]) *
+              (1.0 / patch_area[&tris[j]][p_j]);
 
-            /* Determine rays of NixNi uniform samples of patch
-               on i to NjxNj uniform samples of patch on j */
-            for (auto ii = 0; ii < mc_sample; ii++) {
-              for (auto jj = 0; jj < mc_sample; jj++) {
-                PatchTriangle t_i = tris[i].subTriangles[p_i];
-                PatchTriangle t_j = tris[j].subTriangles[p_j];
+          for (auto ii = 0; ii < mc_sample; ii++) {
+            PatchTriangle t_i = tris[i].subTriangles[p_i];
+            PatchTriangle t_j = tris[j].subTriangles[p_j];
 
-                const Vector xi = Triangle::sample(t_i.a, t_i.b, t_i.c);
-                const Vector xj = Triangle::sample(t_j.a, t_j.b, t_j.c);
+            const Vector xi = Triangle::sample(t_i.a, t_i.b, t_i.c);
+            const Vector xj = Triangle::sample(t_j.a, t_j.b, t_j.c);
 
-                /* Check for visibility between sample points */
-                const Vector ij = (xj - xi).normalize();
+            /* Check for visibility between sample points */
+            const Vector ij = (xj - xi).normalize();
 
-                double t;
-                int id;
-                Vector normal;
-                if (intersectScene(Ray(xi, ij), &t, &id, &normal) && id != j) {
-                  continue; /* If intersection with other triangle */
-                }
-
-                /* Cosines of angles beteen normals and ray inbetween */
-                const double d0 = tris[i].normal.dotProduct(ij);
-                const double d1 = tris[j].normal.dotProduct(-1.0 * ij);
-
-                /* Continue if patches facing each other */
-                if (d0 > 0.0 && d1 > 0.0) {
-                  /* Sample form factor */
-                  const double K = d0 * d1 / (M_PI * (xj - xi).lengthSquared());
-
-                  /* Add weighted sample to estimate */
-                  F += K / pdf;
-                }
-              }
+            double t;
+            int id;
+            Vector normal;
+            if (intersectScene(Ray(xi, ij), &t, &id, &normal) && id != j) {
+              continue; /* If intersection with other triangle */
             }
 
-            /* Divide by number of samples */
-            F /= (pow(mc_sample, 2));
+            /* Cosines of angles beteen normals and ray inbetween */
+            const double d0 = tris[i].normal.dotProduct(ij);
+            const double d1 = tris[j].normal.dotProduct(-1.0 * ij);
 
-            form_factor[&tris[i]][p_i][&tris[j]][p_j] = F;
-            form_factor[&tris[j]][p_j][&tris[i]][p_i] = F;
+            /* Continue if patches facing each other */
+            if (d0 > 0.0 && d1 > 0.0) {
+              /* Sample form factor */
+              const double K = d0 * d1 / (M_PI * (xj - xi).lengthSquared());
+
+              /* Add weighted sample to estimate */
+              F += K / pdf;
+            }
           }
+
+          /* Divide by number of samples */
+          F /= mc_sample;
+
+          form_factor[&tris[i]][p_i][&tris[j]][p_j] = F;
+          form_factor[&tris[j]][p_j][&tris[i]][p_i] = F;
         }
       }
     }
@@ -402,7 +393,7 @@ int main(void) {
 
   cout << "Calculating form factors" << endl;
   int patches_a = 10;
-  int MC_samples = 4;
+  int MC_samples = 10;
 
   calculateFormFactors(patches_a, MC_samples);
 
