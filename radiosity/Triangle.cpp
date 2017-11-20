@@ -53,8 +53,6 @@ vector<PatchTriangle> Triangle::divide(const int divisions) {
 }
 
 Vector Triangle::sample(Vector &p0, Vector &p1, Vector &p2) {
-  srand(time(nullptr));
-
   auto epsilon_0 = drand48();
   auto epsilon_1 = drand48();
 
