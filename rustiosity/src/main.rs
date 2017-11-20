@@ -305,15 +305,24 @@ fn radiance(tris: &[Triangle], ray: &Ray, vertex_colors: &HashMap<Vector, HashMa
 fn main() {
   let mut tris = tris();
 
-  let divisions: u64 = 4;
-  let samples = 4;
+  let divisions: u64 = 10;
+  let samples = 10;
 
+  println!("Calculating form factors ...");
   let form_factors = calculate_form_factors(&mut tris, divisions, samples);
 
-  calculate_radiosity(&mut tris, &form_factors);
+  println!("Calculating radiosity ...");
+  let iterations = 40;
+  for i in 0..iterations {
+    print!("{} ", i);
+    calculate_radiosity(&mut tris, &form_factors);
+  }
+  println!();
 
   println!("Calculating vertex colors ...");
   let vertex_colors = calculate_vertex_colors(&tris);
+
+  println!("Rendering images ...");
 
   let width = 640;
   let height = 480;
@@ -373,6 +382,8 @@ fn main() {
       }
     }
   }
+
+  println!("Saving images ...");
 
   if let Err(e) = image.save(&"image.ppm".to_string()) {
     panic!("{:?}", e)
