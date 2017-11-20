@@ -120,60 +120,55 @@ fn calculate_form_factors(tris: &mut [Triangle], divisions: u64, mc_sample: i64)
       }
 
       // Loop over all triangles in scene for triangles i.
-      for j in 0..n {
+      for j in (i + 1)..n {
         // Loop over all patches in rectangle j.
         for p_j in 0..tris[j].patches.len() {
-          // Do not compute form factors for patches on same rectangle;
-          // also exploit symmetry to reduce computation;
-          // intemediate values; will be divided by patch area below.
-          if i < j {
-            let mut form_factor = 0.0;
+          let mut form_factor = 0.0;
 
-            // Monte Carlo integration of form factor double integral.
+          // Monte Carlo integration of form factor double integral.
 
-            // Uniform PDF for Monte Carlo (1 / Ai) x (1 / Aj).
-            let pdf = (1.0 / patch_area[&i][p_i]) *
-                      (1.0 / patch_area[&j][p_j]);
+          // Uniform PDF for Monte Carlo (1 / Ai) x (1 / Aj).
+          let pdf = (1.0 / patch_area[&i][p_i]) *
+                    (1.0 / patch_area[&j][p_j]);
 
-            let t_i: &PatchTriangle = &tris[i].sub_triangles[p_i];
-            let t_j: &PatchTriangle = &tris[j].sub_triangles[p_j];
+          let t_i: &PatchTriangle = &tris[i].sub_triangles[p_i];
+          let t_j: &PatchTriangle = &tris[j].sub_triangles[p_j];
 
-            // Determine rays of NixNi uniform samples of patch
-            // on i to NjxNj uniform samples of patch on j.
-            for _ in 0..mc_sample {
-              let xi: Vector = t_i.random_sample();
-              let xj: Vector = t_j.random_sample();
+          // Determine rays of NixNi uniform samples of patch
+          // on i to NjxNj uniform samples of patch on j.
+          for _ in 0..mc_sample {
+            let xi: Vector = t_i.random_sample();
+            let xj: Vector = t_j.random_sample();
 
-              // Check for visibility between sample points.
-              let ij: Vector = (&xj - &xi).normalize();
+            // Check for visibility between sample points.
+            let ij: Vector = (&xj - &xi).normalize();
 
-              let mut t = 0.0;
-              let mut id = -1;
-              let mut normal = Vector::new(0.0, 0.0, 0.0);
-              if intersect_scene(&tris, &Ray::new(&xi, &ij), &mut t, &mut id, &mut normal) && id != j as i64 {
-                continue; // If intersection with other triangle.
-              }
-
-              // Cosines of angles beteen normals and ray inbetween.
-              let d0 = tris[i].normal.dot_product(&ij);
-              let d1 = tris[j].normal.dot_product(&(-1.0 * ij));
-
-              // Continue if patches facing each other.
-              if d0 > 0.0 && d1 > 0.0 {
-                // Sample form factor.
-                let k = d0 * d1 / (PI * (&xj - &xi).length_squared());
-
-                // Add weighted sample to estimate.
-                form_factor += k / pdf;
-              }
+            let mut t = 0.0;
+            let mut id = -1;
+            let mut normal = Vector::new(0.0, 0.0, 0.0);
+            if intersect_scene(&tris, &Ray::new(&xi, &ij), &mut t, &mut id, &mut normal) && id != j as i64 {
+              continue; // If intersection with other triangle.
             }
 
-            // Divide by number of samples.
-            form_factor /= mc_sample as f64;
+            // Cosines of angles beteen normals and ray inbetween.
+            let d0 = tris[i].normal.dot_product(&ij);
+            let d1 = tris[j].normal.dot_product(&(-1.0 * ij));
 
-            form_factors.get_mut(&i).unwrap()[p_i].get_mut(&j).unwrap().insert(p_j, form_factor);
-            form_factors.get_mut(&j).unwrap()[p_j].get_mut(&i).unwrap().insert(p_i, form_factor);
+            // Continue if patches facing each other.
+            if d0 > 0.0 && d1 > 0.0 {
+              // Sample form factor.
+              let k = d0 * d1 / (PI * (&xj - &xi).length_squared());
+
+              // Add weighted sample to estimate.
+              form_factor += k / pdf;
+            }
           }
+
+          // Divide by number of samples.
+          form_factor /= mc_sample as f64;
+
+          form_factors.get_mut(&i).unwrap()[p_i].get_mut(&j).unwrap().insert(p_j, form_factor);
+          form_factors.get_mut(&j).unwrap()[p_j].get_mut(&i).unwrap().insert(p_i, form_factor);
         }
       }
     }
