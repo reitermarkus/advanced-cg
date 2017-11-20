@@ -83,7 +83,7 @@ impl<'a> ops::Add<&'a Vector> for Vector {
 
 impl ops::AddAssign for Vector {
   fn add_assign(&mut self, other: Vector) {
-    *self = Vector::new(self.x + other.x, self.y + other.y, self.y + other.z);
+    *self = *self + &other;
   }
 }
 
