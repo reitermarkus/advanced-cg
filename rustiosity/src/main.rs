@@ -286,7 +286,11 @@ fn radiance(tris: &[Triangle], ray: &Ray, vertex_colors: &HashMap<Vector, HashMa
 
   /* Find intersected patch. */
   let obj: &Triangle = &tris[id as usize];
-  let idx = find_patch_index(obj, ray).unwrap();
+
+  let idx = match find_patch_index(obj, ray) {
+    Some(p) => p,
+    None => panic!("Could not find index of patch."),
+  };
 
   let hitpoint = ray.org + t * ray.dir;
 
