@@ -4,6 +4,7 @@ use self::ordered_float::NotNaN;
 
 use std::ops;
 use std::fmt;
+use std::iter::Sum;
 
 #[derive(Hash, PartialEq, Eq, Clone, Copy)]
 pub struct Vector {
@@ -134,5 +135,17 @@ impl<'a> ops::Div<f64> for &'a Vector {
 impl ops::DivAssign<f64> for Vector {
   fn div_assign(&mut self, c: f64) {
     *self = Vector::new(self.x / c, self.y / c, self.z / c)
+  }
+}
+
+impl Sum for Vector {
+  fn sum<I>(iter: I) -> Vector where I: Iterator<Item = Self> {
+    let mut zero = Vector::new(0.0, 0.0, 0.0);
+
+    for vector in iter {
+      zero += vector;
+    }
+
+    zero
   }
 }
