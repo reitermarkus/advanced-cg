@@ -266,12 +266,12 @@ fn radiance(tris: &[Triangle], ray: &Ray, vertex_colors: &HashMap<Vector, HashMa
   let mut id = -1;
   let mut normal = Vector::new(0.0, 0.0, 0.0);
 
-  /* Find intersected triangle. */
+  // Find intersected triangle.
   if !intersect_scene(tris, ray, &mut t, &mut id, &mut normal) {
     return (background_color, background_color);
   }
 
-  /* Find intersected patch. */
+  // Find intersected patch.
   let obj: &Triangle = &tris[id as usize];
 
   let find_patch_index = |triangle: &Triangle, ray: &Ray| -> Option<usize> {
