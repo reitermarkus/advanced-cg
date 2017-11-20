@@ -31,7 +31,7 @@ impl Image {
 
   pub fn add_color(&mut self, x: i64, y: i64, color: &Color) {
     let image_index = self.index(x, y);
-    self.pixels[image_index] = self.pixels[image_index] + color;
+    self.pixels[image_index] += *color;
   }
 
   pub fn save(&self, file_name: &String) -> Result<File, Error> {
