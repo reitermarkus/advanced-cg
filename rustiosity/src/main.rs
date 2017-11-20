@@ -192,24 +192,16 @@ fn calculate_form_factors(tris: &mut [Triangle], divisions: u64, mc_sample: i64)
 fn calculate_radiosity(tris: &mut [Triangle], form_factors: &HashMap<usize, Vec<HashMap<usize, Vec<f64>>>>) {
   for i in 0..tris.len() {
     for p_a in 0..tris[i].patches.len() {
-      let mut color = Color::new(0.0, 0.0, 0.0);
+      let color = (0..tris.len()).into_par_iter().map(|j| {
+        if i == j { return Color::new(0.0, 0.0, 0.0); }
+        (0..tris[j].patches.len()).into_iter().map(|p_b| {
+          form_factors[&i][p_a][&j][p_b] * tris[j].patches[p_b]
+        }).sum()
+      }).sum();
 
-      for j in 0..tris.len() {
-        for p_b in 0..tris[j].patches.len() {
-          let form_factor_ij = form_factors[&i][p_a][&j][p_b];
-
-          // Add form factor multiplied with radiosity of previous step.
-          if form_factor_ij > 0.0 {
-            color += form_factor_ij * tris[j].patches[p_b];
-          }
-        }
-      }
-
-      // Multiply sum with color of patch and add emission.
-      color = tris[i].color.entrywise_product(&color) + tris[i].emission;
-
-      // Store overall patch radiosity of current iteration.
-      tris[i].patches[p_a] = color;
+      // Multiply sum with color of patch and add emission and
+      // store overall patch radiosity of current iteration.
+      tris[i].patches[p_a] = tris[i].color.entrywise_product(&color) + tris[i].emission;
     }
   }
 }
