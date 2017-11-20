@@ -262,16 +262,6 @@ fn calculate_vertex_colors(tris: &[Triangle]) -> HashMap<Vector, HashMap<Vector,
   return vertex_colors;
 }
 
-fn find_patch_index(triangle: &Triangle, ray: &Ray) -> Option<usize> {
-  for p in 0..triangle.sub_triangles.len() {
-    if triangle.sub_triangles[p].intersect(ray) != 0.0 {
-      return Some(p);
-    }
-  }
-
-  None
-}
-
 fn radiance(tris: &[Triangle], ray: &Ray, vertex_colors: &HashMap<Vector, HashMap<Vector, Color>>) -> (Color, Color) {
   let background_color = Color::new(0.0, 0.0, 0.0);
 
@@ -286,6 +276,16 @@ fn radiance(tris: &[Triangle], ray: &Ray, vertex_colors: &HashMap<Vector, HashMa
 
   /* Find intersected patch. */
   let obj: &Triangle = &tris[id as usize];
+
+  let find_patch_index = |triangle: &Triangle, ray: &Ray| -> Option<usize> {
+    for p in 0..triangle.sub_triangles.len() {
+      if triangle.sub_triangles[p].intersect(ray) != 0.0 {
+        return Some(p);
+      }
+    }
+
+    None
+  };
 
   let idx = match find_patch_index(obj, ray) {
     Some(p) => p,
