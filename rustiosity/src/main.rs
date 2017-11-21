@@ -105,12 +105,6 @@ fn calculate_form_factors(tris: &mut [Triangle], divisions: u64, mc_sample: i64)
     (i, maps)
   }).collect();
 
-  // Precompute patch areas, assuming same size for each triangle.
-  let patch_area: HashMap<usize, Vec<f64>> = (0..n).into_par_iter().map(|i| {
-    let area = tris[i].area / tris[i].patches.len() as f64;
-    (i, vec![area; tris[i].patches.len()])
-  }).collect();
-
   // Loop over all triangles in scene.
   for i in 0..n {
     print!("{} ", i);
@@ -128,12 +122,11 @@ fn calculate_form_factors(tris: &mut [Triangle], divisions: u64, mc_sample: i64)
         for p_j in 0..tris[j].patches.len() {
           // Monte Carlo integration of form factor double integral.
 
-          // Uniform PDF for Monte Carlo (1 / Ai) x (1 / Aj).
-          let pdf = (1.0 / patch_area[&i][p_i]) *
-                    (1.0 / patch_area[&j][p_j]);
-
           let t_i: &PatchTriangle = &tris[i].sub_triangles[p_i];
           let t_j: &PatchTriangle = &tris[j].sub_triangles[p_j];
+
+          // Uniform PDF for Monte Carlo (1 / Ai) x (1 / Aj).
+          let pdf = 1.0 / (t_i.area * t_j.area);
 
           // Determine rays of NixNi uniform samples of patch
           // on i to NjxNj uniform samples of patch on j.
@@ -156,16 +149,15 @@ fn calculate_form_factors(tris: &mut [Triangle], divisions: u64, mc_sample: i64)
             let d1 = tris[j].normal.dot_product(&(-1.0 * ij));
 
             // Continue if patches facing each other.
-            if d0 > 0.0 && d1 > 0.0 {
-              // Sample form factor.
-              let k = d0 * d1 / (PI * (&xj - &xi).length_squared());
-
-              // Add weighted sample to estimate.
-              return k / pdf;
+            if d0 <= 0.0 || d1 <= 0.0 {
+              return 0.0;
             }
 
-            0.0
+            // Sample form factor.
+            d0 * d1 / (PI * (&xj - &xi).length_squared())
           }).sum();
+
+          form_factor /= pdf;
 
           // Divide by number of samples.
           form_factor /= mc_sample as f64;
@@ -184,7 +176,7 @@ fn calculate_form_factors(tris: &mut [Triangle], divisions: u64, mc_sample: i64)
     for p_i in 0..tris[i].patches.len() {
       for j in 0..tris.len() {
         for p_j in 0..tris[j].patches.len() {
-          let area = patch_area[&i][p_i];
+          let area = tris[i].sub_triangles[p_i].area;
           let form_factor = form_factors[&i][p_i][&j][p_j] / area;
           form_factors.get_mut(&i).unwrap()[p_i].get_mut(&j).unwrap()[p_j] = if form_factor < 0.0 { 0.0 } else if form_factor > 1.0 { 1.0 } else { form_factor};
         }
