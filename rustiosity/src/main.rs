@@ -170,13 +170,6 @@ fn calculate_form_factors(tris: &mut [Triangle], divisions: u64, mc_sample: i64)
           // Divide by number of samples.
           form_factor /= mc_sample as f64;
 
-          // Divide by area to get final form factors.
-          form_factor /= patch_area[&i][p_i];
-
-          // Clamp form factor between 0 and 1.
-          if form_factor < 0.0 { form_factor = 0.0 } else
-          if form_factor > 1.0 { form_factor = 1.0 }
-
           form_factors.get_mut(&i).unwrap()[p_i].get_mut(&j).unwrap().insert(p_j, form_factor);
           form_factors.get_mut(&j).unwrap()[p_j].get_mut(&i).unwrap().insert(p_i, form_factor);
         }
@@ -184,6 +177,19 @@ fn calculate_form_factors(tris: &mut [Triangle], divisions: u64, mc_sample: i64)
     }
 
     println!();
+  }
+
+  // Divide by area to get final form factors.
+  for i in 0..tris.len() {
+    for p_i in 0..tris[i].patches.len() {
+      for j in 0..tris.len() {
+        for p_j in 0..tris[j].patches.len() {
+          let area = patch_area[&i][p_i];
+          let form_factor = form_factors[&i][p_i][&j][p_j] / area;
+          form_factors.get_mut(&i).unwrap()[p_i].get_mut(&j).unwrap()[p_j] = if form_factor < 0.0 { 0.0 } else if form_factor > 1.0 { 1.0 } else { form_factor};
+        }
+      }
+    }
   }
 
   form_factors
