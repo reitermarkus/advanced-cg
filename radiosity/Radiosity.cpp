@@ -89,7 +89,7 @@ vector<Triangle> tris = {
   Triangle(Vector(10.0,  0.0, 100.0), Vector( 20.0, 0.0,   0.0), Vector(0.0,  40.0,   0.0), Color(), Color(0.75, 0.75, 0.75)), // Front: bottom-left
   Triangle(Vector(30.0, 40.0, 100.0), Vector(-20.0, 0.0,   0.0), Vector(0.0, -40.0,   0.0), Color(), Color(0.75, 0.75, 0.75)), // Front: top-right
   Triangle(Vector(30.0,  0.0,  80.0), Vector(-20.0, 0.0,   0.0), Vector(0.0,  40.0,   0.0), Color(), Color(0.75, 0.75, 0.75)), // Back:  bottom-right
-  Triangle(Vector(10.0,  4.0,  80.0), Vector( 20.0, 0.0,   0.0), Vector(0.0, -40.0,   0.0), Color(), Color(0.75, 0.75, 0.75)), // Back:  top-left
+  Triangle(Vector(10.0, 40.0,  80.0), Vector( 20.0, 0.0,   0.0), Vector(0.0, -40.0,   0.0), Color(), Color(0.75, 0.75, 0.75)), // Back:  top-left
   Triangle(Vector(10.0, 40.0, 100.0), Vector( 20.0, 0.0,   0.0), Vector(0.0,   0.0, -20.0), Color(), Color(0.75, 0.75, 0.75)), // Top:   front-left
   Triangle(Vector(30.0, 40.0,  80.0), Vector(-20.0, 0.0,   0.0), Vector(0.0,   0.0,  20.0), Color(), Color(0.75, 0.75, 0.75)), // Top:   back-right
 };
