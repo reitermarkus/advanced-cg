@@ -55,7 +55,7 @@ fn tris() -> Vec<Triangle> {
     Triangle::new(Vector::new(10.0,  0.0, 100.0), Vector::new( 20.0, 0.0,   0.0), Vector::new(0.0,  40.0,   0.0), Color::new(0.0, 0.0, 0.0), Color::new(0.75, 0.75, 0.75)), // Front: bottom-left
     Triangle::new(Vector::new(30.0, 40.0, 100.0), Vector::new(-20.0, 0.0,   0.0), Vector::new(0.0, -40.0,   0.0), Color::new(0.0, 0.0, 0.0), Color::new(0.75, 0.75, 0.75)), // Front: top-right
     Triangle::new(Vector::new(30.0,  0.0,  80.0), Vector::new(-20.0, 0.0,   0.0), Vector::new(0.0,  40.0,   0.0), Color::new(0.0, 0.0, 0.0), Color::new(0.75, 0.75, 0.75)), // Back:  bottom-right
-    Triangle::new(Vector::new(10.0,  4.0,  80.0), Vector::new( 20.0, 0.0,   0.0), Vector::new(0.0, -40.0,   0.0), Color::new(0.0, 0.0, 0.0), Color::new(0.75, 0.75, 0.75)), // Back:  top-left
+    Triangle::new(Vector::new(10.0, 40.0,  80.0), Vector::new( 20.0, 0.0,   0.0), Vector::new(0.0, -40.0,   0.0), Color::new(0.0, 0.0, 0.0), Color::new(0.75, 0.75, 0.75)), // Back:  top-left
     Triangle::new(Vector::new(10.0, 40.0, 100.0), Vector::new( 20.0, 0.0,   0.0), Vector::new(0.0,   0.0, -20.0), Color::new(0.0, 0.0, 0.0), Color::new(0.75, 0.75, 0.75)), // Top:   front-left
     Triangle::new(Vector::new(30.0, 40.0,  80.0), Vector::new(-20.0, 0.0,   0.0), Vector::new(0.0,   0.0,  20.0), Color::new(0.0, 0.0, 0.0), Color::new(0.75, 0.75, 0.75)), // Top:   back-right
   ]
@@ -402,7 +402,7 @@ fn main() {
 
   println!("Saving images ...");
 
-  if let Err(e) = image.save(&"image.ppm".to_string()) {
+  if let Err(e) = image.save(&"image_patches.ppm".to_string()) {
     panic!("{:?}", e)
   }
 
