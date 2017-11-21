@@ -15,7 +15,7 @@ use rand::distributions::{IndependentSample, Range};
 use std::vec::Vec;
 use std::collections::HashMap;
 use std::f64::consts::PI;
-use std::io::{self, Write};
+use std::io::{stdout, Write};
 use std::sync::{mpsc, Mutex};
 use std::time::Instant;
 
@@ -93,27 +93,14 @@ fn calculate_form_factors(tris: &mut [Triangle], divisions: u64, mc_sample: i64)
   println!("Number of patches: {}", patch_num);
   println!("Number of form factors: {}", form_factor_num);
 
+  // Loop over all triangles in scene.
   let mut form_factors: HashMap<_, _> = (0..n).into_par_iter().map(|i| {
     let mut maps: Vec<HashMap<usize, Vec<f64>>> = vec![HashMap::new(); tris[i].patches.len()];
 
-    for p in 0..tris[i].patches.len() {
-      for j in 0..n {
-        maps[p].insert(j, vec![0.0; tris[j].patches.len()]);
-      }
-    }
-
-    (i, maps)
-  }).collect();
-
-  // Loop over all triangles in scene.
-  for i in 0..n {
-    print!("{} ", i);
-
     // Loop over all patches in rectangle i.
     for p_i in 0..tris[i].patches.len() {
-      if p_i % tris[i].divisions as usize == 0 {
-        print!("*");
-        io::stdout().flush().unwrap();
+      for j in 0..n {
+        maps[p_i].insert(j, vec![0.0; tris[j].patches.len()]);
       }
 
       // Loop over all triangles in scene for triangles i.
@@ -162,13 +149,18 @@ fn calculate_form_factors(tris: &mut [Triangle], divisions: u64, mc_sample: i64)
           // Divide by number of samples.
           form_factor /= mc_sample as f64;
 
-          form_factors.get_mut(&i).unwrap()[p_i].get_mut(&j).unwrap().insert(p_j, form_factor);
+          maps[p_i].get_mut(&j).unwrap().insert(p_j, form_factor);
         }
       }
     }
 
-    println!();
-  }
+    print!("*");
+    stdout().flush().unwrap();
+
+    (i, maps)
+  }).collect();
+
+  println!();
 
   for i in 0..tris.len() {
     for p_i in 0..tris[i].patches.len() {
