@@ -40,8 +40,8 @@ fn tris() -> Vec<Triangle> {
     Triangle::new(Vector::new(  0.0, 80.0,   0.0), Vector::new(   0.0, 0.0,  170.0), Vector::new(0.0, -80.0,    0.0), Color::new(0.0, 0.0, 0.0), Color::new(0.75, 0.25, 0.25)), // Left:   back-top
     Triangle::new(Vector::new(100.0,  0.0,   0.0), Vector::new(   0.0, 0.0,  170.0), Vector::new(0.0,  80.0,    0.0), Color::new(0.0, 0.0, 0.0), Color::new(0.25, 0.25, 0.75)), // Right:  back-bottom
     Triangle::new(Vector::new(100.0, 80.0, 170.0), Vector::new(   0.0, 0.0, -170.0), Vector::new(0.0, -80.0,    0.0), Color::new(0.0, 0.0, 0.0), Color::new(0.25, 0.25, 0.75)), // Right:  front-top
-    Triangle::new(Vector::new(100.0,  0.0, 170.0), Vector::new(-100.0, 0.0,    0.0), Vector::new(0.0,  80.0,    0.0), Color::new(0.0, 0.0, 0.0), Color::new(0.0,  1.0,  0.0)),  // Front:  bottom-right (not visible)
-    Triangle::new(Vector::new(  0.0, 80.0, 170.0), Vector::new( 100.0, 0.0,    0.0), Vector::new(0.0, -80.0,    0.0), Color::new(0.0, 0.0, 0.0), Color::new(0.0,  1.0,  0.0)),  // Front:  top-left (not visible)
+    Triangle::new(Vector::new(100.0,  0.0, 170.0), Vector::new(-100.0, 0.0,    0.0), Vector::new(0.0,  80.0,    0.0), Color::new(0.0, 0.0, 0.0), Color::new(0.25, 0.75,  0.25)),  // Front:  bottom-right (not visible)
+    Triangle::new(Vector::new(  0.0, 80.0, 170.0), Vector::new( 100.0, 0.0,    0.0), Vector::new(0.0, -80.0,    0.0), Color::new(0.0, 0.0, 0.0), Color::new(0.25, 0.75,  0.25)),  // Front:  top-left (not visible)
 
     /* Area light source on top */
     Triangle::new(Vector::new(40.0, 79.99, 65.0), Vector::new( 20.0, 0.0, 0.0), Vector::new(0.0, 0.0,  20.0), Color::new(12.0, 12.0, 12.0), Color::new(0.75, 0.75, 0.75)), // back-left
