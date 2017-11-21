@@ -163,12 +163,21 @@ fn calculate_form_factors(tris: &mut [Triangle], divisions: u64, mc_sample: i64)
           form_factor /= mc_sample as f64;
 
           form_factors.get_mut(&i).unwrap()[p_i].get_mut(&j).unwrap().insert(p_j, form_factor);
-          form_factors.get_mut(&j).unwrap()[p_j].get_mut(&i).unwrap().insert(p_i, form_factor);
         }
       }
     }
 
     println!();
+  }
+
+  for i in 0..tris.len() {
+    for p_i in 0..tris[i].patches.len() {
+      for j in (i + 1)..tris.len() {
+        for p_j in 0..tris[j].patches.len() {
+          form_factors.get_mut(&j).unwrap()[p_j].get_mut(&i).unwrap()[p_i] = form_factors.get(&i).unwrap()[p_i].get(&j).unwrap()[p_j];
+        }
+      }
+    }
   }
 
   // Divide by area to get final form factors.
