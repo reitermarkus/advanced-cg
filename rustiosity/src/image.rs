@@ -4,8 +4,8 @@ use std::io::{BufWriter, Write, Error};
 use color::Color;
 
 pub struct Image {
-  width: i64,
-  height: i64,
+  width: usize,
+  height: usize,
   pixels: Vec<Color>,
 }
 
@@ -20,16 +20,16 @@ fn to_integer<T: Into<f64>>(x: T) -> usize {
 }
 
 impl Image {
-  pub fn new(width: i64, height: i64) -> Image {
+  pub fn new(width: usize, height: usize) -> Image {
     let size = (width * height) as usize;
     Image { width: width, height: height, pixels: vec![Color::new(0.0, 0.0, 0.0); size] }
   }
 
-  fn index(&self, x: i64, y: i64) -> usize {
+  fn index(&self, x: usize, y: usize) -> usize {
     ((self.height - y - 1) * self.width + x) as usize
   }
 
-  pub fn add_color(&mut self, x: i64, y: i64, color: &Color) {
+  pub fn add_color(&mut self, x: usize, y: usize, color: &Color) {
     let image_index = self.index(x, y);
     self.pixels[image_index] += *color;
   }
