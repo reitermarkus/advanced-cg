@@ -17,7 +17,7 @@ use std::collections::HashMap;
 use std::f64::consts::PI;
 use std::io::{stdout, Write};
 use std::sync::{mpsc, Mutex};
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use image::Image;
 use ray::Ray;
@@ -295,20 +295,25 @@ fn radiance(tris: &[Triangle], ray: &Ray, vertex_colors: &HashMap<Vector, HashMa
 
 
 fn main() {
+  let total_bench = Instant::now();
   let mut tris = tris();
 
   let divisions: u64 = 10;
   let samples = 10;
 
   println!("Calculating form factors ...");
+  let form_factor_bench = Instant::now();
   let form_factors = calculate_form_factors(&mut tris, divisions, samples);
+  let form_factor_bench_elapsed = form_factor_bench.elapsed();
 
   println!("Calculating radiosity ...");
   let iterations = 40;
+  let radiosity_bench = Instant::now();
   for i in 0..iterations {
     print!("{} ", i);
     calculate_radiosity(&mut tris, &form_factors);
   }
+  let radiosity_bench_elapsed = radiosity_bench.elapsed();
   println!();
 
   println!("Calculating vertex colors ...");
@@ -331,7 +336,7 @@ fn main() {
   let (tx, rx) = mpsc::channel();
   let sender = Mutex::new(tx);
 
-  let start = Instant::now();
+  let rendering_bench = Instant::now();
 
   // Loop over image rows.
   (0..height).into_par_iter().for_each(move |y| {
@@ -386,13 +391,11 @@ fn main() {
     image_interpolated.add_color(x, y, &radiance_interpolated);
   }
 
-  let elapsed = start.elapsed();
-  println!("Rendering took {} ms",
-           (elapsed.as_secs() * 1_000) + (elapsed.subsec_nanos() / 1_000_000) as u64);
-
+  let rendering_bench_elapsed = rendering_bench.elapsed();
 
   println!("Saving images ...");
 
+  let image_bench = Instant::now();
   if let Err(e) = image.save("image_patches.ppm") {
     panic!("{:?}", e)
   }
@@ -400,4 +403,18 @@ fn main() {
   if let Err(e) = image_interpolated.save("image_smooth.ppm") {
     panic!("{:?}", e)
   }
+
+  let image_bench_elapsed = image_bench.elapsed();
+  let total_bench_elapsed = total_bench.elapsed();
+
+  let into_ms = |x: Duration| -> u64 {
+    return (x.as_secs() * 1_000) + (x.subsec_nanos() / 1_000_000) as u64;
+  };
+
+  println!("Form Factors took {} ms", into_ms(form_factor_bench_elapsed));
+  println!("Radiosity took {} ms", into_ms(radiosity_bench_elapsed));
+  println!("Rendering took {} ms", into_ms(rendering_bench_elapsed));
+  println!("Images took {} ms", into_ms(image_bench_elapsed));
+  println!("Complete process took {} ms", into_ms(total_bench_elapsed));
+
 }
