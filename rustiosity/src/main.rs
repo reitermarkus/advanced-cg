@@ -226,28 +226,22 @@ fn calculate_vertex_colors(tris: &[Triangle]) -> HashMap<Vector, HashMap<Vector,
 
   for tri in tris {
     for p in 0..tri.patches.len() {
-      vertex_colors.get_mut(&tri.normal).unwrap().insert(tri.sub_triangles[p].a, Color::new(0.0, 0.0, 0.0));
-      vertex_colors.get_mut(&tri.normal).unwrap().insert(tri.sub_triangles[p].b, Color::new(0.0, 0.0, 0.0));
-      vertex_colors.get_mut(&tri.normal).unwrap().insert(tri.sub_triangles[p].c, Color::new(0.0, 0.0, 0.0));
-      vertex_counts.get_mut(&tri.normal).unwrap().insert(tri.sub_triangles[p].a, 0);
-      vertex_counts.get_mut(&tri.normal).unwrap().insert(tri.sub_triangles[p].b, 0);
-      vertex_counts.get_mut(&tri.normal).unwrap().insert(tri.sub_triangles[p].c, 0);
-    }
-  }
+      let vertex_counts = vertex_counts.get_mut(&tri.normal).unwrap();
+      let vertex_colors = vertex_colors.get_mut(&tri.normal).unwrap();
 
-  for tri in tris {
-    for p in 0..tri.patches.len() {
-      *vertex_counts.get_mut(&tri.normal).unwrap().get_mut(&tri.sub_triangles[p].a).unwrap() += 1;
-      *vertex_counts.get_mut(&tri.normal).unwrap().get_mut(&tri.sub_triangles[p].b).unwrap() += 1;
-      *vertex_counts.get_mut(&tri.normal).unwrap().get_mut(&tri.sub_triangles[p].c).unwrap() += 1;
-    }
-  }
+      vertex_colors.entry(tri.sub_triangles[p].a).or_insert(Color::new(0.0, 0.0, 0.0));
+      vertex_colors.entry(tri.sub_triangles[p].b).or_insert(Color::new(0.0, 0.0, 0.0));
+      vertex_colors.entry(tri.sub_triangles[p].c).or_insert(Color::new(0.0, 0.0, 0.0));
+      vertex_counts.entry(tri.sub_triangles[p].a).or_insert(0);
+      vertex_counts.entry(tri.sub_triangles[p].b).or_insert(0);
+      vertex_counts.entry(tri.sub_triangles[p].c).or_insert(0);
 
-  for tri in tris {
-    for p in 0..tri.patches.len() {
-      *vertex_colors.get_mut(&tri.normal).unwrap().get_mut(&tri.sub_triangles[p].a).unwrap() += tri.patches[p];
-      *vertex_colors.get_mut(&tri.normal).unwrap().get_mut(&tri.sub_triangles[p].b).unwrap() += tri.patches[p];
-      *vertex_colors.get_mut(&tri.normal).unwrap().get_mut(&tri.sub_triangles[p].c).unwrap() += tri.patches[p];
+      *vertex_counts.get_mut(&tri.sub_triangles[p].a).unwrap() += 1;
+      *vertex_counts.get_mut(&tri.sub_triangles[p].b).unwrap() += 1;
+      *vertex_counts.get_mut(&tri.sub_triangles[p].c).unwrap() += 1;
+      *vertex_colors.get_mut(&tri.sub_triangles[p].a).unwrap() += tri.patches[p];
+      *vertex_colors.get_mut(&tri.sub_triangles[p].b).unwrap() += tri.patches[p];
+      *vertex_colors.get_mut(&tri.sub_triangles[p].c).unwrap() += tri.patches[p];
     }
   }
 
