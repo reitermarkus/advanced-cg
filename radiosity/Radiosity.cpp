@@ -34,6 +34,7 @@
 #include <map>
 #include <unordered_map>
 #include <vector>
+#include <chrono>
 
 #include "Vector.h"
 #include "ColorUtils.h"
@@ -374,8 +375,51 @@ pair<Color, Color> radiance(const Ray &ray, unordered_map<Vector, unordered_map<
  *******************************************************************/
 
 int main(void) {
+  int divisions = 10;
+  int mc_samples = 10;
+
+  chrono::high_resolution_clock::time_point start;
+  chrono::duration<double, milli> elapsed;
+
+  start = chrono::high_resolution_clock::now();
+
+  cout << "Calculating form factors" << endl;
+  calculateFormFactors(divisions, mc_samples);
+
+  elapsed = chrono::high_resolution_clock::now() - start;
+  cout << "Calculating form factors took " << elapsed.count() << " ms" << endl;
+
+  start = chrono::high_resolution_clock::now();
+
+  /* Iterative solution of radiosity linear system */
+  cout << "Calculating radiosity ..." << endl;
+  int iterations = 40;
+  for (int i = 0; i < iterations; i++) {
+    cout << i << " ";
+    calculateRadiosity();
+  }
+  cout << endl;
+
+  elapsed = chrono::high_resolution_clock::now() - start;
+  cout << "Calculating radiosity took " << elapsed.count() << " ms" << endl;
+
+
+  start = chrono::high_resolution_clock::now();
+
+  cout << "Calculating vertex colors ..." << endl;
+  auto vertex_colors = calculateVertexColors();
+
+  elapsed = chrono::high_resolution_clock::now() - start;
+  cout << "Calculating vertex colors took " << elapsed.count() << " ms" << endl;
+
+
+  start = chrono::high_resolution_clock::now();
+
+  cout << "Rendering images ..." << endl;
+
   int width = 640;
   int height = 480;
+
   int samples = 4;
 
   /* Set camera origin and viewing direction (negative z direction) */
@@ -390,23 +434,6 @@ int main(void) {
    */
   Image img(width, height);
   Image img_interpolated(width, height);
-
-  cout << "Calculating form factors" << endl;
-  int patches_a = 10;
-  int MC_samples = 10;
-
-  calculateFormFactors(patches_a, MC_samples);
-
-  /* Iterative solution of radiosity linear system */
-  cout << "Calculating radiosity" << endl;
-  int iterations = 40;
-  for (int i = 0; i < iterations; i++) {
-    cout << i << " ";
-    calculateRadiosity();
-  }
-  cout << endl;
-
-  auto vertex_colors = calculateVertexColors();
 
   /* Loop over image rows */
   for (int y = 0; y < height; y++) {
@@ -467,6 +494,16 @@ int main(void) {
 
   cout << endl;
 
+  elapsed = chrono::high_resolution_clock::now() - start;
+  cout << "Rendering images took " << elapsed.count() << " ms" << endl;
+
+
+  start = chrono::high_resolution_clock::now();
+
+  cout << "Saving images ..." << endl;
   img.save(string("image_patches.ppm"));
   img_interpolated.save(string("image_smooth.ppm"));
+
+  elapsed = chrono::high_resolution_clock::now() - start;
+  cout << "Saving images took " << elapsed.count() << " ms" << endl;
 }
