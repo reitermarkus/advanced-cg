@@ -16,7 +16,7 @@ use std::vec::Vec;
 use std::collections::HashMap;
 use std::f64::consts::PI;
 use std::io::{stdout, Write};
-use std::sync::{mpsc, Mutex};
+use std::sync::{Mutex};
 use std::time::{Duration, Instant};
 
 use image::Image;
@@ -342,16 +342,13 @@ fn main() {
   let cx: Vector = Vector::new(width as f64 * 0.5135 / height as f64, 0.0, 0.0);
   let cy: Vector = cx.cross_product(&camera.dir).normalize() * 0.5135;
 
-  let mut image = Image::new(width, height);
-  let mut image_interpolated = Image::new(width, height);
-
-  let (tx, rx) = mpsc::channel();
-  let sender = Mutex::new(tx);
+  let image = Mutex::new(Image::new(width, height));
+  let image_interpolated = Mutex::new(Image::new(width, height));
 
   let rendering_bench = Instant::now();
 
   // Loop over image rows.
-  (0..height).into_par_iter().for_each(move |y| {
+  (0..height).into_par_iter().for_each(|y| {
     let between = Range::new(0.0, 1.0);
     let mut rng = rand::thread_rng();
 
@@ -393,15 +390,16 @@ fn main() {
         }
       }
 
-      sender.lock().unwrap()
-        .send((x, y, accumulated_radiance, accumulated_radiance_interpolated)).unwrap();
+      image.lock().unwrap()
+        .set_color(x, y, accumulated_radiance);
+      image_interpolated.lock().unwrap()
+        .set_color(x, y, accumulated_radiance_interpolated);
     }
   });
 
-  for (x, y, radiance, radiance_interpolated) in rx {
-    image.add_color(x, y, &radiance);
-    image_interpolated.add_color(x, y, &radiance_interpolated);
-  }
+  let image = image.lock().unwrap();
+  let image_interpolated = image_interpolated.lock().unwrap();
+
 
   let rendering_bench_elapsed = rendering_bench.elapsed();
 

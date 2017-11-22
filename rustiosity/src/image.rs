@@ -29,9 +29,9 @@ impl Image {
     ((self.height - y - 1) * self.width + x) as usize
   }
 
-  pub fn add_color(&mut self, x: usize, y: usize, color: &Color) {
+  pub fn set_color(&mut self, x: usize, y: usize, color: Color) {
     let image_index = self.index(x, y);
-    self.pixels[image_index] += *color;
+    self.pixels[image_index] = color;
   }
 
   pub fn save(&self, file_name: &str) -> Result<File, Error> {
