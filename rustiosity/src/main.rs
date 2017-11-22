@@ -413,10 +413,15 @@ fn main() {
     return (x.as_secs() * 1_000) + (x.subsec_nanos() / 1_000_000) as u64;
   };
 
-  println!("Form Factors took {} ms", into_ms(form_factor_bench_elapsed));
-  println!("Radiosity took {} ms", into_ms(radiosity_bench_elapsed));
-  println!("Rendering took {} ms", into_ms(rendering_bench_elapsed));
-  println!("Images took {} ms", into_ms(image_bench_elapsed));
-  println!("Complete process took {} ms", into_ms(total_bench_elapsed));
-
+  println!("┌───────────────┬───────────┐");
+  println!("│ Form Factors  │ {:#6 } ms │", into_ms(form_factor_bench_elapsed));
+  println!("├───────────────┼───────────┤");
+  println!("│ Radiosity     │ {:#6 } ms │", into_ms(radiosity_bench_elapsed));
+  println!("├───────────────┼───────────┤");
+  println!("│ Rendering     │ {:#6 } ms │", into_ms(rendering_bench_elapsed));
+  println!("├───────────────┼───────────┤");
+  println!("│ Saving Images │ {:#6 } ms │", into_ms(image_bench_elapsed));
+  println!("┢━━━━━━━━━━━━━━━╈━━━━━━━━━━━┪");
+  println!("┃ Total         ┃ {:#6 } ms ┃", into_ms(total_bench_elapsed));
+  println!("┗━━━━━━━━━━━━━━━┻━━━━━━━━━━━┛");
 }
