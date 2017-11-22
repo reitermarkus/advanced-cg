@@ -34,7 +34,7 @@ impl Image {
     self.pixels[image_index] += *color;
   }
 
-  pub fn save(&self, file_name: &String) -> Result<File, Error> {
+  pub fn save(&self, file_name: &str) -> Result<File, Error> {
     let file = File::create(file_name)?;
 
     {

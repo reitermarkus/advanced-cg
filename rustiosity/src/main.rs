@@ -393,11 +393,11 @@ fn main() {
 
   println!("Saving images ...");
 
-  if let Err(e) = image.save(&"image_patches.ppm".to_string()) {
+  if let Err(e) = image.save("image_patches.ppm") {
     panic!("{:?}", e)
   }
 
-  if let Err(e) = image_interpolated.save(&"image_smooth.ppm".to_string()) {
+  if let Err(e) = image_interpolated.save("image_smooth.ppm") {
     panic!("{:?}", e)
   }
 }
