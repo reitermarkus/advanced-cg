@@ -299,11 +299,11 @@ fn main() {
   let mut tris = tris();
 
   let divisions: u64 = 10;
-  let samples = 10;
+  let mc_samples = 10;
 
   println!("Calculating form factors ...");
   let form_factor_bench = Instant::now();
-  let form_factors = calculate_form_factors(&mut tris, divisions, samples);
+  let form_factors = calculate_form_factors(&mut tris, divisions, mc_samples);
   let form_factor_bench_elapsed = form_factor_bench.elapsed();
 
   println!("Calculating radiosity ...");
@@ -323,6 +323,8 @@ fn main() {
 
   let width = 640;
   let height = 480;
+
+  let samples = 4;
 
   let camera = Ray::new(&Vector::new(50.0, 52.0, 295.6), &Vector::new(0.0, -0.042612, -1.0).normalize());
 

@@ -126,11 +126,11 @@ bool intersectScene(const Ray &ray, double *t, int *id, Vector *normal) {
  * Computation accelerated by exploiting symmetries of form factor
  * estimation;
  *******************************************************************/
-void calculateFormFactors(const int a_div_num, const int mc_sample) {
+void calculateFormFactors(const int divisions, const int mc_sample) {
   /* Total number of patches in scene */
   const int n = tris.size();
   for (auto &tri : tris) {
-    tri.init_patches(a_div_num);
+    tri.init_patches(divisions);
     patch_num += tri.patch.size();
   }
   unsigned long form_factor_num = pow(patch_num, 2);
