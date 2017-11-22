@@ -9,14 +9,14 @@ pub struct Image {
   pixels: Vec<Color>,
 }
 
-fn to_integer<T: Into<f64>>(x: T) -> usize {
+fn to_integer<T: Into<f64>>(x: T) -> u64 {
   let mut x = x.into();
 
   if x < 0.0 { x = 0.0; } else
   if x > 1.0 { x = 1.0; };
 
   // Apply gamma correction and convert to integer.
-  (x.powf(1.0 / 2.2) * 255.0 + 0.5) as usize
+  (x.powf(1.0 / 2.2) * 255.0 + 0.5) as u64
 }
 
 impl Image {
@@ -25,13 +25,9 @@ impl Image {
     Image { width: width, height: height, pixels: vec![Color::new(0.0, 0.0, 0.0); size] }
   }
 
-  fn index(&self, x: usize, y: usize) -> usize {
-    ((self.height - y - 1) * self.width + x) as usize
-  }
-
-  pub fn set_color(&mut self, x: usize, y: usize, color: Color) {
-    let image_index = self.index(x, y);
-    self.pixels[image_index] = color;
+  pub fn get_pixel_mut(&mut self, x: usize, y: usize) -> &mut Color {
+    let image_index = (self.height - y - 1) * self.width + x;
+    &mut self.pixels[image_index]
   }
 
   pub fn save(&self, file_name: &str) -> Result<File, Error> {

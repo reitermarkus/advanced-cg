@@ -390,16 +390,13 @@ fn main() {
         }
       }
 
-      image.lock().unwrap()
-        .set_color(x, y, accumulated_radiance);
-      image_interpolated.lock().unwrap()
-        .set_color(x, y, accumulated_radiance_interpolated);
+      *image.lock().unwrap().get_pixel_mut(x, y) = accumulated_radiance;
+      *image_interpolated.lock().unwrap().get_pixel_mut(x, y) = accumulated_radiance_interpolated;
     }
   });
 
   let image = image.lock().unwrap();
   let image_interpolated = image_interpolated.lock().unwrap();
-
 
   let rendering_bench_elapsed = rendering_bench.elapsed();
 
