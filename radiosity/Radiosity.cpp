@@ -50,6 +50,7 @@
 const double M_PI = atan(1) * 4;
 
 using namespace std;
+using namespace std::chrono;
 
 static map<Triangle*, vector<map<Triangle*, vector<double>>>> form_factor;
 static int patch_num = 0;
@@ -375,45 +376,36 @@ pair<Color, Color> radiance(const Ray &ray, unordered_map<Vector, unordered_map<
  *******************************************************************/
 
 int main(void) {
+  duration<double, milli> elapsed;
+  auto total_bench = high_resolution_clock::now();
+
   int divisions = 10;
   int mc_samples = 10;
 
-  chrono::high_resolution_clock::time_point start;
-  chrono::duration<double, milli> elapsed;
-
-  start = chrono::high_resolution_clock::now();
-
   cout << "Calculating form factors" << endl;
+  auto form_factor_bench = high_resolution_clock::now();
   calculateFormFactors(divisions, mc_samples);
 
-  elapsed = chrono::high_resolution_clock::now() - start;
-  cout << "Calculating form factors took " << elapsed.count() << " ms" << endl;
-
-  start = chrono::high_resolution_clock::now();
+  elapsed = high_resolution_clock::now() - form_factor_bench;
+  auto form_factor_bench_elapsed = elapsed.count();
 
   /* Iterative solution of radiosity linear system */
   cout << "Calculating radiosity ..." << endl;
   int iterations = 40;
+  auto radiosity_bench = high_resolution_clock::now();
   for (int i = 0; i < iterations; i++) {
     cout << i << " ";
     calculateRadiosity();
   }
   cout << endl;
 
-  elapsed = chrono::high_resolution_clock::now() - start;
-  cout << "Calculating radiosity took " << elapsed.count() << " ms" << endl;
+  elapsed = high_resolution_clock::now() - radiosity_bench;
+  auto radiosity_bench_elapsed = elapsed.count();
 
-
-  start = chrono::high_resolution_clock::now();
 
   cout << "Calculating vertex colors ..." << endl;
   auto vertex_colors = calculateVertexColors();
 
-  elapsed = chrono::high_resolution_clock::now() - start;
-  cout << "Calculating vertex colors took " << elapsed.count() << " ms" << endl;
-
-
-  start = chrono::high_resolution_clock::now();
 
   cout << "Rendering images ..." << endl;
 
@@ -434,6 +426,8 @@ int main(void) {
    */
   Image img(width, height);
   Image img_interpolated(width, height);
+
+  auto rendering_bench = high_resolution_clock::now();
 
   /* Loop over image rows */
   for (int y = 0; y < height; y++) {
@@ -494,16 +488,32 @@ int main(void) {
 
   cout << endl;
 
-  elapsed = chrono::high_resolution_clock::now() - start;
-  cout << "Rendering images took " << elapsed.count() << " ms" << endl;
+  elapsed = high_resolution_clock::now() - rendering_bench;
+  auto rendering_bench_elapsed = elapsed.count();
 
-
-  start = chrono::high_resolution_clock::now();
 
   cout << "Saving images ..." << endl;
+  auto image_bench = high_resolution_clock::now();
+
   img.save(string("image_patches.ppm"));
   img_interpolated.save(string("image_smooth.ppm"));
 
-  elapsed = chrono::high_resolution_clock::now() - start;
-  cout << "Saving images took " << elapsed.count() << " ms" << endl;
+  elapsed = high_resolution_clock::now() - image_bench;
+  auto image_bench_elapsed = elapsed.count();
+
+  elapsed = high_resolution_clock::now() - total_bench;
+  auto total_bench_elapsed = elapsed.count();
+
+  printf("┌───────────────┬───────────┐\n");
+  printf("│ Form Factors  │ %6ld ms │\n", (unsigned long)form_factor_bench_elapsed);
+  printf("├───────────────┼───────────┤\n");
+  printf("│ Radiosity     │ %6ld ms │\n", (unsigned long)radiosity_bench_elapsed);
+  printf("├───────────────┼───────────┤\n");
+  printf("│ Rendering     │ %6ld ms │\n", (unsigned long)rendering_bench_elapsed);
+  printf("├───────────────┼───────────┤\n");
+  printf("│ Saving Images │ %6ld ms │\n", (unsigned long)image_bench_elapsed);
+  printf("┢━━━━━━━━━━━━━━━╈━━━━━━━━━━━┪\n");
+  printf("┃ Total         ┃ %6ld ms ┃\n", (unsigned long)total_bench_elapsed);
+  printf("┗━━━━━━━━━━━━━━━┻━━━━━━━━━━━┛\n");
+
 }
