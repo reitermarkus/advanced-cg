@@ -1,12 +1,19 @@
+extern crate crossbeam;
+
+use self::crossbeam::epoch::{self, Atomic, Owned};
+
+use std::sync::atomic::Ordering::{Acquire, Release};
 use std::vec::Vec;
 use std::fs::File;
 use std::io::{BufWriter, Write, Error};
+use std::ops::Deref;
+
 use color::Color;
 
 pub struct Image {
   width: usize,
   height: usize,
-  pixels: Vec<Color>,
+  pixels: Vec<Atomic<Color>>,
 }
 
 fn to_integer<T: Into<f64>>(x: T) -> u64 {
@@ -22,12 +29,30 @@ fn to_integer<T: Into<f64>>(x: T) -> u64 {
 impl Image {
   pub fn new(width: usize, height: usize) -> Image {
     let size = (width * height) as usize;
-    Image { width: width, height: height, pixels: vec![Color::new(0.0, 0.0, 0.0); size] }
+
+    Image { width: width, height: height, pixels: (0..size).map(|_| Atomic::null()).collect() }
   }
 
-  pub fn get_pixel_mut(&mut self, x: usize, y: usize) -> &mut Color {
-    let image_index = (self.height - y - 1) * self.width + x;
-    &mut self.pixels[image_index]
+  fn index(&self, x: usize, y: usize) -> usize {
+    (self.height - y - 1) * self.width + x
+  }
+
+  pub fn set_color(&self, x: usize, y: usize, color: Color) {
+    let image_index = self.index(x, y);
+
+    let guard = epoch::pin();
+
+    loop {
+      match self.pixels[image_index].load(Acquire, &guard) {
+        Some(previous_color) => {
+          panic!("Pixel ({}, {}) was already set to {:?}.", x, y, previous_color.deref());
+        },
+        None => match self.pixels[image_index].cas_and_ref(None, Owned::new(color), Release, &guard) {
+          Ok(_) => return,
+          Err(_) => continue,
+        }
+      }
+    }
   }
 
   pub fn save(&self, file_name: &str) -> Result<File, Error> {
@@ -38,14 +63,30 @@ impl Image {
 
       write!(writer, "P3\n{} {}\n{}\n", self.width, self.height, 255)?;
 
-      for pixel in &self.pixels {
-        let r = to_integer(pixel.x);
-        let g = to_integer(pixel.y);
-        let b = to_integer(pixel.z);
-        write!(writer, "{} {} {} ", r, g, b)?;
+      for i in 0..self.pixels.len() {
+        let guard = epoch::pin();
+
+        loop {
+          match self.pixels[i].load(Acquire, &guard) {
+            Some(color) => {
+              let color = **color.deref();
+
+              let r = to_integer(color.x);
+              let g = to_integer(color.y);
+              let b = to_integer(color.z);
+              write!(writer, "{} {} {} ", r, g, b)?;
+
+              break;
+            },
+            None => continue,
+          }
+        }
       }
     }
 
     Ok(file)
   }
 }
+
+unsafe impl Sync for Image {}
+unsafe impl Send for Image {}

@@ -16,8 +16,8 @@ use std::vec::Vec;
 use std::collections::HashMap;
 use std::f64::consts::PI;
 use std::io::{stdout, Write};
-use std::sync::{Mutex};
 use std::time::{Duration, Instant};
+use std::thread;
 
 use image::Image;
 use ray::Ray;
@@ -336,8 +336,8 @@ fn main() {
   let cx: Vector = Vector::new(width as f64 * 0.5135 / height as f64, 0.0, 0.0);
   let cy: Vector = cx.cross_product(&camera.dir).normalize() * 0.5135;
 
-  let image = Mutex::new(Image::new(width, height));
-  let image_interpolated = Mutex::new(Image::new(width, height));
+  let image = Image::new(width, height);
+  let image_interpolated = Image::new(width, height);
 
   let rendering_bench = Instant::now();
 
@@ -384,26 +384,31 @@ fn main() {
         }
       }
 
-      *image.lock().unwrap().get_pixel_mut(x, y) = accumulated_radiance;
-      *image_interpolated.lock().unwrap().get_pixel_mut(x, y) = accumulated_radiance_interpolated;
+      image.set_color(x, y, accumulated_radiance);
+      image_interpolated.set_color(x, y, accumulated_radiance_interpolated);
     }
   });
-
-  let image = image.lock().unwrap();
-  let image_interpolated = image_interpolated.lock().unwrap();
 
   let rendering_bench_elapsed = rendering_bench.elapsed();
 
   println!("Saving images ...");
 
   let image_bench = Instant::now();
-  if let Err(e) = image.save("image_patches.ppm") {
-    panic!("{:?}", e)
-  }
 
-  if let Err(e) = image_interpolated.save("image_smooth.ppm") {
-    panic!("{:?}", e)
-  }
+  let image_thread = thread::spawn(move || {
+    if let Err(e) = image.save("image_patches.ppm") {
+      panic!("{:?}", e)
+    }
+  });
+
+  let image_interpolated_thread = thread::spawn(move || {
+    if let Err(e) = image_interpolated.save("image_smooth.ppm") {
+      panic!("{:?}", e)
+    }
+  });
+
+  image_thread.join().unwrap();
+  image_interpolated_thread.join().unwrap();
 
   let image_bench_elapsed = image_bench.elapsed();
   let total_bench_elapsed = total_bench.elapsed();
