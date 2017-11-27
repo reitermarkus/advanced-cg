@@ -20,10 +20,7 @@ pub struct Triangle {
   pub emission: Vector,
   pub color: Vector,
 
-  pub divisions: u64,
-
-  pub patches: Vec<Color>,
-  pub sub_triangles: Vec<PatchTriangle>,
+  pub patches: Vec<PatchTriangle>,
 }
 
 impl Triangular for Triangle {
@@ -49,13 +46,11 @@ impl Triangle {
       normal: normal,
       area: area,
       emission: emission, color: color,
-      divisions: 0, patches: Vec::new(), sub_triangles: Vec::new()
+      patches: Vec::new()
     }
   }
 
   pub fn init_patches(&mut self, divisions: u64) {
-    self.divisions = divisions;
-    self.patches = vec![Color::zero(); divisions.pow(2) as usize];
     self.divide(divisions)
   }
 
@@ -63,7 +58,8 @@ impl Triangle {
     let delta_x = self.b_rel / (divisions as f64);
     let delta_y = self.c_rel / (divisions as f64);
 
-    self.sub_triangles = Vec::new();
+    self.patches.clear();
+    self.patches.reserve_exact(divisions.pow(2) as usize);
 
     // Loop through patches, from bottom to top, left to right.
     let mut row_size = divisions as i64;
@@ -78,7 +74,7 @@ impl Triangle {
         let v2 = self.a + (x + 1) * delta_x + (y + offset) * delta_y;
         let v3 = self.a + x * delta_x + (y + 1) * delta_y;
 
-        self.sub_triangles.push(PatchTriangle::new(v1, v2, v3))
+        self.patches.push(PatchTriangle::new(v1, v2, v3))
       }
 
       row += 1;

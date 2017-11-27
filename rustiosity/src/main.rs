@@ -110,8 +110,8 @@ fn calculate_form_factors(tris: &mut [Triangle], divisions: u64, mc_sample: i64)
         for p_j in 0..tris[j].patches.len() {
           // Monte Carlo integration of form factor double integral.
 
-          let t_i: &PatchTriangle = &tris[i].sub_triangles[p_i];
-          let t_j: &PatchTriangle = &tris[j].sub_triangles[p_j];
+          let t_i: &PatchTriangle = &tris[i].patches[p_i];
+          let t_j: &PatchTriangle = &tris[j].patches[p_j];
 
           // Uniform PDF for Monte Carlo (1 / Ai) x (1 / Aj).
           let pdf = 1.0 / (t_i.area * t_j.area);
@@ -178,7 +178,7 @@ fn calculate_form_factors(tris: &mut [Triangle], divisions: u64, mc_sample: i64)
     for p_i in 0..tris[i].patches.len() {
       for j in 0..tris.len() {
         for p_j in 0..tris[j].patches.len() {
-          let area = tris[i].sub_triangles[p_i].area;
+          let area = tris[i].patches[p_i].area;
           let form_factor = form_factors[&i][p_i][&j][p_j] / area;
           form_factors.get_mut(&i).unwrap()[p_i].get_mut(&j).unwrap()[p_j] = if form_factor < 0.0 { 0.0 } else if form_factor > 1.0 { 1.0 } else { form_factor};
         }
@@ -197,7 +197,7 @@ fn calculate_radiosity(tris: &mut [Triangle], form_factors: &HashMap<usize, Vec<
       let color = (0..tris.len()).map(|j| {
         if i == j { return Color::zero(); }
         (0..tris[j].patches.len()).map(|p_b| {
-          form_factors[&i][p_a][&j][p_b] * tris[j].patches[p_b]
+          form_factors[&i][p_a][&j][p_b] * tris[j].patches[p_b].color
         }).sum()
       }).sum();
 
@@ -211,7 +211,7 @@ fn calculate_radiosity(tris: &mut [Triangle], form_factors: &HashMap<usize, Vec<
 
   for i in 0..tris.len() {
     for p in 0..tris[i].patches.len() {
-      tris[i].patches[p] = myvec[i][p];
+      tris[i].patches[p].color = myvec[i][p];
     }
   }
 }
@@ -230,19 +230,19 @@ fn calculate_vertex_colors(tris: &[Triangle]) -> HashMap<Vector, HashMap<Vector,
       let vertex_counts = vertex_counts.get_mut(&tri.normal).unwrap();
       let vertex_colors = vertex_colors.get_mut(&tri.normal).unwrap();
 
-      vertex_colors.entry(tri.sub_triangles[p].a).or_insert(Color::zero());
-      vertex_colors.entry(tri.sub_triangles[p].b).or_insert(Color::zero());
-      vertex_colors.entry(tri.sub_triangles[p].c).or_insert(Color::zero());
-      vertex_counts.entry(tri.sub_triangles[p].a).or_insert(0);
-      vertex_counts.entry(tri.sub_triangles[p].b).or_insert(0);
-      vertex_counts.entry(tri.sub_triangles[p].c).or_insert(0);
+      vertex_colors.entry(tri.patches[p].a).or_insert(Color::zero());
+      vertex_colors.entry(tri.patches[p].b).or_insert(Color::zero());
+      vertex_colors.entry(tri.patches[p].c).or_insert(Color::zero());
+      vertex_counts.entry(tri.patches[p].a).or_insert(0);
+      vertex_counts.entry(tri.patches[p].b).or_insert(0);
+      vertex_counts.entry(tri.patches[p].c).or_insert(0);
 
-      *vertex_counts.get_mut(&tri.sub_triangles[p].a).unwrap() += 1;
-      *vertex_counts.get_mut(&tri.sub_triangles[p].b).unwrap() += 1;
-      *vertex_counts.get_mut(&tri.sub_triangles[p].c).unwrap() += 1;
-      *vertex_colors.get_mut(&tri.sub_triangles[p].a).unwrap() += tri.patches[p];
-      *vertex_colors.get_mut(&tri.sub_triangles[p].b).unwrap() += tri.patches[p];
-      *vertex_colors.get_mut(&tri.sub_triangles[p].c).unwrap() += tri.patches[p];
+      *vertex_counts.get_mut(&tri.patches[p].a).unwrap() += 1;
+      *vertex_counts.get_mut(&tri.patches[p].b).unwrap() += 1;
+      *vertex_counts.get_mut(&tri.patches[p].c).unwrap() += 1;
+      *vertex_colors.get_mut(&tri.patches[p].a).unwrap() += tri.patches[p].color;
+      *vertex_colors.get_mut(&tri.patches[p].b).unwrap() += tri.patches[p].color;
+      *vertex_colors.get_mut(&tri.patches[p].c).unwrap() += tri.patches[p].color;
     }
   }
 
@@ -271,8 +271,8 @@ fn radiance(tris: &[Triangle], ray: &Ray, vertex_colors: &HashMap<Vector, HashMa
   let obj: &Triangle = &tris[id as usize];
 
   let find_patch_index = |triangle: &Triangle, ray: &Ray| -> Option<usize> {
-    for p in 0..triangle.sub_triangles.len() {
-      if triangle.sub_triangles[p].intersect(ray) != 0.0 {
+    for p in 0..triangle.patches.len() {
+      if triangle.patches[p].intersect(ray) != 0.0 {
         return Some(p);
       }
     }
@@ -287,15 +287,15 @@ fn radiance(tris: &[Triangle], ray: &Ray, vertex_colors: &HashMap<Vector, HashMa
 
   let hitpoint = ray.org + t * ray.dir;
 
-  let bary = obj.sub_triangles[idx].barycentric_coordinates_at(&hitpoint);
+  let bary = obj.patches[idx].barycentric_coordinates_at(&hitpoint);
 
-  let a: Color = vertex_colors[&obj.normal][&obj.sub_triangles[idx].a];
-  let b: Color = vertex_colors[&obj.normal][&obj.sub_triangles[idx].b];
-  let c: Color = vertex_colors[&obj.normal][&obj.sub_triangles[idx].c];
+  let a: Color = vertex_colors[&obj.normal][&obj.patches[idx].a];
+  let b: Color = vertex_colors[&obj.normal][&obj.patches[idx].b];
+  let c: Color = vertex_colors[&obj.normal][&obj.patches[idx].c];
 
   let interpolated: Color = a * bary.x.into_inner() + b * bary.z.into_inner() + c * bary.y.into_inner();
 
-  return (obj.patches[idx], interpolated);
+  return (obj.patches[idx].color, interpolated);
 }
 
 
