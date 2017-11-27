@@ -14,6 +14,10 @@ pub struct Vector {
 }
 
 impl Vector {
+  pub fn zero() -> Vector {
+    Vector::new(0.0, 0.0, 0.0)
+  }
+
   pub fn new<T: Into<NotNaN<f64>>>(x: T, y: T, z: T) -> Vector {
     Vector { x: x.into(), y: y.into(), z: z.into() }
   }

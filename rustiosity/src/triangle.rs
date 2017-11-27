@@ -55,7 +55,7 @@ impl Triangle {
 
   pub fn init_patches(&mut self, divisions: u64) {
     self.divisions = divisions;
-    self.patches = vec![Color::new(0.0, 0.0, 0.0); divisions.pow(2) as usize];
+    self.patches = vec![Color::zero(); divisions.pow(2) as usize];
     self.divide(divisions)
   }
 
