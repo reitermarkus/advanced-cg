@@ -39,6 +39,7 @@ impl Image {
 
   pub fn set_color(&self, x: usize, y: usize, color: Color) {
     let image_index = self.index(x, y);
+    let mut color = Owned::new(color);
 
     let guard = epoch::pin();
 
@@ -47,9 +48,9 @@ impl Image {
         Some(previous_color) => {
           panic!("Pixel ({}, {}) was already set to {:?}.", x, y, previous_color.deref());
         },
-        None => match self.pixels[image_index].cas_and_ref(None, Owned::new(color), Release, &guard) {
+        None => match self.pixels[image_index].cas_and_ref(None, color, Release, &guard) {
           Ok(_) => return,
-          Err(_) => continue,
+          Err(c) => color = c,
         }
       }
     }
