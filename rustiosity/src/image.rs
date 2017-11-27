@@ -10,20 +10,22 @@ use std::ops::Deref;
 
 use color::Color;
 
+const GAMMA: f64 = 2.2;
+
 pub struct Image {
   width: usize,
   height: usize,
   pixels: Vec<Atomic<Color>>,
 }
 
-fn to_integer<T: Into<f64>>(x: T) -> u64 {
+fn to_integer<T: Into<f64>>(x: T) -> u8 {
   let mut x = x.into();
 
   if x < 0.0 { x = 0.0; } else
   if x > 1.0 { x = 1.0; };
 
   // Apply gamma correction and convert to integer.
-  (x.powf(1.0 / 2.2) * 255.0 + 0.5) as u64
+  (x.powf(1.0 / GAMMA) * 255.0 + 0.5) as u8
 }
 
 impl Image {
@@ -62,7 +64,7 @@ impl Image {
     {
       let mut writer = BufWriter::new(&file);
 
-      write!(writer, "P3\n{} {}\n{}\n", self.width, self.height, 255)?;
+      write!(writer, "P6\n{} {}\n{}\n", self.width, self.height, 255)?;
 
       for i in 0..self.pixels.len() {
         let guard = epoch::pin();
@@ -70,12 +72,11 @@ impl Image {
         loop {
           match self.pixels[i].load(Acquire, &guard) {
             Some(color) => {
-              let color = **color.deref();
+              let r = to_integer((**color).x);
+              let g = to_integer((**color).y);
+              let b = to_integer((**color).z);
 
-              let r = to_integer(color.x);
-              let g = to_integer(color.y);
-              let b = to_integer(color.z);
-              write!(writer, "{} {} {} ", r, g, b)?;
+              writer.write(&[r, g, b])?;
 
               break;
             },
