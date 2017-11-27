@@ -346,16 +346,22 @@ fn main() {
   let rendering_and_saving_bench = Instant::now();
 
   let image_thread = thread::spawn(move || {
+    thread::park();
+
     if let Err(e) = image_clone.save("image_patches.ppm") {
       panic!("{:?}", e)
     }
   });
 
   let image_interpolated_thread = thread::spawn(move || {
+    thread::park();
+
     if let Err(e) = image_interpolated_clone.save("image_smooth.ppm") {
       panic!("{:?}", e)
     }
   });
+
+  let start_saving = if height < 20 { height / 2 } else { height - 20 };
 
   // Loop over image rows.
   (0..height).into_par_iter().for_each(|y| {
@@ -402,6 +408,11 @@ fn main() {
 
       image.set_color(x, y, accumulated_radiance / samples as f64);
       image_interpolated.set_color(x, y, accumulated_radiance_interpolated / samples as f64);
+
+      if y == start_saving {
+        image_thread.thread().unpark();
+        image_interpolated_thread.thread().unpark();
+      }
     }
   });
 
