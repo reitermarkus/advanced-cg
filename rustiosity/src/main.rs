@@ -17,6 +17,7 @@ use std::collections::HashMap;
 use std::f64::consts::PI;
 use std::io::{stdout, Write};
 use std::time::{Duration, Instant};
+use std::sync::{Arc};
 use std::thread;
 
 use image::Image;
@@ -323,7 +324,7 @@ fn main() {
   println!("Calculating vertex colors ...");
   let vertex_colors = calculate_vertex_colors(&tris);
 
-  println!("Rendering images ...");
+  println!("Rendering and saving images ...");
 
   let width = 640;
   let height = 480;
@@ -336,10 +337,25 @@ fn main() {
   let cx: Vector = Vector::new(width as f64 * 0.5135 / height as f64, 0.0, 0.0);
   let cy: Vector = cx.cross_product(&camera.dir).normalize() * 0.5135;
 
-  let image = Image::new(width, height);
-  let image_interpolated = Image::new(width, height);
+  let image = Arc::new(Image::new(width, height));
+  let image_interpolated = Arc::new(Image::new(width, height));
 
-  let rendering_bench = Instant::now();
+  let image_clone = image.clone();
+  let image_interpolated_clone = image_interpolated.clone();
+
+  let rendering_and_saving_bench = Instant::now();
+
+  let image_thread = thread::spawn(move || {
+    if let Err(e) = image_clone.save("image_patches.ppm") {
+      panic!("{:?}", e)
+    }
+  });
+
+  let image_interpolated_thread = thread::spawn(move || {
+    if let Err(e) = image_interpolated_clone.save("image_smooth.ppm") {
+      panic!("{:?}", e)
+    }
+  });
 
   // Loop over image rows.
   (0..height).into_par_iter().for_each(|y| {
@@ -367,7 +383,7 @@ fn main() {
 
             // Ray direction into scene from camera through sample.
             let dir: Vector = cx * (((x as f64) + ((sx as f64) + 0.5 + dx) / 2.0) / (width as f64) - 0.5) +
-                              cy * (((y as f64) + ((sy as f64) + 0.5 + dy) / 2.0) / (height as f64) - 0.5) +
+                              cy * ((((height - y - 1) as f64) + ((sy as f64) + 0.5 + dy) / 2.0) / (height as f64) - 0.5) +
                               camera.dir;
 
             // Extend camera ray to start inside box.
@@ -376,56 +392,36 @@ fn main() {
             let (color, color_interpolated) = radiance(&tris, &Ray::new(&start, &dir.normalize()), &vertex_colors);
 
             // Determine constant radiance.
-            accumulated_radiance += color / samples as f64;
+            accumulated_radiance += color;
 
             // Determine interpolated radiance.
-            accumulated_radiance_interpolated += color_interpolated / samples as f64;
+            accumulated_radiance_interpolated += color_interpolated;
           }
         }
       }
 
-      image.set_color(x, y, accumulated_radiance);
-      image_interpolated.set_color(x, y, accumulated_radiance_interpolated);
-    }
-  });
-
-  let rendering_bench_elapsed = rendering_bench.elapsed();
-
-  println!("Saving images ...");
-
-  let image_bench = Instant::now();
-
-  let image_thread = thread::spawn(move || {
-    if let Err(e) = image.save("image_patches.ppm") {
-      panic!("{:?}", e)
-    }
-  });
-
-  let image_interpolated_thread = thread::spawn(move || {
-    if let Err(e) = image_interpolated.save("image_smooth.ppm") {
-      panic!("{:?}", e)
+      image.set_color(x, y, accumulated_radiance / samples as f64);
+      image_interpolated.set_color(x, y, accumulated_radiance_interpolated / samples as f64);
     }
   });
 
   image_thread.join().unwrap();
   image_interpolated_thread.join().unwrap();
 
-  let image_bench_elapsed = image_bench.elapsed();
+  let rendering_and_saving_bench_elapsed = rendering_and_saving_bench.elapsed();
   let total_bench_elapsed = total_bench.elapsed();
 
   let into_ms = |x: Duration| -> u64 {
     return (x.as_secs() * 1_000) + (x.subsec_nanos() / 1_000_000) as u64;
   };
 
-  println!("┌───────────────┬───────────┐");
-  println!("│ Form Factors  │ {:#6 } ms │", into_ms(form_factor_bench_elapsed));
-  println!("├───────────────┼───────────┤");
-  println!("│ Radiosity     │ {:#6 } ms │", into_ms(radiosity_bench_elapsed));
-  println!("├───────────────┼───────────┤");
-  println!("│ Rendering     │ {:#6 } ms │", into_ms(rendering_bench_elapsed));
-  println!("├───────────────┼───────────┤");
-  println!("│ Saving Images │ {:#6 } ms │", into_ms(image_bench_elapsed));
-  println!("┢━━━━━━━━━━━━━━━╈━━━━━━━━━━━┪");
-  println!("┃ Total         ┃ {:#6 } ms ┃", into_ms(total_bench_elapsed));
-  println!("┗━━━━━━━━━━━━━━━┻━━━━━━━━━━━┛");
+  println!("┌────────────────────┬───────────┐");
+  println!("│ Form Factors       │ {:#6 } ms │", into_ms(form_factor_bench_elapsed));
+  println!("├────────────────────┼───────────┤");
+  println!("│ Radiosity          │ {:#6 } ms │", into_ms(radiosity_bench_elapsed));
+  println!("├────────────────────┼───────────┤");
+  println!("│ Rendering & Saving │ {:#6 } ms │", into_ms(rendering_and_saving_bench_elapsed));
+  println!("┢━━━━━━━━━━━━━━━━━━━━╈━━━━━━━━━━━┪");
+  println!("┃ Total              ┃ {:#6 } ms ┃", into_ms(total_bench_elapsed));
+  println!("┗━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━┛");
 }

@@ -34,7 +34,7 @@ impl Image {
   }
 
   fn index(&self, x: usize, y: usize) -> usize {
-    (self.height - y - 1) * self.width + x
+    y * self.width + x
   }
 
   pub fn set_color(&self, x: usize, y: usize, color: Color) {
