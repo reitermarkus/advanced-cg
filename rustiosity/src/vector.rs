@@ -109,14 +109,14 @@ impl Mul<f64> for Vector {
 impl Mul<Vector> for i64 {
   type Output = Vector;
   fn mul(self, other: Vector) -> Vector {
-    Vector::new(other.x * self as f64, other.y * self as f64, other.z * self as f64)
+    other * (self as f64)
   }
 }
 
 impl Mul<Vector> for f64 {
   type Output = Vector;
   fn mul(self, other: Vector) -> Vector {
-    Vector::new(other.x * self, other.y * self, other.z * self)
+    other * self
   }
 }
 
