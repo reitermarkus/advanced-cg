@@ -1,6 +1,5 @@
-extern crate rand;
-
-use self::rand::distributions::{IndependentSample, Range};
+use rand;
+use rand::distributions::{IndependentSample, Range};
 
 use std::f64::EPSILON;
 

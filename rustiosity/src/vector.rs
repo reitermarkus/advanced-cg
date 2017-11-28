@@ -1,6 +1,4 @@
-extern crate ordered_float;
-
-use self::ordered_float::NotNaN;
+use ordered_float::NotNaN;
 
 use std::ops::{Add, AddAssign, Sub, Mul, Div, DivAssign};
 use std::fmt::{Debug, Formatter, Result};

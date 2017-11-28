@@ -6,9 +6,10 @@ mod image;
 mod patch_triangle;
 mod ray;
 
-extern crate rayon;
-extern crate rand;
 extern crate crossbeam;
+extern crate ordered_float;
+extern crate rand;
+extern crate rayon;
 
 use rayon::prelude::*;
 use rand::distributions::{IndependentSample, Range};
