@@ -8,6 +8,7 @@ mod ray;
 
 extern crate rayon;
 extern crate rand;
+extern crate crossbeam;
 
 use rayon::prelude::*;
 use rand::distributions::{IndependentSample, Range};

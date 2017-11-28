@@ -1,6 +1,4 @@
-extern crate crossbeam;
-
-use self::crossbeam::epoch::{self, Atomic, Owned};
+use crossbeam::epoch::{self, Atomic, Owned};
 
 use std::sync::atomic::Ordering::{Acquire, Release};
 use std::vec::Vec;
