@@ -192,30 +192,20 @@ fn calculate_form_factors(tris: &mut [Triangle], divisions: u64, mc_sample: i64)
 }
 
 fn calculate_radiosity(tris: &mut [Triangle], form_factors: &HashMap<usize, Vec<HashMap<usize, Vec<f64>>>>) {
-  let myvec: Vec<_> = (0..tris.len()).into_par_iter().map(|i| {
-    let mut patches: Vec<Color> = Vec::with_capacity(tris[i].patches.len());
-
+  (0..tris.len()).into_par_iter().for_each(|i| {
     for p_a in 0..tris[i].patches.len() {
       let color = (0..tris.len()).map(|j| {
         if i == j { return Color::zero(); }
         (0..tris[j].patches.len()).map(|p_b| {
-          form_factors[&i][p_a][&j][p_b] * tris[j].patches[p_b].color
+          form_factors[&i][p_a][&j][p_b] * tris[j].patches[p_b].get_color()
         }).sum()
       }).sum();
 
       // Multiply sum with color of patch and add emission and
       // store overall patch radiosity of current iteration.
-      patches.insert(p_a, tris[i].color.entrywise_product(&color) + tris[i].emission);
+      tris[i].patches[p_a].set_color(tris[i].color.entrywise_product(&color) + tris[i].emission);
     }
-
-    patches
-  }).collect();
-
-  for i in 0..tris.len() {
-    for p in 0..tris[i].patches.len() {
-      tris[i].patches[p].color = myvec[i][p];
-    }
-  }
+  });
 }
 
 fn calculate_vertex_colors(tris: &[Triangle]) -> HashMap<Vector, HashMap<Vector, Color>> {
@@ -242,9 +232,9 @@ fn calculate_vertex_colors(tris: &[Triangle]) -> HashMap<Vector, HashMap<Vector,
       *vertex_counts.get_mut(&tri.patches[p].a).unwrap() += 1;
       *vertex_counts.get_mut(&tri.patches[p].b).unwrap() += 1;
       *vertex_counts.get_mut(&tri.patches[p].c).unwrap() += 1;
-      *vertex_colors.get_mut(&tri.patches[p].a).unwrap() += tri.patches[p].color;
-      *vertex_colors.get_mut(&tri.patches[p].b).unwrap() += tri.patches[p].color;
-      *vertex_colors.get_mut(&tri.patches[p].c).unwrap() += tri.patches[p].color;
+      *vertex_colors.get_mut(&tri.patches[p].a).unwrap() += tri.patches[p].get_color();
+      *vertex_colors.get_mut(&tri.patches[p].b).unwrap() += tri.patches[p].get_color();
+      *vertex_colors.get_mut(&tri.patches[p].c).unwrap() += tri.patches[p].get_color();
     }
   }
 
@@ -297,7 +287,7 @@ fn radiance(tris: &[Triangle], ray: &Ray, vertex_colors: &HashMap<Vector, HashMa
 
   let interpolated: Color = a * bary.x.into_inner() + b * bary.z.into_inner() + c * bary.y.into_inner();
 
-  return (obj.patches[idx].color, interpolated);
+  return (obj.patches[idx].get_color(), interpolated);
 }
 
 
