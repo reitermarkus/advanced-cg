@@ -16,7 +16,8 @@ pub struct Image {
   pixels: Vec<Atomic<Color>>,
 }
 
-fn to_integer<T: Into<f64>>(x: T) -> u8 {
+#[inline(always)]
+fn to_byte<T: Into<f64>>(x: T) -> u8 {
   let mut x = x.into();
 
   if x < 0.0 { x = 0.0; } else
@@ -70,11 +71,13 @@ impl Image {
         loop {
           match self.pixels[i].load(Acquire, &guard) {
             Some(color) => {
-              let r = to_integer((**color).x);
-              let g = to_integer((**color).y);
-              let b = to_integer((**color).z);
+              let Color { x: r, y: g, z: b } = **color;
 
-              writer.write(&[r, g, b])?;
+              writer.write(&[
+                to_byte(r),
+                to_byte(g),
+                to_byte(b)
+              ])?;
 
               break;
             },
