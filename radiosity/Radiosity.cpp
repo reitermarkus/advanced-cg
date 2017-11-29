@@ -37,9 +37,7 @@
 #include <chrono>
 
 #include "Vector.h"
-#include "ColorUtils.h"
 #include "Image.h"
-#include "Rectangle.h"
 #include "Triangle.h"
 #include "Ray.h"
 #include "PatchTriangle.h"
