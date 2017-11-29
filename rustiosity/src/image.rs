@@ -73,11 +73,7 @@ impl Image {
             Some(color) => {
               let Color { x: r, y: g, z: b } = **color;
 
-              writer.write(&[
-                to_byte(r),
-                to_byte(g),
-                to_byte(b)
-              ])?;
+              writer.write(&[to_byte(r), to_byte(g), to_byte(b)])?;
 
               break;
             },
