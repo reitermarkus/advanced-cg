@@ -1,4 +1,6 @@
-language: cpp
+language: rust
+
+cache: cargo
 
 matrix:
   include:
@@ -21,9 +23,16 @@ addons:
 before_script:
   - export CXXFLAGS='-Werror'
   - eval "${MATRIX_EVAL}"
-  - cd radiosity
 
 script:
+  - cd radiosity
   - make
   - make run
   - make test
+
+  - cd -
+
+  - cd rustiosity
+  - cargo build --release --all-features --locked
+  - cargo run --release
+  - cargo test
