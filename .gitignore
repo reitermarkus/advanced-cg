@@ -1,3 +1,4 @@
+/radiosity/include/catch.hpp
 /radiosity/Radiosity
 /radiosity/*.ppm
 /radiosity/test/run

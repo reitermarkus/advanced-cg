@@ -3,6 +3,7 @@ TARGET_TEST = test/run
 
 OBJ = $(filter-out $(TARGET).o, $(patsubst %.cpp, %.o, $(wildcard *.cpp)))
 OBJ_TEST = $(patsubst %.cpp, %.o, $(wildcard test/*.cpp))
+CATCH = include/catch.hpp
 
 INCLUDES = -Iinclude -I./
 CXXFLAGS = -O3 -Wall -Wextra -std=c++1z -fopenmp
@@ -38,7 +39,12 @@ $(TARGET): $(TARGET).o $(OBJ)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $@
 
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $^ -o $@
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $(filter-out $(CATCH), $^) -o $@
+
+$(CATCH):
+	curl -sL https://github.com/catchorg/Catch2/releases/download/v2.0.1/catch.hpp -o $@
+
+$(OBJ_TEST): %.o: %.cpp $(CATCH)
 
 .PHONY: test
 test: $(OBJ_TEST) $(OBJ)
