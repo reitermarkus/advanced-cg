@@ -16,7 +16,6 @@ struct Image {
   Color getColor(int x, int y);
   void setColor(int x, int y, const Color &c);
   void addColor(int x, int y, const Color &c);
-  int toInteger(double x);
   void save(const string &filename);
 };
 

@@ -19,24 +19,25 @@ void Image::addColor(int x, int y, const Color &c) {
   pixels[image_index] = pixels[image_index] + c;
 }
 
-int Image::toInteger(double x) {
-  /* Clamp to [0,1] */
-  if (x < 0.0)
-    x = 0.0;
+static byte toByte(double x) {
+  x = clamp(x, 0.0, 1.0);
 
-  if (x > 1.0)
-    x = 1.0;
-
-  /* Apply gamma correction and convert to integer */
-  return int(pow(x, 1 / 2.2) * 255 + .5);
+  // Apply gamma correction and convert to integer.
+  return (byte)int(pow(x, 1 / 2.2) * 255 + 0.5);
 }
 
+// Save image in binary PPM format.
 void Image::save(const string &filename) {
-  /* Save image in PPM format */
-  FILE *f = fopen(filename.c_str(), "wb");
-  fprintf(f, "P3\n%d %d\n%d\n", width, height, 255);
-  for (int i = 0; i < width * height; i++)
-    fprintf(f, "%d %d %d ", toInteger(pixels[i].x), toInteger(pixels[i].y),
-            toInteger(pixels[i].z));
-  fclose(f);
+  ofstream file;
+  file.open(filename, ios::out | ios::binary);
+
+  file << "P6" << endl;
+  file << width << " " << height << endl;
+  file << 255 << endl;
+  for (int i = 0; i < width * height; i++) {
+    file << (unsigned char)toByte(pixels[i].x);
+    file << (unsigned char)toByte(pixels[i].y);
+    file << (unsigned char)toByte(pixels[i].z);
+  }
+  file.close();
 }
