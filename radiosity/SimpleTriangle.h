@@ -1,10 +1,14 @@
 #ifndef __SIMPLE_TRIANGLE_H__
 #define __SIMPLE_TRIANGLE_H__
 
-#include "Shape.h"
+#include "Vector.h"
+#include "Ray.h"
 
-struct SimpleTriangle : public Shape {
+struct SimpleTriangle {
   Vector a, b, c;
+  Vector normal;
+
+  double area;
 
   SimpleTriangle(const Vector& a_, const Vector& b_, const Vector& c_);
   SimpleTriangle(const Vector &a_, const Vector &b_,
