@@ -20,7 +20,7 @@ vector<PatchTriangle> Triangle::divide(const int divisions) {
   auto delta_x = b_rel / divisions;
   auto delta_y = c_rel / divisions;
 
-  this->subTriangles.clear();
+  this->patches.clear();
 
   // Loop through patches, from bottom to top, left to right.
   auto row_size = divisions;
@@ -36,7 +36,7 @@ vector<PatchTriangle> Triangle::divide(const int divisions) {
       auto v3 = a + x * delta_x + (y + 1) * delta_y;
 
       auto patch_triangle = PatchTriangle(v1, v2, v3);
-      this->subTriangles.push_back(patch_triangle);
+      this->patches.push_back(patch_triangle);
     }
 
     row++;
@@ -46,7 +46,7 @@ vector<PatchTriangle> Triangle::divide(const int divisions) {
     }
   }
 
-  return this->subTriangles;
+  return this->patches;
 }
 
 Vector Triangle::sample(Vector &p0, Vector &p1, Vector &p2) {

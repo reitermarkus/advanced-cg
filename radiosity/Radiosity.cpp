@@ -129,7 +129,7 @@ void calculateFormFactors(const int divisions, const int mc_sample) {
   const int n = tris.size();
   for (auto &tri : tris) {
     tri.init_patches(divisions);
-    patch_num += tri.subTriangles.size();
+    patch_num += tri.patches.size();
   }
   unsigned long form_factor_num = pow(patch_num, 2);
 
@@ -138,11 +138,11 @@ void calculateFormFactors(const int divisions, const int mc_sample) {
   cout << "Number of form factors: " << form_factor_num << endl;
 
   for (auto &tri_a : tris) {
-    form_factor[&tri_a] = vector<map<Triangle*, vector<double>>>(tri_a.subTriangles.size());
-    for (size_t p = 0; p < tri_a.subTriangles.size(); p++) {
+    form_factor[&tri_a] = vector<map<Triangle*, vector<double>>>(tri_a.patches.size());
+    for (size_t p = 0; p < tri_a.patches.size(); p++) {
       form_factor[&tri_a][p] = map<Triangle*, vector<double>>();
       for (auto &tri_b : tris) {
-        form_factor[&tri_a][p][&tri_b] = vector<double>(tri_b.subTriangles.size());
+        form_factor[&tri_a][p][&tri_b] = vector<double>(tri_b.patches.size());
         fill(form_factor[&tri_a][p][&tri_b].begin(), form_factor[&tri_a][p][&tri_b].end(), 0.0);
       }
     }
@@ -152,8 +152,8 @@ void calculateFormFactors(const int divisions, const int mc_sample) {
 
   /* Precompute patch areas, assuming same size for each triangle */
   for (auto &tri : tris) {
-    patch_area[&tri] = vector<double>(tri.subTriangles.size());
-    const auto area = tri.area / tri.subTriangles.size();
+    patch_area[&tri] = vector<double>(tri.patches.size());
+    const auto area = tri.area / tri.patches.size();
     fill(patch_area[&tri].begin(), patch_area[&tri].end(), area);
   }
 
@@ -163,11 +163,11 @@ void calculateFormFactors(const int divisions, const int mc_sample) {
 
     /* Loop over all patches in rectangle i */
     #pragma omp parallel for
-    for (unsigned long p_i = 0; p_i < tris[i].subTriangles.size(); p_i++) {
+    for (unsigned long p_i = 0; p_i < tris[i].patches.size(); p_i++) {
       /* Loop over all triangles in scene for triangles i */
       for (int j = i + 1; j < n; j++) {
         /* Loop over all patches in rectangle j */
-        for (unsigned long p_j = 0; p_j < tris[j].subTriangles.size(); p_j++) {
+        for (unsigned long p_j = 0; p_j < tris[j].patches.size(); p_j++) {
           double F = 0;
 
           /* Monte Carlo integration of form factor double integral */
@@ -178,8 +178,8 @@ void calculateFormFactors(const int divisions, const int mc_sample) {
               (1.0 / patch_area[&tris[j]][p_j]);
 
           for (auto ii = 0; ii < mc_sample; ii++) {
-            PatchTriangle t_i = tris[i].subTriangles[p_i];
-            PatchTriangle t_j = tris[j].subTriangles[p_j];
+            PatchTriangle t_i = tris[i].patches[p_i];
+            PatchTriangle t_j = tris[j].patches[p_j];
 
             const Vector xi = Triangle::sample(t_i.a, t_i.b, t_i.c);
             const Vector xj = Triangle::sample(t_j.a, t_j.b, t_j.c);
@@ -222,9 +222,9 @@ void calculateFormFactors(const int divisions, const int mc_sample) {
 
   /* Divide by area to get final form factors */
   for (auto &tri_a : tris) {
-    for (size_t p_a = 0; p_a < tri_a.subTriangles.size(); p_a++) {
+    for (size_t p_a = 0; p_a < tri_a.patches.size(); p_a++) {
       for (auto &tri_b : tris) {
-        for (size_t p_b = 0; p_b < tri_b.subTriangles.size(); p_b++) {
+        for (size_t p_b = 0; p_b < tri_b.patches.size(); p_b++) {
           const auto area = patch_area[&tri_a][p_a];
           form_factor[&tri_a][p_a][&tri_b][p_b] = clamp(form_factor[&tri_a][p_a][&tri_b][p_b] / area, 0.0, 1.0);
         }
@@ -243,29 +243,29 @@ unordered_map<Vector, unordered_map<Vector, Color>> calculateVertexColors() {
   }
 
   for (auto &tri : tris) {
-    for (size_t p = 0; p < tri.subTriangles.size(); p++) {
-      vertex_colors.at(tri.normal).emplace(tri.subTriangles[p].a, Color(0, 0, 0));
-      vertex_colors.at(tri.normal).emplace(tri.subTriangles[p].b, Color(0, 0, 0));
-      vertex_colors.at(tri.normal).emplace(tri.subTriangles[p].c, Color(0, 0, 0));
-      vertex_counts.at(tri.normal).emplace(tri.subTriangles[p].a, 0);
-      vertex_counts.at(tri.normal).emplace(tri.subTriangles[p].b, 0);
-      vertex_counts.at(tri.normal).emplace(tri.subTriangles[p].c, 0);
+    for (size_t p = 0; p < tri.patches.size(); p++) {
+      vertex_colors.at(tri.normal).emplace(tri.patches[p].a, Color(0, 0, 0));
+      vertex_colors.at(tri.normal).emplace(tri.patches[p].b, Color(0, 0, 0));
+      vertex_colors.at(tri.normal).emplace(tri.patches[p].c, Color(0, 0, 0));
+      vertex_counts.at(tri.normal).emplace(tri.patches[p].a, 0);
+      vertex_counts.at(tri.normal).emplace(tri.patches[p].b, 0);
+      vertex_counts.at(tri.normal).emplace(tri.patches[p].c, 0);
     }
   }
 
   for (auto &tri : tris) {
-    for (size_t p = 0; p < tri.subTriangles.size(); p++) {
-      vertex_counts.at(tri.normal).at(tri.subTriangles[p].a) += 1;
-      vertex_counts.at(tri.normal).at(tri.subTriangles[p].b) += 1;
-      vertex_counts.at(tri.normal).at(tri.subTriangles[p].c) += 1;
+    for (size_t p = 0; p < tri.patches.size(); p++) {
+      vertex_counts.at(tri.normal).at(tri.patches[p].a) += 1;
+      vertex_counts.at(tri.normal).at(tri.patches[p].b) += 1;
+      vertex_counts.at(tri.normal).at(tri.patches[p].c) += 1;
     }
   }
 
   for (auto &tri : tris) {
-    for (size_t p = 0; p < tri.subTriangles.size(); p++) {
-      vertex_colors.at(tri.normal).at(tri.subTriangles[p].a) += tri.subTriangles[p].color;
-      vertex_colors.at(tri.normal).at(tri.subTriangles[p].b) += tri.subTriangles[p].color;
-      vertex_colors.at(tri.normal).at(tri.subTriangles[p].c) += tri.subTriangles[p].color;
+    for (size_t p = 0; p < tri.patches.size(); p++) {
+      vertex_colors.at(tri.normal).at(tri.patches[p].a) += tri.patches[p].color;
+      vertex_colors.at(tri.normal).at(tri.patches[p].b) += tri.patches[p].color;
+      vertex_colors.at(tri.normal).at(tri.patches[p].c) += tri.patches[p].color;
     }
   }
 
@@ -291,16 +291,16 @@ unordered_map<Vector, unordered_map<Vector, Color>> calculateVertexColors() {
 void calculateRadiosity() {
   for (auto &tri_a : tris) {
     #pragma omp parallel for
-    for (unsigned long p_a = 0; p_a < tri_a.subTriangles.size(); p_a++) {
+    for (unsigned long p_a = 0; p_a < tri_a.patches.size(); p_a++) {
       Color B;
 
       for (auto &tri_b : tris) {
-        for (unsigned long p_b = 0; p_b < tri_b.subTriangles.size(); p_b++) {
+        for (unsigned long p_b = 0; p_b < tri_b.patches.size(); p_b++) {
           const double Fij = form_factor[&tri_a][p_a][&tri_b][p_b];
 
           /* Add form factor multiplied with radiosity of previous step */
           if (Fij > 0.0)
-            B = B + Fij * tri_b.subTriangles[p_b].color;
+            B = B + Fij * tri_b.patches[p_b].color;
         }
       }
 
@@ -308,7 +308,7 @@ void calculateRadiosity() {
       B = tri_a.color.entrywiseProduct(B) + tri_a.emission;
 
       /* Store overall patch radiosity of current iteration */
-      tri_a.subTriangles[p_a].color = B;
+      tri_a.patches[p_a].color = B;
     }
   }
 }
@@ -322,8 +322,8 @@ void calculateRadiosity() {
  *******************************************************************/
 
 static int findPatchIndex(const Triangle &triangle, const Ray &ray) {
-  for (unsigned long p = 0; p < triangle.subTriangles.size(); p++) {
-    if (triangle.subTriangles[p].intersect(ray)) {
+  for (unsigned long p = 0; p < triangle.patches.size(); p++) {
+    if (triangle.patches[p].intersect(ray)) {
       return p;
     }
   }
@@ -347,15 +347,15 @@ pair<Color, Color> radiance(const Ray &ray, unordered_map<Vector, unordered_map<
 
   const Vector hitpoint = ray.org + t * ray.dir;
 
-  Vector bary = obj.subTriangles[idx].barycentricCoordinatesAt(hitpoint);
+  Vector bary = obj.patches[idx].barycentricCoordinatesAt(hitpoint);
 
-  Color a = vertex_colors[obj.normal][obj.subTriangles[idx].a];
-  Color b = vertex_colors[obj.normal][obj.subTriangles[idx].b];
-  Color c = vertex_colors[obj.normal][obj.subTriangles[idx].c];
+  Color a = vertex_colors[obj.normal][obj.patches[idx].a];
+  Color b = vertex_colors[obj.normal][obj.patches[idx].b];
+  Color c = vertex_colors[obj.normal][obj.patches[idx].c];
 
   Color interpolated = a * bary.x + b * bary.z + c * bary.y;
 
-  return make_pair(obj.subTriangles[idx].color, interpolated);
+  return make_pair(obj.patches[idx].color, interpolated);
 }
 
 /******************************************************************
