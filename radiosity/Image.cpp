@@ -1,21 +1,21 @@
 #include "Image.h"
 
-Image::Image(int _w, int _h) : width(_w), height(_h) {
+Image::Image(size_t _w, size_t _h) : width(_w), height(_h) {
   pixels = new Color[width * height];
 }
 
-Color Image::getColor(int x, int y) {
-  int image_index = (height - y - 1) * width + x;
+Color Image::getColor(size_t x, size_t y) {
+  size_t image_index = (height - y - 1) * width + x;
   return pixels[image_index];
 }
 
-void Image::setColor(int x, int y, const Color &c) {
-  int image_index = (height - y - 1) * width + x;
+void Image::setColor(size_t x, size_t y, const Color &c) {
+  size_t image_index = (height - y - 1) * width + x;
   pixels[image_index] = c;
 }
 
-void Image::addColor(int x, int y, const Color &c) {
-  int image_index = (height - y - 1) * width + x;
+void Image::addColor(size_t x, size_t y, const Color &c) {
+  size_t image_index = (height - y - 1) * width + x;
   pixels[image_index] = pixels[image_index] + c;
 }
 
@@ -23,7 +23,7 @@ static byte toByte(double x) {
   x = clamp(x, 0.0, 1.0);
 
   // Apply gamma correction and convert to integer.
-  return (byte)int(pow(x, 1 / 2.2) * 255 + 0.5);
+  return (byte)int(pow(x, 1.0 / 2.2) * 255.0 + 0.5);
 }
 
 // Save image in binary PPM format.
@@ -34,7 +34,7 @@ void Image::save(const string &filename) {
   file << "P6" << endl;
   file << width << " " << height << endl;
   file << 255 << endl;
-  for (int i = 0; i < width * height; i++) {
+  for (size_t i = 0; i < width * height; i++) {
     file << (unsigned char)toByte(pixels[i].x);
     file << (unsigned char)toByte(pixels[i].y);
     file << (unsigned char)toByte(pixels[i].z);

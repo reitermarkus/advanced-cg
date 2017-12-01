@@ -8,14 +8,14 @@
 #include "Vector.h"
 
 struct Image {
-  int width, height;
+  size_t width, height;
   Color *pixels;
 
-  Image(int _w, int _h);
+  Image(size_t _w, size_t _h);
 
-  Color getColor(int x, int y);
-  void setColor(int x, int y, const Color &c);
-  void addColor(int x, int y, const Color &c);
+  Color getColor(size_t x, size_t y);
+  void setColor(size_t x, size_t y, const Color &c);
+  void addColor(size_t x, size_t y, const Color &c);
   void save(const string &filename);
 };
 
