@@ -53,7 +53,7 @@ test: $(OBJ_TEST) $(OBJ)
 
 .PHONY: clean
 clean:
-	$(RM) $(TARGET) *.o */*.o
+	$(RM) $(TARGET) $(TARGET_TEST) *.o */*.o
 
 run: all
 	time ./$(TARGET)
