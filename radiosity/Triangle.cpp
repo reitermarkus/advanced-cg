@@ -13,9 +13,6 @@ Triangle::Triangle(const Vector &a_, const Vector &b_, const Vector &c_, const C
 }
 
 void Triangle::init_patches(const int divisions) {
-  this->divisions = divisions;
-  this->patch.clear();
-  this->patch.resize(pow(divisions, 2));
   this->divide(divisions);
 }
 

@@ -12,9 +12,7 @@ struct Triangle: public SimpleTriangle {
 
   Color emission, color;
 
-  int divisions;
   vector<PatchTriangle> subTriangles;
-  vector<Color> patch;
 
   Triangle(const Vector &a_, const Vector &b_, const Vector &c_,
            const Color &emission, const Color &color);
