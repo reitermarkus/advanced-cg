@@ -1,5 +1,8 @@
 #include "Image.h"
 
+#include <algorithm>
+#include <cstddef>
+
 Image::Image(size_t _w, size_t _h) : width(_w), height(_h) {
   pixels = new Color[width * height];
 }
