@@ -1,7 +1,6 @@
-/radiosity/include/catch.hpp
-/radiosity/Radiosity
-/radiosity/*.ppm
-/radiosity/test/run
+/../radiosity/Radiosity
+/../path_tracing/PathTracing
+/../radiosity/test/run
 
 # Prerequisites
 *.d
@@ -35,3 +34,6 @@
 *.exe
 *.out
 *.app
+
+# image
+*.ppm

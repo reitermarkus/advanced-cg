@@ -6,7 +6,7 @@ OBJ_SHARED = $(patsubst ../shared/%.cpp, ../shared/%.o, $(wildcard ../shared/*.c
 OBJ_TEST = $(patsubst %.cpp, %.o, $(wildcard test/*.cpp))
 CATCH = include/catch.hpp
 
-INCLUDES = -Iinclude -I./ -I../shared
+INCLUDES = -I./ -I../shared
 CXXFLAGS = -O3 -Wall -Wextra -std=c++1z -fopenmp
 
 ifneq ($(OS), Windows_NT)
@@ -54,7 +54,7 @@ test: $(OBJ_TEST) $(OBJ)
 
 .PHONY: clean
 clean:
-	$(RM) $(TARGET) $(TARGET_TEST) *.o */*.o
+	$(RM) $(TARGET) $(TARGET_TEST) *.o */*.o ../shared/*.o
 
 run: all
 	time ./$(TARGET)
