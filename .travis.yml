@@ -21,7 +21,7 @@ addons:
 before_script:
   - export CXXFLAGS='-Werror'
   - eval "${MATRIX_EVAL}"
-  - cd radiosity
+  - cd cpp/radiosity
 
 script:
   - make
