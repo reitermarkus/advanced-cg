@@ -38,11 +38,11 @@
 
 #include "../shared/Vector.h"
 #include "../shared/Image.h"
-#include "Triangle.h"
-#include "Ray.h"
-#include "PatchTriangle.h"
+#include "../shared/Ray.h"
+#include "../shared/macro.h"
 
-#include "macro.h"
+#include "Triangle.h"
+#include "PatchTriangle.h"
 
 #undef M_PI
 const double M_PI = atan(1) * 4;

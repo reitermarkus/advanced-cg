@@ -2,9 +2,7 @@
 
 #include <cmath>
 
-#include "macro.h"
-
-#include "Ray.h"
+#include "../shared/macro.h"
 #include "../shared/Vector.h"
 
 Triangle::Triangle(const Vector &a_, const Vector &b_, const Vector &c_, const Color &emission_, const Color &color_): SimpleTriangle(a_, a_ + b_, a_ + c_), b_rel(b_), c_rel(c_) {

@@ -2,7 +2,7 @@
 #define __SIMPLE_TRIANGLE_H__
 
 #include "../shared/Vector.h"
-#include "Ray.h"
+#include "../shared/Ray.h"
 
 struct SimpleTriangle {
   Vector a, b, c;

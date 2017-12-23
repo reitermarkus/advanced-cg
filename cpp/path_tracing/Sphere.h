@@ -1,6 +1,9 @@
 #ifndef __SPHERE_H__
 #define __SPHERE_H__
 
+#include "../shared/Vector.h"
+#include "../shared/Ray.h"
+
 /*------------------------------------------------------------------
 | Scene objects are spheres; material either perfectly diffuse,
 | specular (mirror reflection) or transparent (refraction/reflection)
