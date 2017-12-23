@@ -1,7 +1,7 @@
 #ifndef __PATCH_TRIANGLE_H__
 #define __PATCH_TRIANGLE_H__
 
-#include "Vector.h"
+#include "../shared/Vector.h"
 #include "SimpleTriangle.h"
 
 struct PatchTriangle : public SimpleTriangle {

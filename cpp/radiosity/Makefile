@@ -2,10 +2,11 @@ TARGET = Radiosity
 TARGET_TEST = test/run
 
 OBJ = $(filter-out $(TARGET).o, $(patsubst %.cpp, %.o, $(wildcard *.cpp)))
+OBJ_SHARED = $(patsubst ../shared/%.cpp, ../shared/%.o, $(wildcard ../shared/*.cpp))
 OBJ_TEST = $(patsubst %.cpp, %.o, $(wildcard test/*.cpp))
 CATCH = include/catch.hpp
 
-INCLUDES = -Iinclude -I./
+INCLUDES = -Iinclude -I./ -I../shared
 CXXFLAGS = -O3 -Wall -Wextra -std=c++1z -fopenmp
 
 ifneq ($(OS), Windows_NT)
@@ -35,7 +36,7 @@ endif
 # Rules
 all: $(TARGET)
 
-$(TARGET): $(TARGET).o $(OBJ)
+$(TARGET): $(TARGET).o $(OBJ) $(OBJ_SHARED)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $@
 
 %.o: %.cpp

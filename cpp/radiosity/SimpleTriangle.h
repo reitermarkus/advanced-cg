@@ -1,7 +1,7 @@
 #ifndef __SIMPLE_TRIANGLE_H__
 #define __SIMPLE_TRIANGLE_H__
 
-#include "Vector.h"
+#include "../shared/Vector.h"
 #include "Ray.h"
 
 struct SimpleTriangle {
