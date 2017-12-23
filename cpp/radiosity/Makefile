@@ -4,7 +4,7 @@ TARGET_TEST = test/run
 OBJ = $(filter-out $(TARGET).o, $(patsubst %.cpp, %.o, $(wildcard *.cpp)))
 OBJ_SHARED = $(patsubst ../shared/%.cpp, ../shared/%.o, $(wildcard ../shared/*.cpp))
 OBJ_TEST = $(patsubst %.cpp, %.o, $(wildcard test/*.cpp))
-CATCH = include/catch.hpp
+CATCH = ../shared/test
 
 INCLUDES = -I./ -I../shared
 CXXFLAGS = -O3 -Wall -Wextra -std=c++1z -fopenmp
@@ -43,12 +43,12 @@ $(TARGET): $(TARGET).o $(OBJ) $(OBJ_SHARED)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $(filter-out $(CATCH), $^) -o $@
 
 $(CATCH):
-	curl -sL https://github.com/catchorg/Catch2/releases/download/v2.0.1/catch.hpp -o $@
+	mkdir -p $@ && curl -sL https://github.com/catchorg/Catch2/releases/download/v2.0.1/catch.hpp -o $@/catch.hpp
 
 $(OBJ_TEST): %.o: %.cpp $(CATCH)
 
 .PHONY: test
-test: $(OBJ_TEST) $(OBJ)
+test: $(OBJ_TEST) $(OBJ) $(OBJ_SHARED)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $(TARGET_TEST)
 	./$(TARGET_TEST)
 

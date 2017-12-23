@@ -1,4 +1,4 @@
-#include "catch.hpp"
+#include "../shared/test/catch.hpp"
 
 #include "Triangle.h"
 
