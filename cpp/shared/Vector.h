@@ -31,6 +31,9 @@ struct Vector {
     Vector normalize() const;
     double dotProduct(const Vector &b) const;
     Vector crossProduct(const Vector &b) const;
+    Vector multComponents(const Vector &b) const;
+    Vector& clamp();
+    double max() const;
 
     double x, y, z;
 };

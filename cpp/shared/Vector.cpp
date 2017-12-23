@@ -1,5 +1,7 @@
 #include "Vector.h"
 
+#include <algorithm>
+
 Vector::Vector(const Vector &b) : x(b.x), y(b.y), z(b.z) {}
 Vector::Vector(double x_, double y_, double z_) : x(x_), y(y_), z(z_) {}
 
@@ -73,6 +75,22 @@ Vector Vector::crossProduct(const Vector &b) const {
     (z * b.x) - (x * b.z),
     (x * b.y) - (y * b.x)
   );
+}
+
+Vector Vector::multComponents(const Vector &b) const {
+  return Vector(x * b.x, y * b.y, z * b.z);
+}
+
+Vector& Vector::clamp() {
+  x = std::clamp(x, 0.0, 1.0);
+  y = std::clamp(y, 0.0, 1.0);
+  z = std::clamp(z, 0.0, 1.0);
+
+  return *this;
+}
+
+double Vector::max() const {
+  return fmax(x, fmax(x, y));
 }
 
 ostream& operator<<(std::ostream &strm, const Vector &v) {

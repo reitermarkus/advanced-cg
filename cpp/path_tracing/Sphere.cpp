@@ -5,8 +5,8 @@ double Sphere::Intersect(const Ray &ray) const {
         t^2*d.d + 2*t*(o-p).d + (o-p).(o-p) - R^2 = 0 */
     Vector op = position - ray.org;
     double eps = 1e-4;
-    double b = op.Dot(ray.dir);
-    double radicant = b*b - op.Dot(op) + radius*radius;
+    double b = op.dotProduct(ray.dir);
+    double radicant = b*b - op.dotProduct(op) + radius*radius;
     if (radicant < 0.0)
         return 0.0;      /* No intersection */
     else

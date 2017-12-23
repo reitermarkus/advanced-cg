@@ -27,150 +27,16 @@
 
 #include "Sphere.h"
 
+#include "../shared/Vector.h"
+#include "../shared/Ray.h"
+#include "../shared/Image.h"
+#include "../shared/macro.h"
+
 using namespace std;
 
-
-/*------------------------------------------------------------------
-| Struct for standard Vector operations in 3D
-| (used for points, vectors, and colors)
-------------------------------------------------------------------*/
-struct Vector
-{
-    double x, y, z;           /* Position XYZ or color RGB */
-
-    Vector(const Vector &b) : x(b.x), y(b.y), z(b.z) {}
-    Vector(double x_=0, double y_=0, double z_=0) : x(x_), y(y_), z(z_) {}
-
-    Vector operator+(const Vector &b) const
-    {
-        return Vector(x + b.x, y + b.y, z + b.z);
-    }
-
-    Vector operator-(const Vector &b) const
-    {
-        return Vector(x - b.x, y - b.y, z - b.z);
-    }
-
-    Vector operator/(double c) const
-    {
-        return Vector(x / c, y / c, z / c);
-    }
-
-    Vector operator*(double c) const
-    {
-        return Vector(x * c, y * c, z * c);
-    }
-
-    friend Vector operator*(double c, const Vector &b)
-    {
-        return b * c;
-    }
-
-    Vector MultComponents(const Vector &b) const
-    {
-        return Vector(x * b.x, y * b.y, z * b.z);
-    }
-
-    const Vector Normalized() const
-    {
-        return Vector(x, y, z) / sqrt(x*x + y*y + z*z);
-    }
-
-    const double Dot(const Vector &b) const
-    {
-        return x * b.x + y * b.y + z * b.z;
-    }
-
-    const Vector Cross(const Vector &b) const
-    {
-        return Vector((y * b.z) - (z * b.y),
-                      (z * b.x) - (x * b.z),
-                      (x * b.y) - (y * b.x));
-    }
-
-    const double Max()
-    {
-        return fmax(x, fmax(x, y));
-    }
-
-    Vector& clamp()
-    {
-        x = x<0 ? 0.0 : x>1.0 ? 1.0 : x;
-        y = y<0 ? 0.0 : y>1.0 ? 1.0 : y;
-        z = z<0 ? 0.0 : z>1.0 ? 1.0 : z;
-        return *this;
-    }
-};
-
-typedef Vector Color;
-const Color BackgroundColor(0.0, 0.0, 0.0);
-
-/*------------------------------------------------------------------
-| Structure for rays (e.g. viewing ray, path tracing)
-------------------------------------------------------------------*/
-struct Ray
-{
-    Vector org, dir;    /* Origin and direction */
-    Ray(const Vector org_, const Vector &dir_) : org(org_), dir(dir_) {}
-};
-
-
-/*------------------------------------------------------------------
-| Struct holds pixels/colors of rendered image
-------------------------------------------------------------------*/
-struct Image
-{
-    int width, height;
-    Color *pixels;
-
-    Image(int _w, int _h) : width(_w), height(_h)
-    {
-        pixels = new Color[width * height];
-    }
-
-    Color getColor(int x, int y)
-    {
-        int image_index = (height-y-1) * width + x;
-        return pixels[image_index];
-    }
-
-    void setColor(int x, int y, const Color &c)
-    {
-        int image_index = (height-y-1) * width + x;
-        pixels[image_index] = c;
-    }
-
-    void addColor(int x, int y, const Color &c)
-    {
-        int image_index = (height-y-1) * width + x;
-        pixels[image_index] = pixels[image_index] + c;
-    }
-
-    int toInteger(double x)
-    {
-        /* Clamp to [0,1] */
-        if (x<0.0)
-            x = 0.0;
-
-        if (x>1.0)
-            x = 1.0;
-
-        /* Apply gamma correction and convert to integer */
-        return int(pow(x,1/2.2)*255+.5);
-    }
-
-    void Save(const string &filename)
-    {
-        /* Save image in PPM format */
-        FILE *f = fopen(filename.c_str(), "wb");
-        fprintf(f, "P3\n%d %d\n%d\n", width, height, 255);
-        for (int i = 0; i < width * height; i++)
-            fprintf(f,"%d %d %d ", toInteger(pixels[i].x),
-                                   toInteger(pixels[i].y),
-                                   toInteger(pixels[i].z));
-        fclose(f);
-    }
-};
+#undef M_PI
+const double M_PI = atan(1) * 4;
+const double M_1_PI = 1 / (atan(1) * 4);
 
 /******************************************************************
 * Hard-coded scene definition: the geometry is composed of spheres
@@ -242,22 +108,22 @@ Color Radiance(const Ray &ray, int depth, int E)
     int id = 0;
 
     if (!Intersect(ray, t, id))   /* No intersection with scene */
-        return BackgroundColor;
+        return Color(0.0, 0.0, 0.0);
 
     const Sphere &obj = spheres[id];
 
     Vector hitpoint = ray.org + ray.dir * t;    /* Intersection point */
-    Vector normal = (hitpoint - obj.position).Normalized();  /* Normal at intersection */
+    Vector normal = (hitpoint - obj.position).normalize();  /* Normal at intersection */
     Vector nl = normal;
 
     /* Obtain flipped normal, if object hit from inside */
-    if (normal.Dot(ray.dir) >= 0)
+    if (normal.dotProduct(ray.dir) >= 0)
         nl = nl*-1.0;
 
     Color col = obj.color;
 
     /* Maximum RGB reflectivity for Russian Roulette */
-    double p = col.Max();
+    double p = col.max();
 
     if (depth > 5 || !p)   /* After 5 bounces or if max reflectivity is zero */
     {
@@ -281,14 +147,14 @@ Color Radiance(const Ray &ray, int depth, int E)
         if(fabs(w.x) > .1)
             u = Vector(0.0, 1.0, 0.0);
         else
-            u = (Vector(1.0, 0.0, 0.0).Cross(w)).Normalized();
+            u = (Vector(1.0, 0.0, 0.0).crossProduct(w)).normalize();
 
-        Vector v = w.Cross(u);
+        Vector v = w.crossProduct(u);
 
         /* Random reflection vector d */
         Vector d = (u * cos(r1) * r2s +
                     v * sin(r1) * r2s +
-                    w * sqrt(1 - r2)).Normalized();
+                    w * sqrt(1 - r2)).normalize();
 
         /* Explicit computation of direct lighting */
         Vector e;
@@ -309,12 +175,12 @@ Color Radiance(const Ray &ray, int depth, int E)
             else
                 su = Vector(1.0, 0.0, 0.0);
 
-            su = (su.Cross(w)).Normalized();
-            Vector sv = sw.Cross(su);
+            su = (su.crossProduct(w)).normalize();
+            Vector sv = sw.crossProduct(su);
 
             /* Create random sample direction l towards spherical light source */
             double cos_a_max = sqrt(1.0 - sphere.radius * sphere.radius /
-                                    (hitpoint - sphere.position).Dot(hitpoint-sphere.position));
+                                    (hitpoint - sphere.position).dotProduct(hitpoint-sphere.position));
             double eps1 = drand48();
             double eps2 = drand48();
             double cos_a = 1.0 - eps1 + eps1 * cos_a_max;
@@ -323,7 +189,7 @@ Color Radiance(const Ray &ray, int depth, int E)
             Vector l = su * cos(phi) * sin_a +
                        sv * sin(phi) * sin_a +
                        sw * cos_a;
-            l = l.Normalized();
+            l = l.normalize();
 
             /* Shoot shadow ray, check if intersection is with light source */
             if (Intersect(Ray(hitpoint,l), t, id) && id==i)
@@ -331,26 +197,26 @@ Color Radiance(const Ray &ray, int depth, int E)
                 double omega = 2*M_PI * (1 - cos_a_max);
 
                 /* Add diffusely reflected light from light source; note constant BRDF 1/PI */
-                e = e + col.MultComponents(sphere.emission * l.Dot(nl) * omega) * M_1_PI;
+                e = e + col.multComponents(sphere.emission * l.dotProduct(nl) * omega) * M_1_PI;
             }
         }
 
         /* Return potential light emission, direct lighting, and indirect lighting (via
            recursive call for Monte-Carlo integration */
-        return obj.emission * E + e + col.MultComponents(Radiance(Ray(hitpoint,d), depth, 0));
+        return obj.emission * E + e + col.multComponents(Radiance(Ray(hitpoint,d), depth, 0));
     }
     else if (obj.refl == SPEC)
     {
         /* Return light emission mirror reflection (via recursive call using perfect
            reflection vector) */
         return obj.emission +
-            col.MultComponents(Radiance(Ray(hitpoint, ray.dir - normal * 2 * normal.Dot(ray.dir)),
+            col.multComponents(Radiance(Ray(hitpoint, ray.dir - normal * 2 * normal.dotProduct(ray.dir)),
                                depth, 1));
     }
 
     /* Otherwise object transparent, i.e. assumed dielectric glass material */
-    Ray reflRay (hitpoint, ray.dir - normal * 2 * normal.Dot(ray.dir));  /* Prefect reflection */
-    bool into = normal.Dot(nl) > 0;       /* Bool for checking if ray from outside going in */
+    Ray reflRay (hitpoint, ray.dir - normal * 2 * normal.dotProduct(ray.dir));  /* Prefect reflection */
+    bool into = normal.dotProduct(nl) > 0;       /* Bool for checking if ray from outside going in */
     double nc = 1;                        /* Index of refraction of air (approximately) */
     double nt = 1.5;                      /* Index of refraction of glass (approximately) */
     double nnt;
@@ -360,21 +226,21 @@ Color Radiance(const Ray &ray, int depth, int E)
     else
         nnt = nt/nc;
 
-    double ddn = ray.dir.Dot(nl);
+    double ddn = ray.dir.dotProduct(nl);
     double cos2t = 1 - nnt * nnt * (1 - ddn*ddn);
 
     /* Check for total internal reflection, if so only reflect */
     if (cos2t < 0)
-        return obj.emission + col.MultComponents( Radiance(reflRay, depth, 1));
+        return obj.emission + col.multComponents( Radiance(reflRay, depth, 1));
 
     /* Otherwise reflection and/or refraction occurs */
     Vector tdir;
 
     /* Determine transmitted ray direction for refraction */
     if(into)
-        tdir = (ray.dir * nnt - normal * (ddn * nnt + sqrt(cos2t))).Normalized();
+        tdir = (ray.dir * nnt - normal * (ddn * nnt + sqrt(cos2t))).normalize();
     else
-        tdir = (ray.dir * nnt + normal * (ddn * nnt + sqrt(cos2t))).Normalized();
+        tdir = (ray.dir * nnt + normal * (ddn * nnt + sqrt(cos2t))).normalize();
 
     /* Determine R0 for Schlick�s approximation */
     double a = nt - nc;
@@ -386,7 +252,7 @@ Color Radiance(const Ray &ray, int depth, int E)
     if(into)
         c = 1 + ddn;
     else
-        c = 1 - tdir.Dot(normal);
+        c = 1 - tdir.dotProduct(normal);
 
     /* Compute Schlick�s approximation of Fresnel equation */
     double Re = R0 + (1 - R0) *c*c*c*c*c;   /* Reflectance */
@@ -398,13 +264,13 @@ Color Radiance(const Ray &ray, int depth, int E)
     double TP = Tr / (1 - P);
 
     if (depth < 3)   /* Initially both reflection and trasmission */
-        return obj.emission + col.MultComponents(Radiance(reflRay, depth, 1) * Re +
+        return obj.emission + col.multComponents(Radiance(reflRay, depth, 1) * Re +
                                                  Radiance(Ray(hitpoint, tdir), depth, 1) * Tr);
     else             /* Russian Roulette */
         if (drand48() < P)
-            return obj.emission + col.MultComponents(Radiance(reflRay, depth, 1) * RP);
+            return obj.emission + col.multComponents(Radiance(reflRay, depth, 1) * RP);
         else
-            return obj.emission + col.MultComponents(Radiance(Ray(hitpoint,tdir), depth, 1) * TP);
+            return obj.emission + col.multComponents(Radiance(Ray(hitpoint,tdir), depth, 1) * TP);
 }
 
 
@@ -426,11 +292,11 @@ int main(int argc, char *argv[])
         samples = atoi(argv[1]);
 
     /* Set camera origin and viewing direction (negative z direction) */
-    Ray camera(Vector(50.0, 52.0, 295.6), Vector(0.0, -0.042612, -1.0).Normalized());
+    Ray camera(Vector(50.0, 52.0, 295.6), Vector(0.0, -0.042612, -1.0).normalize());
 
     /* Image edge vectors for pixel sampling */
     Vector cx = Vector(width * 0.5135 / height);
-    Vector cy = (cx.Cross(camera.dir)).Normalized() * 0.5135;
+    Vector cy = (cx.crossProduct(camera.dir)).normalize() * 0.5135;
 
     /* Final rendering */
     Image img(width, height);
@@ -480,7 +346,7 @@ int main(int argc, char *argv[])
                         /* Extend camera ray to start inside box */
                         Vector start = camera.org + dir * 130.0;
 
-                        dir = dir.Normalized();
+                        dir = dir.normalize();
 
                         /* Accumulate radiance */
                         accumulated_radiance = accumulated_radiance +
@@ -496,5 +362,5 @@ int main(int argc, char *argv[])
     }
     cout << endl;
 
-    img.Save(string("image.ppm"));
+    img.save(string("image.ppm"));
 }
