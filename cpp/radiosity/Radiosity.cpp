@@ -44,9 +44,6 @@
 #include "Triangle.h"
 #include "PatchTriangle.h"
 
-#undef M_PI
-const double M_PI = atan(1) * 4;
-
 using namespace std;
 using namespace std::chrono;
 

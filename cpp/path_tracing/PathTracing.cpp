@@ -34,10 +34,6 @@
 
 using namespace std;
 
-#undef M_PI
-const double M_PI = atan(1) * 4;
-const double M_1_PI = 1 / (atan(1) * 4);
-
 /******************************************************************
 * Hard-coded scene definition: the geometry is composed of spheres
 * (i.e. Cornell box walls are part of very large spheres).
