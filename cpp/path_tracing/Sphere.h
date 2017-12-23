@@ -12,17 +12,17 @@
 enum Refl_t { DIFF, SPEC, REFR };
 
 struct Sphere {
-    double radius;
-    Vector position;
-    Color emission, color;
-    Refl_t refl;
+  double radius;
+  Vector position;
+  Color emission, color;
+  Refl_t refl;
 
-    Sphere(double radius_, Vector position_, Vector emission_,
-           Vector color_, Refl_t refl_):
-           radius(radius_), position(position_), emission(emission_),
-           color(color_), refl(refl_) {}
+  Sphere(double radius_, Vector position_, Vector emission_,
+          Vector color_, Refl_t refl_):
+          radius(radius_), position(position_), emission(emission_),
+          color(color_), refl(refl_) {}
 
-    double Intersect(const Ray &ray) const;
+  double intersect(const Ray &ray) const;
 };
 
 #endif // __SPHERE_H__
