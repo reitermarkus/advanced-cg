@@ -1,6 +1,6 @@
-/../radiosity/Radiosity
-/../path_tracing/PathTracing
-/../radiosity/test/run
+cpp/radiosity/Radiosity
+cpp/path_tracing/PathTracing
+cpp/radiosity/test/run
 
 # Prerequisites
 *.d
