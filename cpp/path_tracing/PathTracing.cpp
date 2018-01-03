@@ -43,17 +43,17 @@ using namespace std;
 *   material
 *******************************************************************/
 Sphere spheres[] = {
-  Sphere( 1e5, Vector( 1e5  +1,      40.8,      81.6),  Vector(), Vector(.75,.25,.25), DIFF), /* Left wall */
-  Sphere( 1e5, Vector(-1e5 +99,      40.8,      81.6),  Vector(), Vector(.25,.25,.75), DIFF), /* Rght wall */
-  Sphere( 1e5, Vector(      50,      40.8,       1e5),  Vector(), Vector(.75,.75,.75), DIFF), /* Back wall */
-  Sphere( 1e5, Vector(      50,      40.8, -1e5 +170),  Vector(), Vector(),            DIFF), /* Front wall */
-  Sphere( 1e5, Vector(      50,       1e5,      81.6),  Vector(), Vector(.75,.75,.75), DIFF), /* Floor */
-  Sphere( 1e5, Vector(      50,-1e5 +81.6,      81.6),  Vector(), Vector(.75,.75,.75), DIFF), /* Ceiling */
+  Sphere(1e5, Vector( 1e5 +  1,        40.8,        81.6), Vector(), Vector(.75, .25, .25), DIFF), /* Left wall */
+  Sphere(1e5, Vector(-1e5 + 99,        40.8,        81.6), Vector(), Vector(.25, .25, .75), DIFF), /* Rght wall */
+  Sphere(1e5, Vector(       50,        40.8,        1e5),  Vector(), Vector(.75, .75, .75), DIFF), /* Back wall */
+  Sphere(1e5, Vector(       50,        40.8, -1e5 + 170),  Vector(), Vector(),            DIFF), /* Front wall */
+  Sphere(1e5, Vector(       50,         1e5,        81.6), Vector(), Vector(.75, .75, .75), DIFF), /* Floor */
+  Sphere(1e5, Vector(       50, -1e5 + 81.6,        81.6), Vector(), Vector(.75, .75, .75), DIFF), /* Ceiling */
 
-  Sphere(16.5, Vector(27, 16.5, 47), Vector(), Vector(1,1,1)*.999,  SPEC), /* Mirror sphere */
-  Sphere(16.5, Vector(73, 16.5, 78), Vector(), Vector(1,1,1)*.999,  REFR), /* Glas sphere */
+  Sphere(16.5, Vector(27, 16.5, 47), Vector(), Vector(1, 1, 1) * .999,  SPEC), /* Mirror sphere */
+  Sphere(16.5, Vector(73, 16.5, 78), Vector(), Vector(1, 1, 1) * .999,  REFR), /* Glas sphere */
 
-  Sphere( 1.5, Vector(50, 81.6-16.5, 81.6), Vector(4,4,4)*100, Vector(), DIFF), /* Light */
+  Sphere(1.5, Vector(50, 81.6 - 16.5, 81.6), Vector(4,4,4)*100, Vector(), DIFF), /* Light */
 };
 
 
@@ -109,7 +109,7 @@ Color radiance(const Ray &ray, int depth, int E) {
 
   /* Obtain flipped normal, if object hit from inside */
   if (normal.dotProduct(ray.dir) >= 0)
-    nl = nl*-1.0;
+    nl = -nl;
 
   Color col = obj.color;
 
@@ -118,10 +118,9 @@ Color radiance(const Ray &ray, int depth, int E) {
 
   /* After 5 bounces or if max reflectivity is zero */
   if (depth > 5 || !p) {
-    if (drand48() < p)            /* Russian Roulette */
-      col = col * (1/p);        /* Scale estimator to remain unbiased */
-    else
-      return obj.emission * E;  /* No further bounces, only return potential emission */
+    /* Russian Roulette */
+    if (drand48() >= p) return obj.emission * E; /* No further bounces, only return potential emission */
+    col = col * (1 / p); /* Scale estimator to remain unbiased */
   }
 
   if (obj.refl == DIFF) {
@@ -132,12 +131,7 @@ Color radiance(const Ray &ray, int depth, int E) {
 
     /* Set up local orthogonal coordinate system u,v,w on surface */
     Vector w = nl;
-    Vector u;
-
-    if(fabs(w.x) > .1)
-      u = Vector(0.0, 1.0, 0.0);
-    else
-      u = (Vector(1.0, 0.0, 0.0).crossProduct(w)).normalize();
+    Vector u = fabs(w.x) > .1 ? Vector(0.0, 1.0, 0.0) : Vector(1.0, 0.0, 0.0).crossProduct(w).normalize();
 
     Vector v = w.crossProduct(u);
 
@@ -148,7 +142,7 @@ Color radiance(const Ray &ray, int depth, int E) {
 
     /* Explicit computation of direct lighting */
     Vector e;
-    for (int i = 0; i < numSpheres; i ++) {
+    for (int i = 0; i < numSpheres; i++) {
       const Sphere &sphere = spheres[i];
       if (sphere.emission.x <= 0 && sphere.emission.y <= 0 && sphere.emission.z <= 0)
           continue; /* Skip objects that are not light sources */
@@ -157,12 +151,7 @@ Color radiance(const Ray &ray, int depth, int E) {
 
       /* Set up local orthogonal coordinate system su,sv,sw towards light source */
       Vector sw = sphere.position - hitpoint;
-      Vector su;
-
-      if(fabs(sw.x) > 0.1)
-        su = Vector(0.0, 1.0, 0.0);
-      else
-        su = Vector(1.0, 0.0, 0.0);
+      Vector su = fabs(sw.x) > 0.1 ? Vector(0.0, 1.0, 0.0) : Vector(1.0, 0.0, 0.0);
 
       su = (su.crossProduct(w)).normalize();
       Vector sv = sw.crossProduct(su);
@@ -184,7 +173,7 @@ Color radiance(const Ray &ray, int depth, int E) {
 
       /* Shoot shadow ray, check if intersection is with light source */
       if (intersect(Ray(hitpoint,l), t, id) && id==i) {
-        double omega = 2*M_PI * (1 - cos_a_max);
+        double omega = 2 * M_PI * (1 - cos_a_max);
 
         /* Add diffusely reflected light from light source; note constant BRDF 1/PI */
         e = e + col.multComponents(sphere.emission * l.dotProduct(nl) * omega) * M_1_PI;
@@ -194,8 +183,7 @@ Color radiance(const Ray &ray, int depth, int E) {
     /* Return potential light emission, direct lighting, and indirect lighting (via
         recursive call for Monte-Carlo integration */
     return obj.emission * E + e + col.multComponents(radiance(Ray(hitpoint,d), depth, 0));
-  }
-  else if (obj.refl == SPEC) {
+  } else if (obj.refl == SPEC) {
     /* Return light emission mirror reflection (via recursive call using perfect
         reflection vector) */
     return obj.emission +
@@ -204,23 +192,18 @@ Color radiance(const Ray &ray, int depth, int E) {
   }
 
   /* Otherwise object transparent, i.e. assumed dielectric glass material */
-  Ray reflRay (hitpoint, ray.dir - normal * 2 * normal.dotProduct(ray.dir));  /* Prefect reflection */
+  Ray reflRay (hitpoint, ray.dir - normal * 2 * normal.dotProduct(ray.dir)); /* Prefect reflection */
   bool into = normal.dotProduct(nl) > 0;       /* Bool for checking if ray from outside going in */
   double nc = 1;                        /* Index of refraction of air (approximately) */
   double nt = 1.5;                      /* Index of refraction of glass (approximately) */
-  double nnt;
-
-  if(into)      /* Set ratio depending on hit from inside or outside */
-    nnt = nc/nt;
-  else
-    nnt = nt/nc;
+  double nnt = into ? nc / nt : nt / nc; /* Set ratio depending on hit from inside or outside */
 
   double ddn = ray.dir.dotProduct(nl);
-  double cos2t = 1 - nnt * nnt * (1 - ddn*ddn);
+  double cos2t = 1 - nnt * nnt * (1 - ddn * ddn);
 
   /* Check for total internal reflection, if so only reflect */
   if (cos2t < 0)
-    return obj.emission + col.multComponents( radiance(reflRay, depth, 1));
+    return obj.emission + col.multComponents(radiance(reflRay, depth, 1));
 
   /* Otherwise reflection and/or refraction occurs */
   Vector tdir;
@@ -231,10 +214,10 @@ Color radiance(const Ray &ray, int depth, int E) {
   else
     tdir = (ray.dir * nnt + normal * (ddn * nnt + sqrt(cos2t))).normalize();
 
-  /* Determine R0 for Schlick�s approximation */
+  /* Determine R0 for Schlick's approximation */
   double a = nt - nc;
   double b = nt + nc;
-  double R0 = a*a / (b*b);
+  double R0 = a * a / (b * b);
 
   /* Cosine of correct angle depending on outside/inside */
   double c;
@@ -243,8 +226,8 @@ Color radiance(const Ray &ray, int depth, int E) {
   else
     c = 1 - tdir.dotProduct(normal);
 
-  /* Compute Schlick�s approximation of Fresnel equation */
-  double Re = R0 + (1 - R0) *c*c*c*c*c;   /* Reflectance */
+  /* Compute Schlick's approximation of Fresnel equation */
+  double Re = R0 + (1 - R0) * c * c * c * c * c;   /* Reflectance */
   double Tr = 1 - Re;                     /* Transmittance */
 
   /* Probability for selecting reflectance or transmittance */
@@ -252,14 +235,13 @@ Color radiance(const Ray &ray, int depth, int E) {
   double RP = Re / P;         /* Scaling factors for unbiased estimator */
   double TP = Tr / (1 - P);
 
-  if (depth < 3)   /* Initially both reflection and trasmission */
+  if (depth < 3) /* Initially both reflection and trasmission */
     return obj.emission + col.multComponents(radiance(reflRay, depth, 1) * Re +
                                                 radiance(Ray(hitpoint, tdir), depth, 1) * Tr);
-  else             /* Russian Roulette */
-    if (drand48() < P)
-      return obj.emission + col.multComponents(radiance(reflRay, depth, 1) * RP);
-    else
-      return obj.emission + col.multComponents(radiance(Ray(hitpoint,tdir), depth, 1) * TP);
+
+  /* Russian Roulette */
+  if (drand48() < P) return obj.emission + col.multComponents(radiance(reflRay, depth, 1) * RP);
+  return obj.emission + col.multComponents(radiance(Ray(hitpoint, tdir), depth, 1) * TP);
 }
 
 
@@ -290,7 +272,7 @@ int main(int argc, char *argv[]) {
   Image img(width, height);
 
   /* Loop over image rows */
-  for (int y = 0; y < height; y ++) {
+  for (int y = 0; y < height; y++) {
     cout << "\rRendering (" << samples * 4 << " spp) " << (100.0 * y / (height - 1)) << "%     ";
     srand(y * y * y);
 
@@ -310,22 +292,13 @@ int main(int argc, char *argv[]) {
             const double r2 = 2.0 * drand48();
 
             /* Transform uniform into non-uniform filter samples */
-            double dx;
-            if (r1 < 1.0)
-              dx = sqrt(r1) - 1.0;
-            else
-              dx = 1.0 - sqrt(2.0 - r1);
-
-            double dy;
-            if (r2 < 1.0)
-              dy = sqrt(r2) - 1.0;
-            else
-              dy = 1.0 - sqrt(2.0 - r2);
+            double dx = r1 < 1.0 ? sqrt(r1) - 1.0 : 1.0 - sqrt(2.0 - r1);
+            double dy = r2 < 1.0 ? sqrt(r2) - 1.0 : 1.0 - sqrt(2.0 - r2);
 
             /* Ray direction into scene from camera through sample */
             Vector dir = cx * ((x + (sx + 0.5 + dx) / 2.0) / width - 0.5) +
-                          cy * ((y + (sy + 0.5 + dy) / 2.0) / height - 0.5) +
-                          camera.dir;
+                         cy * ((y + (sy + 0.5 + dy) / 2.0) / height - 0.5) +
+                         camera.dir;
 
             /* Extend camera ray to start inside box */
             Vector start = camera.org + dir * 130.0;
@@ -334,7 +307,7 @@ int main(int argc, char *argv[]) {
 
             /* Accumulate radiance */
             accumulated_radiance = accumulated_radiance +
-              radiance( Ray(start, dir), 0, 1) / samples;
+              radiance(Ray(start, dir), 0, 1) / samples;
           }
 
           accumulated_radiance = accumulated_radiance.clamp() * 0.25;

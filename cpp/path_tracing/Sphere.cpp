@@ -6,20 +6,16 @@ double Sphere::intersect(const Ray &ray) const {
   Vector op = position - ray.org;
   double eps = 1e-4;
   double b = op.dotProduct(ray.dir);
-  double radicant = b*b - op.dotProduct(op) + radius*radius;
-  if (radicant < 0.0)
-      return 0.0;      /* No intersection */
-  else
-      radicant = sqrt(radicant);
+  double radicant = b*b - op.dotProduct(op) + radius * radius;
 
-  double t;
-  t = b - radicant;    /* Check smaller root first */
-  if(t > eps)
-      return t;
+  if (radicant < 0.0) return 0.0; /* No intersection */
+  radicant = sqrt(radicant);
+
+  double t = b - radicant;    /* Check smaller root first */
+  if (t > eps) return t;
 
   t = b + radicant;
-  if(t > eps)          /* Check second root */
-      return t;
+  if (t > eps) return t; /* Check second root */
 
-  return 0.0;          /* No intersection in ray direction */
+  return 0.0; /* No intersection in ray direction */
 }

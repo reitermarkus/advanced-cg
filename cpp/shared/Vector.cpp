@@ -17,6 +17,10 @@ Vector Vector::operator-(const Vector &b) const {
   return Vector(x - b.x, y - b.y, z - b.z);
 }
 
+Vector Vector::operator-() const {
+  return Vector(-x, -y, -z);
+}
+
 Vector& Vector::operator/=(double c) {
   x /= c;
   y /= c;

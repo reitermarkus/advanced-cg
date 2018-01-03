@@ -14,6 +14,7 @@ struct Vector {
 
     Vector& operator+=(const Vector &b);
     Vector operator-(const Vector &b) const;
+    Vector operator-() const;
     Vector& operator/=(double c);
     Vector operator*(double c) const;
     bool operator==(const Vector &b) const;
