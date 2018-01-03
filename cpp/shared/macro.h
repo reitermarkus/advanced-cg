@@ -7,7 +7,13 @@
 
 #undef M_PI
 const double M_PI = atan(1) * 4;
-#undef M_1_PI
-const double M_1_PI = 1 / (atan(1) * 4);
+
+double non_uniform_filter_sample() {
+  // Get uniform filter sample.
+  const double r = 2.0 * drand48();
+
+  // Transform uniform into non-uniform filter sample.
+  return r < 1.0 ? (sqrt(r) - 1.0) : (1.0 - sqrt(2.0 - r));
+}
 
 #endif // __MACRO_H__

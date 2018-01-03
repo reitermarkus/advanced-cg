@@ -175,8 +175,8 @@ Color radiance(const Ray &ray, int depth, int E) {
       if (intersect(Ray(hitpoint,l), t, id) && id==i) {
         double omega = 2 * M_PI * (1 - cos_a_max);
 
-        /* Add diffusely reflected light from light source; note constant BRDF 1/PI */
-        e = e + col.multComponents(sphere.emission * l.dotProduct(nl) * omega) * M_1_PI;
+        /* Add diffusely reflected light from light source; note constant BRDF 1 / π */
+        e += col.multComponents(sphere.emission * l.dotProduct(nl) * omega) / M_PI;
       }
     }
 
@@ -287,13 +287,9 @@ int main(int argc, char *argv[]) {
           Color accumulated_radiance = Color();
 
           /* Compute radiance at subpixel using multiple samples */
-          for (int s = 0; s < samples; s ++) {
-            const double r1 = 2.0 * drand48();
-            const double r2 = 2.0 * drand48();
-
-            /* Transform uniform into non-uniform filter samples */
-            double dx = r1 < 1.0 ? sqrt(r1) - 1.0 : 1.0 - sqrt(2.0 - r1);
-            double dy = r2 < 1.0 ? sqrt(r2) - 1.0 : 1.0 - sqrt(2.0 - r2);
+          for (int s = 0; s < samples; s++) {
+            double dx = non_uniform_filter_sample();
+            double dy = non_uniform_filter_sample();
 
             /* Ray direction into scene from camera through sample */
             Vector dir = cx * ((x + (sx + 0.5 + dx) / 2.0) / width - 0.5) +

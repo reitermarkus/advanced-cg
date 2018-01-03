@@ -440,14 +440,8 @@ int main(void) {
 
           /* Computes radiance at subpixel using multiple samples */
           for (int s = 0; s < samples; s++) {
-            auto nu_filter_samples = [] {
-              /* Transform uniform into non-uniform filter samples */
-              auto r = 2.0 * drand48();
-              return r < 1.0 ? (sqrt(r) - 1.0) : (1.0 - sqrt(2.0 - r));
-            };
-
-            double dx = nu_filter_samples();
-            double dy = nu_filter_samples();
+            double dx = non_uniform_filter_sample();
+            double dy = non_uniform_filter_sample();
 
             /* Ray direction into scene from camera through sample */
             Vector dir = cx * ((x + (sx + 0.5 + dx) / 2.0) / width - 0.5) +
