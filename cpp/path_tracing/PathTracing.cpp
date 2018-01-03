@@ -66,13 +66,14 @@ bool intersect(const Ray &ray, double &t, int &id) {
   const int n = int(sizeof(spheres) / sizeof(Sphere));
   t = 1e20;
 
-  for (int i = 0; i < n; i ++) {
+  for (int i = 0; i < n; i++) {
     double d = spheres[i].intersect(ray);
     if (d > 0.0  && d < t) {
       t = d;
       id = i;
     }
   }
+
   return t < 1e20;
 }
 
@@ -164,7 +165,7 @@ Color radiance(const Ray &ray, int depth, int E) {
       double eps2 = drand48();
       double cos_a = 1.0 - eps1 + eps1 * cos_a_max;
       double sin_a = sqrt(1.0 - cos_a * cos_a);
-      double phi = 2.0*M_PI * eps2;
+      double phi = 2.0 * M_PI * eps2;
       Vector l = su * cos(phi) * sin_a +
                   sv * sin(phi) * sin_a +
                   sw * cos_a;
@@ -172,7 +173,7 @@ Color radiance(const Ray &ray, int depth, int E) {
       l = l.normalize();
 
       /* Shoot shadow ray, check if intersection is with light source */
-      if (intersect(Ray(hitpoint,l), t, id) && id==i) {
+      if (intersect(Ray(hitpoint, l), t, id) && id == i) {
         double omega = 2 * M_PI * (1 - cos_a_max);
 
         /* Add diffusely reflected light from light source; note constant BRDF 1 / π */
@@ -182,7 +183,7 @@ Color radiance(const Ray &ray, int depth, int E) {
 
     /* Return potential light emission, direct lighting, and indirect lighting (via
         recursive call for Monte-Carlo integration */
-    return obj.emission * E + e + col.multComponents(radiance(Ray(hitpoint,d), depth, 0));
+    return obj.emission * E + e + col.multComponents(radiance(Ray(hitpoint, d), depth, 0));
   } else if (obj.refl == SPEC) {
     /* Return light emission mirror reflection (via recursive call using perfect
         reflection vector) */
@@ -220,11 +221,7 @@ Color radiance(const Ray &ray, int depth, int E) {
   double R0 = a * a / (b * b);
 
   /* Cosine of correct angle depending on outside/inside */
-  double c;
-  if(into)
-    c = 1 + ddn;
-  else
-    c = 1 - tdir.dotProduct(normal);
+  double c = into ? 1 + ddn : 1 - tdir.dotProduct(normal);
 
   /* Compute Schlick's approximation of Fresnel equation */
   double Re = R0 + (1 - R0) * c * c * c * c * c;   /* Reflectance */
@@ -278,12 +275,12 @@ int main(int argc, char *argv[]) {
 
     /* Loop over row pixels */
     #pragma omp parallel for
-    for (int x = 0; x < width; x ++) {
+    for (int x = 0; x < width; x++) {
       img.setColor(x, y, Color());
 
       /* 2x2 subsampling per pixel */
-      for (int sy = 0; sy < 2; sy ++) {
-        for (int sx = 0; sx < 2; sx ++) {
+      for (int sy = 0; sy < 2; sy++) {
+        for (int sx = 0; sx < 2; sx++) {
           Color accumulated_radiance = Color();
 
           /* Compute radiance at subpixel using multiple samples */
