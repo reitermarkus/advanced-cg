@@ -43,15 +43,15 @@ using namespace std;
 *   material
 *******************************************************************/
 Sphere spheres[] = {
-  Sphere(1e5, Vector( 1e5 +  1,        40.8,        81.6), Vector(), Vector(.75, .25, .25), DIFF), /* Left wall */
-  Sphere(1e5, Vector(-1e5 + 99,        40.8,        81.6), Vector(), Vector(.25, .25, .75), DIFF), /* Rght wall */
-  Sphere(1e5, Vector(       50,        40.8,        1e5),  Vector(), Vector(.75, .75, .75), DIFF), /* Back wall */
+  Sphere(1e5, Vector( 1e5 +  1,        40.8,        81.6), Vector(), Vector(0.75, 0.25, 0.25), DIFF), /* Left wall */
+  Sphere(1e5, Vector(-1e5 + 99,        40.8,        81.6), Vector(), Vector(0.25, .25, 0.75), DIFF), /* Rght wall */
+  Sphere(1e5, Vector(       50,        40.8,        1e5),  Vector(), Vector(0.75, .75, 0.75), DIFF), /* Back wall */
   Sphere(1e5, Vector(       50,        40.8, -1e5 + 170),  Vector(), Vector(),            DIFF), /* Front wall */
-  Sphere(1e5, Vector(       50,         1e5,        81.6), Vector(), Vector(.75, .75, .75), DIFF), /* Floor */
-  Sphere(1e5, Vector(       50, -1e5 + 81.6,        81.6), Vector(), Vector(.75, .75, .75), DIFF), /* Ceiling */
+  Sphere(1e5, Vector(       50,         1e5,        81.6), Vector(), Vector(0.75, 0.75, 0.75), DIFF), /* Floor */
+  Sphere(1e5, Vector(       50, -1e5 + 81.6,        81.6), Vector(), Vector(0.75, 0.75, 0.75), DIFF), /* Ceiling */
 
-  Sphere(16.5, Vector(27, 16.5, 47), Vector(), Vector(1, 1, 1) * .999,  SPEC), /* Mirror sphere */
-  Sphere(16.5, Vector(73, 16.5, 78), Vector(), Vector(1, 1, 1) * .999,  REFR), /* Glas sphere */
+  Sphere(16.5, Vector(27, 16.5, 47), Vector(), Vector(1, 1, 1) * 0.999,  SPEC), /* Mirror sphere */
+  Sphere(16.5, Vector(73, 16.5, 78), Vector(), Vector(1, 1, 1) * 0.999,  REFR), /* Glas sphere */
 
   Sphere(1.5, Vector(50, 81.6 - 16.5, 81.6), Vector(4,4,4)*100, Vector(), DIFF), /* Light */
 };
@@ -87,7 +87,7 @@ bool intersect(const Ray &ray, double &t, int &id) {
 * (possibly via specular reflection, refraction), controlled by
 * parameter E = 0/1;
 * on diffuse surfaces light sources are explicitely sampled;
-* for transparent objects, Schlick�s approximation is employed;
+* for transparent objects, Schlick's approximation is employed;
 * for first 3 bounces obtain reflected and refracted component,
 * afterwards one of the two is chosen randomly
 *******************************************************************/
@@ -120,7 +120,9 @@ Color radiance(const Ray &ray, int depth, int E) {
   /* After 5 bounces or if max reflectivity is zero */
   if (depth > 5 || !p) {
     /* Russian Roulette */
-    if (drand48() >= p) return obj.emission * E; /* No further bounces, only return potential emission */
+    if (drand48() >= p)
+      return obj.emission * E; /* No further bounces, only return potential emission */
+
     col = col * (1 / p); /* Scale estimator to remain unbiased */
   }
 
@@ -132,7 +134,7 @@ Color radiance(const Ray &ray, int depth, int E) {
 
     /* Set up local orthogonal coordinate system u,v,w on surface */
     Vector w = nl;
-    Vector u = fabs(w.x) > .1 ? Vector(0.0, 1.0, 0.0) : Vector(1.0, 0.0, 0.0).crossProduct(w).normalize();
+    Vector u = fabs(w.x) > 0.1 ? Vector(0.0, 1.0, 0.0) : Vector(1.0, 0.0, 0.0).crossProduct(w).normalize();
 
     Vector v = w.crossProduct(u);
 
@@ -228,7 +230,7 @@ Color radiance(const Ray &ray, int depth, int E) {
   double Tr = 1 - Re;                     /* Transmittance */
 
   /* Probability for selecting reflectance or transmittance */
-  double P = .25 + .5 * Re;
+  double P = 0.25 + 0.5 * Re;
   double RP = Re / P;         /* Scaling factors for unbiased estimator */
   double TP = Tr / (1 - P);
 
@@ -237,7 +239,9 @@ Color radiance(const Ray &ray, int depth, int E) {
                                                 radiance(Ray(hitpoint, tdir), depth, 1) * Tr);
 
   /* Russian Roulette */
-  if (drand48() < P) return obj.emission + col.multComponents(radiance(reflRay, depth, 1) * RP);
+  if (drand48() < P)
+    return obj.emission + col.multComponents(radiance(reflRay, depth, 1) * RP);
+
   return obj.emission + col.multComponents(radiance(Ray(hitpoint, tdir), depth, 1) * TP);
 }
 
