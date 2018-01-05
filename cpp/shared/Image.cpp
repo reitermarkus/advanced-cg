@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <cstddef>
 
+using namespace std::literals::string_literals;
+
 Image::Image(size_t _w, size_t _h) : width(_w), height(_h) {
   pixels = new Color[width * height];
 }
@@ -32,7 +34,11 @@ static byte toByte(double x) {
 // Save image in binary PPM format.
 void Image::save(const string &filename) {
   ofstream file;
-  file.open(filename, ios::out | ios::binary);
+
+  if (filename.find(".ppm") != string::npos)
+    file.open(filename, ios::out | ios::binary);
+  else
+    file.open(filename + ".ppm"s, ios::out | ios::binary);
 
   file << "P6" << endl;
   file << width << " " << height << endl;

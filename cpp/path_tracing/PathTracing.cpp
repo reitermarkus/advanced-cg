@@ -316,5 +316,5 @@ int main(int argc, char *argv[]) {
   }
 
   cout << endl;
-  img.save("image.ppm");
+  img.save("image");
 }
