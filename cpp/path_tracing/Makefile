@@ -44,4 +44,4 @@ clean:
 	$(RM) $(TARGET) $(TARGET_TEST) *.o */*.o ../shared/*.o
 
 run: all
-	time ./$(TARGET)
+	time ./$(TARGET) 1 spheres

@@ -34,6 +34,8 @@
 
 using namespace std;
 
+static bool isSphere = true;
+
 /******************************************************************
 * Hard-coded scene definition: the geometry is composed of spheres
 * (i.e. Cornell box walls are part of very large spheres).
@@ -259,8 +261,20 @@ int main(int argc, char *argv[]) {
   int height = 768;
   int samples = 1;
 
-  if(argc == 2)
-    samples = atoi(argv[1]);
+  switch (argc) {
+    case 2:
+      samples = atoi(argv[1]);
+      break;
+    case 3:
+      auto choice = string(argv[2]);
+
+      if(choice.compare("tris") == 0)
+        isSphere = false;
+
+      if(choice.compare("spheres") == 0)
+        isSphere = true;
+      break;
+  }
 
   /* Set camera origin and viewing direction (negative z direction) */
   Ray camera(Vector(50.0, 52.0, 295.6), Vector(0.0, -0.042612, -1.0).normalize());
