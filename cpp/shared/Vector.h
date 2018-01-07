@@ -24,15 +24,13 @@ struct Vector {
     friend Vector operator*(double c, const Vector &b) { return b * c; }
     friend Vector operator/(Vector a, double c) { return a /= c; }
 
-    Vector entrywiseProduct(const Vector &b) const;
-
     double lengthSquared() const;
     double length() const;
     double distance(const Vector &b) const;
     Vector normalize() const;
     double dotProduct(const Vector &b) const;
     Vector crossProduct(const Vector &b) const;
-    Vector multComponents(const Vector &b) const;
+    Vector entrywiseProduct(const Vector &b) const;
     Vector& clamp();
     double max() const;
 

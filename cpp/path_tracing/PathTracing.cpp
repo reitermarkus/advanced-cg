@@ -182,18 +182,18 @@ Color radiance(const Ray &ray, int depth, int E) {
         double omega = 2 * M_PI * (1 - cos_a_max);
 
         /* Add diffusely reflected light from light source; note constant BRDF 1 / π */
-        e += col.multComponents(sphere.emission * l.dotProduct(nl) * omega) / M_PI;
+        e += col.entrywiseProduct(sphere.emission * l.dotProduct(nl) * omega) / M_PI;
       }
     }
 
     /* Return potential light emission, direct lighting, and indirect lighting (via
         recursive call for Monte-Carlo integration */
-    return obj.emission * E + e + col.multComponents(radiance(Ray(hitpoint, d), depth, 0));
+    return obj.emission * E + e + col.entrywiseProduct(radiance(Ray(hitpoint, d), depth, 0));
   } else if (obj.refl == SPEC) {
     /* Return light emission mirror reflection (via recursive call using perfect
         reflection vector) */
     return obj.emission +
-      col.multComponents(radiance(Ray(hitpoint, ray.dir - normal * 2 * normal.dotProduct(ray.dir)),
+      col.entrywiseProduct(radiance(Ray(hitpoint, ray.dir - normal * 2 * normal.dotProduct(ray.dir)),
                             depth, 1));
   }
 
@@ -209,7 +209,7 @@ Color radiance(const Ray &ray, int depth, int E) {
 
   /* Check for total internal reflection, if so only reflect */
   if (cos2t < 0)
-    return obj.emission + col.multComponents(radiance(reflRay, depth, 1));
+    return obj.emission + col.entrywiseProduct(radiance(reflRay, depth, 1));
 
   /* Otherwise reflection and/or refraction occurs */
   Vector tdir;
@@ -238,14 +238,14 @@ Color radiance(const Ray &ray, int depth, int E) {
   double TP = Tr / (1 - P);
 
   if (depth < 3) /* Initially both reflection and trasmission */
-    return obj.emission + col.multComponents(radiance(reflRay, depth, 1) * Re +
+    return obj.emission + col.entrywiseProduct(radiance(reflRay, depth, 1) * Re +
                                                 radiance(Ray(hitpoint, tdir), depth, 1) * Tr);
 
   /* Russian Roulette */
   if (drand48() < P)
-    return obj.emission + col.multComponents(radiance(reflRay, depth, 1) * RP);
+    return obj.emission + col.entrywiseProduct(radiance(reflRay, depth, 1) * RP);
 
-  return obj.emission + col.multComponents(radiance(Ray(hitpoint, tdir), depth, 1) * TP);
+  return obj.emission + col.entrywiseProduct(radiance(Ray(hitpoint, tdir), depth, 1) * TP);
 }
 
 

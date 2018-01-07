@@ -81,10 +81,6 @@ Vector Vector::crossProduct(const Vector &b) const {
   );
 }
 
-Vector Vector::multComponents(const Vector &b) const {
-  return Vector(x * b.x, y * b.y, z * b.z);
-}
-
 Vector& Vector::clamp() {
   x = std::clamp(x, 0.0, 1.0);
   y = std::clamp(y, 0.0, 1.0);
