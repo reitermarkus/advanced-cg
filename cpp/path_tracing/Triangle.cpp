@@ -2,7 +2,7 @@
 
 Triangle::Triangle(const Vector &a_, const Vector &b_,
           const Vector &c_, const Color &emission_, const Color &color_)
-          : Trigonometrical(color_, emission_), a(a_), b(b_), c(c_) {}
+          : SceneObject(color_, emission_), a(a_), b(b_), c(c_) {}
 
 double Triangle::intersect(const Ray &ray) {
   static const double EPSILON = numeric_limits<double>::epsilon();

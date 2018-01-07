@@ -1,9 +1,9 @@
 #ifndef __TRIANGLE_H__
 #define __TRIANGLE_H__
 
-#include "Trigonometrical.h"
+#include "SceneObject.h"
 
-struct Triangle: public Trigonometrical {
+struct Triangle: public SceneObject {
   Vector a, b, c;
 
   Triangle(const Vector &a_, const Vector &b_, const Vector &c_,

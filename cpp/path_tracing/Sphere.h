@@ -4,7 +4,7 @@
 #include "../shared/Vector.h"
 #include "../shared/Ray.h"
 
-#include "Trigonometrical.h"
+#include "SceneObject.h"
 
 /*------------------------------------------------------------------
 | Scene objects are spheres; material either perfectly diffuse,
@@ -13,7 +13,7 @@
 ------------------------------------------------------------------*/
 enum Refl_t { DIFF, SPEC, REFR };
 
-struct Sphere : public Trigonometrical {
+struct Sphere : public SceneObject {
   double radius;
   Vector position;
   Refl_t refl;
