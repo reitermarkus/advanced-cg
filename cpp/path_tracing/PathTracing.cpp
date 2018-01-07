@@ -139,7 +139,7 @@ Color radiance(const Ray &ray, int depth, int E) {
     if (normal.dotProduct(ray.dir) >= 0)
       nl = -nl;
   } else {
-    const Triangle* tri = (const Triangle*) obj;
+    const Triangle* tri = static_cast<const Triangle*>(obj);
     normal = tri->normal;
     nl = normal;
   }
@@ -187,7 +187,7 @@ Color radiance(const Ray &ray, int depth, int E) {
         continue;
       }
 
-      const Sphere* sphere = (const Sphere*) lightSource;
+      const Sphere* sphere = static_cast<const Sphere*>(lightSource);
 
       /* Randomly sample spherical light source from surface intersection */
 
