@@ -1,5 +1,18 @@
 #include "Triangle.h"
 
+
+static Vector calculateFaceNormal(const Vector a, const Vector b, const Vector c) {
+  Vector u = b - a;
+  Vector v = c - a;
+
+  return u.crossProduct(v).normalize();
+}
+
+Triangle::Triangle(const Vector &a_, const Vector &b_, const Vector &c_, const Color &emission_, const Color &color_, const Refl_t refl_)
+          : SceneObject(a_, color_, emission_, refl_), a(a_), b(b_), c(c_) {
+  this->normal = calculateFaceNormal(a, b, c);
+}
+
 double Triangle::intersect(const Ray &ray) const {
   static const double EPSILON = numeric_limits<double>::epsilon();
 
