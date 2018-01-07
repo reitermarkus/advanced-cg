@@ -6,10 +6,12 @@
 
 struct SceneObject {
   Color color, emission;
+  const bool isSphere;
 
-  SceneObject(const Vector color_, const Vector emission_) : color(color_), emission(emission_) { }
+  SceneObject(const Vector color_, const Vector emission_, const bool isSphere_ = false) : color(color_), emission(emission_), isSphere(isSphere_) {}
 
-  virtual double intersect(const Ray &ray) = 0;
+  virtual double intersect(const Ray &ray) const = 0;
+
 };
 
 #endif // __SCENE_OBJECT_H__

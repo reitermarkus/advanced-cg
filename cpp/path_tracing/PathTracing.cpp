@@ -45,7 +45,7 @@ static bool isSphere = true;
 * - emitted light (light sources), surface reflectivity (~color),
 *   material
 *******************************************************************/
-vector<Sphere> spheres = {
+vector<Sphere> objects = {
   Sphere(1e5, Vector( 1e5 +  1,        40.8,        81.6), Vector(), Vector(0.75, 0.25, 0.25), DIFF), /* Left wall */
   Sphere(1e5, Vector(-1e5 + 99,        40.8,        81.6), Vector(), Vector(0.25, .25, 0.75), DIFF), /* Rght wall */
   Sphere(1e5, Vector(       50,        40.8,        1e5),  Vector(), Vector(0.75, .75, 0.75), DIFF), /* Back wall */
@@ -66,11 +66,11 @@ vector<Sphere> spheres = {
 * of intersection and id of intersected object
 *******************************************************************/
 bool intersect(const Ray &ray, double &t, int &id) {
-  const int n = spheres.size();
+  const int n = objects.size();
   t = 1e20;
 
   for (int i = 0; i < n; i++) {
-    double d = spheres[i].intersect(ray);
+    double d = objects[i].intersect(ray);
     if (d > 0.0  && d < t) {
       t = d;
       id = i;
@@ -97,7 +97,7 @@ bool intersect(const Ray &ray, double &t, int &id) {
 Color radiance(const Ray &ray, int depth, int E) {
   depth++;
 
-  int numSpheres = spheres.size();
+  int numSpheres = objects.size();
 
   double t;
   int id = 0;
@@ -105,7 +105,7 @@ Color radiance(const Ray &ray, int depth, int E) {
   if (!intersect(ray, t, id))   /* No intersection with scene */
     return Color(0.0, 0.0, 0.0);
 
-  const Sphere &obj = spheres[id];
+  const Sphere &obj = objects[id];
 
   Vector hitpoint = ray.org + ray.dir * t;    /* Intersection point */
   Vector normal = (hitpoint - obj.position).normalize();  /* Normal at intersection */
@@ -149,9 +149,16 @@ Color radiance(const Ray &ray, int depth, int E) {
     /* Explicit computation of direct lighting */
     Vector e;
     for (int i = 0; i < numSpheres; i++) {
-      const Sphere &sphere = spheres[i];
-      if (sphere.emission.x <= 0 && sphere.emission.y <= 0 && sphere.emission.z <= 0)
+      const SceneObject &obj = objects[i];
+      if (obj.emission.x <= 0 && obj.emission.y <= 0 && obj.emission.z <= 0)
           continue; /* Skip objects that are not light sources */
+
+      if (!obj.isSphere) {
+        cerr << "Warning: Only spherical light sources are implemented." << endl;
+        continue;
+      }
+
+      const Sphere &sphere = (const Sphere&) obj;
 
       /* Randomly sample spherical light source from surface intersection */
 

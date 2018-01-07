@@ -18,10 +18,11 @@ struct Sphere : public SceneObject {
   Vector position;
   Refl_t refl;
 
-  Sphere(double radius_, Vector position_, Vector emission_,
-          Vector color_, Refl_t refl_);
+  Sphere(double radius_, Vector position_, Vector emission_, Vector color_, Refl_t refl_) :
+    SceneObject(color_, emission_, true),
+    radius(radius_), position(position_), refl(refl_) {}
 
-  double intersect(const Ray &ray) override;
+  double intersect(const Ray &ray) const override;
 };
 
 #endif // __SPHERE_H__

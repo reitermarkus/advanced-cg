@@ -9,7 +9,7 @@ struct Triangle: public SceneObject {
   Triangle(const Vector &a_, const Vector &b_, const Vector &c_,
            const Color &emission, const Color &color);
 
-  double intersect(const Ray &ray) override;
+  double intersect(const Ray &ray) const override;
 };
 
 #endif // __TRIANGLE_H__

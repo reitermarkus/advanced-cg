@@ -1,10 +1,6 @@
 #include "Sphere.h"
 
-Sphere::Sphere(double radius_, Vector position_, Vector emission_,
-          Vector color_, Refl_t refl_) : SceneObject(color_, emission_),
-          radius(radius_), position(position_), refl(refl_) {}
-
-double Sphere::intersect(const Ray &ray) {
+double Sphere::intersect(const Ray &ray) const {
   /* Check for ray-sphere intersection by solving for t:
       t^2*d.d + 2*t*(o-p).d + (o-p).(o-p) - R^2 = 0 */
   Vector op = position - ray.org;
