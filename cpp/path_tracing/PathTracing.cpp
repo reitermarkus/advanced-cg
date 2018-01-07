@@ -45,7 +45,7 @@ static bool isSphere = true;
 * - emitted light (light sources), surface reflectivity (~color),
 *   material
 *******************************************************************/
-vector<Sphere> objects = {
+vector<Sphere> spheres = {
   Sphere(1e5, Vector( 1e5 +  1,        40.8,        81.6), Vector(), Vector(0.75, 0.25, 0.25), DIFF), /* Left wall */
   Sphere(1e5, Vector(-1e5 + 99,        40.8,        81.6), Vector(), Vector(0.25, .25, 0.75), DIFF), /* Rght wall */
   Sphere(1e5, Vector(       50,        40.8,        1e5),  Vector(), Vector(0.75, .75, 0.75), DIFF), /* Back wall */
@@ -59,7 +59,7 @@ vector<Sphere> objects = {
   Sphere(1.5, Vector(50, 81.6 - 16.5, 81.6), Vector(4, 4, 4) * 100, Vector(), DIFF), /* Light */
 };
 
-vector<const SceneObject*> sceneObjects = vector<const SceneObject*>();
+vector<const SceneObject*> objects = vector<const SceneObject*>();
 
 /******************************************************************
 * Check for closest intersection of a ray with the scene;
@@ -67,11 +67,11 @@ vector<const SceneObject*> sceneObjects = vector<const SceneObject*>();
 * of intersection and id of intersected object
 *******************************************************************/
 bool intersect(const Ray &ray, double &t, int &id) {
-  const int n = sceneObjects.size();
+  const int n = objects.size();
   t = 1e20;
 
   for (int i = 0; i < n; i++) {
-    double d = sceneObjects[i]->intersect(ray);
+    double d = objects[i]->intersect(ray);
     if (d > 0.0  && d < t) {
       t = d;
       id = i;
@@ -106,17 +106,17 @@ Color radiance(const Ray &ray, int depth, int E) {
   if (!intersect(ray, t, id))   /* No intersection with scene */
     return Color(0.0, 0.0, 0.0);
 
-  const Sphere &obj = objects[id];
+  const Sphere* obj = (const Sphere*) objects[id];
 
   Vector hitpoint = ray.org + ray.dir * t;    /* Intersection point */
-  Vector normal = (hitpoint - obj.position).normalize();  /* Normal at intersection */
+  Vector normal = (hitpoint - obj->position).normalize();  /* Normal at intersection */
   Vector nl = normal;
 
   /* Obtain flipped normal, if object hit from inside */
   if (normal.dotProduct(ray.dir) >= 0)
     nl = -nl;
 
-  Color col = obj.color;
+  Color col = obj->color;
 
   /* Maximum RGB reflectivity for Russian Roulette */
   double p = col.max();
@@ -125,12 +125,12 @@ Color radiance(const Ray &ray, int depth, int E) {
   if (depth > 5 || !p) {
     /* Russian Roulette */
     if (drand48() >= p)
-      return obj.emission * E; /* No further bounces, only return potential emission */
+      return obj->emission * E; /* No further bounces, only return potential emission */
 
     col = col * (1 / p); /* Scale estimator to remain unbiased */
   }
 
-  if (obj.refl == DIFF) {
+  if (obj->refl == DIFF) {
     /* Compute random reflection vector on hemisphere */
     double r1 = 2.0 * M_PI * drand48();
     double r2 = drand48();
@@ -150,7 +150,7 @@ Color radiance(const Ray &ray, int depth, int E) {
     /* Explicit computation of direct lighting */
     Vector e;
     for (int i = 0; i < numSpheres; i++) {
-      const SceneObject* lightSource = sceneObjects[i];
+      const SceneObject* lightSource = objects[i];
       if (lightSource->emission.x <= 0 && lightSource->emission.y <= 0 && lightSource->emission.z <= 0)
           continue; /* Skip objects that are not light sources */
 
@@ -196,11 +196,11 @@ Color radiance(const Ray &ray, int depth, int E) {
 
     /* Return potential light emission, direct lighting, and indirect lighting (via
         recursive call for Monte-Carlo integration */
-    return obj.emission * E + e + col.entrywiseProduct(radiance(Ray(hitpoint, d), depth, 0));
-  } else if (obj.refl == SPEC) {
+    return obj->emission * E + e + col.entrywiseProduct(radiance(Ray(hitpoint, d), depth, 0));
+  } else if (obj->refl == SPEC) {
     /* Return light emission mirror reflection (via recursive call using perfect
         reflection vector) */
-    return obj.emission +
+    return obj->emission +
       col.entrywiseProduct(radiance(Ray(hitpoint, ray.dir - normal * 2 * normal.dotProduct(ray.dir)),
                             depth, 1));
   }
@@ -217,7 +217,7 @@ Color radiance(const Ray &ray, int depth, int E) {
 
   /* Check for total internal reflection, if so only reflect */
   if (cos2t < 0)
-    return obj.emission + col.entrywiseProduct(radiance(reflRay, depth, 1));
+    return obj->emission + col.entrywiseProduct(radiance(reflRay, depth, 1));
 
   /* Otherwise reflection and/or refraction occurs */
   Vector tdir;
@@ -246,14 +246,14 @@ Color radiance(const Ray &ray, int depth, int E) {
   double TP = Tr / (1 - P);
 
   if (depth < 3) /* Initially both reflection and trasmission */
-    return obj.emission + col.entrywiseProduct(radiance(reflRay, depth, 1) * Re +
+    return obj->emission + col.entrywiseProduct(radiance(reflRay, depth, 1) * Re +
                                                 radiance(Ray(hitpoint, tdir), depth, 1) * Tr);
 
   /* Russian Roulette */
   if (drand48() < P)
-    return obj.emission + col.entrywiseProduct(radiance(reflRay, depth, 1) * RP);
+    return obj->emission + col.entrywiseProduct(radiance(reflRay, depth, 1) * RP);
 
-  return obj.emission + col.entrywiseProduct(radiance(Ray(hitpoint, tdir), depth, 1) * TP);
+  return obj->emission + col.entrywiseProduct(radiance(Ray(hitpoint, tdir), depth, 1) * TP);
 }
 
 
@@ -270,9 +270,8 @@ int main(int argc, char *argv[]) {
   int height = 768;
   int samples = 1;
 
-  for (auto &sphere : objects) {
-    const SceneObject* s = &sphere;
-    sceneObjects.push_back(s);
+  for (auto &sphere : spheres) {
+    objects.push_back(&sphere);
   }
 
   switch (argc) {
