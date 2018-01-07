@@ -56,7 +56,7 @@ vector<Sphere> spheres = {
   Sphere(16.5, Vector(27, 16.5, 47), Vector(), Vector(1, 1, 1) * 0.999,  SPEC), /* Mirror sphere */
   Sphere(16.5, Vector(73, 16.5, 78), Vector(), Vector(1, 1, 1) * 0.999,  REFR), /* Glas sphere */
 
-  Sphere(1.5, Vector(50, 81.6 - 16.5, 81.6), Vector(4,4,4)*100, Vector(), DIFF), /* Light */
+  Sphere(1.5, Vector(50, 81.6 - 16.5, 81.6), Vector(4, 4, 4) * 100, Vector(), DIFF), /* Light */
 };
 
 
@@ -164,7 +164,7 @@ Color radiance(const Ray &ray, int depth, int E) {
 
       /* Create random sample direction l towards spherical light source */
       double cos_a_max = sqrt(1.0 - sphere.radius * sphere.radius /
-                              (hitpoint - sphere.position).dotProduct(hitpoint-sphere.position));
+                              (hitpoint - sphere.position).dotProduct(hitpoint - sphere.position));
 
       double eps1 = drand48();
       double eps2 = drand48();
@@ -172,8 +172,8 @@ Color radiance(const Ray &ray, int depth, int E) {
       double sin_a = sqrt(1.0 - cos_a * cos_a);
       double phi = 2.0 * M_PI * eps2;
       Vector l = su * cos(phi) * sin_a +
-                  sv * sin(phi) * sin_a +
-                  sw * cos_a;
+                 sv * sin(phi) * sin_a +
+                 sw * cos_a;
 
       l = l.normalize();
 
@@ -198,7 +198,7 @@ Color radiance(const Ray &ray, int depth, int E) {
   }
 
   /* Otherwise object transparent, i.e. assumed dielectric glass material */
-  Ray reflRay (hitpoint, ray.dir - normal * 2 * normal.dotProduct(ray.dir)); /* Prefect reflection */
+  Ray reflRay(hitpoint, ray.dir - normal * 2 * normal.dotProduct(ray.dir)); /* Prefect reflection */
   bool into = normal.dotProduct(nl) > 0;       /* Bool for checking if ray from outside going in */
   double nc = 1;                        /* Index of refraction of air (approximately) */
   double nt = 1.5;                      /* Index of refraction of glass (approximately) */
