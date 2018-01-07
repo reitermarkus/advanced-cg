@@ -123,7 +123,7 @@ Color radiance(const Ray &ray, int depth, int E) {
   if (!intersect(ray, t, id))   /* No intersection with scene */
     return Color(0.0, 0.0, 0.0);
 
-  const SceneObject* obj = (const SceneObject*) objects[id];
+  const SceneObject* obj = objects[id];
 
   Vector hitpoint = ray.org + ray.dir * t;    /* Intersection point */
 
