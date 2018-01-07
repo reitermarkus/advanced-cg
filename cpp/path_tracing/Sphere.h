@@ -4,6 +4,8 @@
 #include "../shared/Vector.h"
 #include "../shared/Ray.h"
 
+#include "Trigonometrical.h"
+
 /*------------------------------------------------------------------
 | Scene objects are spheres; material either perfectly diffuse,
 | specular (mirror reflection) or transparent (refraction/reflection)
@@ -11,18 +13,15 @@
 ------------------------------------------------------------------*/
 enum Refl_t { DIFF, SPEC, REFR };
 
-struct Sphere {
+struct Sphere : public Trigonometrical {
   double radius;
   Vector position;
-  Color emission, color;
   Refl_t refl;
 
   Sphere(double radius_, Vector position_, Vector emission_,
-          Vector color_, Refl_t refl_):
-          radius(radius_), position(position_), emission(emission_),
-          color(color_), refl(refl_) {}
+          Vector color_, Refl_t refl_);
 
-  double intersect(const Ray &ray) const;
+  double intersect(const Ray &ray) override;
 };
 
 #endif // __SPHERE_H__
