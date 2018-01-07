@@ -150,16 +150,16 @@ Color radiance(const Ray &ray, int depth, int E) {
     /* Explicit computation of direct lighting */
     Vector e;
     for (int i = 0; i < numSpheres; i++) {
-      const SceneObject &obj = objects[i];
-      if (obj.emission.x <= 0 && obj.emission.y <= 0 && obj.emission.z <= 0)
+      const SceneObject &lightSource = objects[i];
+      if (lightSource.emission.x <= 0 && lightSource.emission.y <= 0 && lightSource.emission.z <= 0)
           continue; /* Skip objects that are not light sources */
 
-      if (!obj.isSphere) {
+      if (!lightSource.isSphere) {
         cerr << "Warning: Only spherical light sources are implemented." << endl;
         continue;
       }
 
-      const Sphere &sphere = (const Sphere&) obj;
+      const Sphere &sphere = (const Sphere&) lightSource;
 
       /* Randomly sample spherical light source from surface intersection */
 
