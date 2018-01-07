@@ -24,6 +24,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <fstream>
+#include <vector>
 
 #include "Sphere.h"
 
@@ -44,7 +45,7 @@ static bool isSphere = true;
 * - emitted light (light sources), surface reflectivity (~color),
 *   material
 *******************************************************************/
-Sphere spheres[] = {
+vector<Sphere> spheres = {
   Sphere(1e5, Vector( 1e5 +  1,        40.8,        81.6), Vector(), Vector(0.75, 0.25, 0.25), DIFF), /* Left wall */
   Sphere(1e5, Vector(-1e5 + 99,        40.8,        81.6), Vector(), Vector(0.25, .25, 0.75), DIFF), /* Rght wall */
   Sphere(1e5, Vector(       50,        40.8,        1e5),  Vector(), Vector(0.75, .75, 0.75), DIFF), /* Back wall */
@@ -65,7 +66,7 @@ Sphere spheres[] = {
 * of intersection and id of intersected object
 *******************************************************************/
 bool intersect(const Ray &ray, double &t, int &id) {
-  const int n = int(sizeof(spheres) / sizeof(Sphere));
+  const int n = spheres.size();
   t = 1e20;
 
   for (int i = 0; i < n; i++) {
@@ -96,7 +97,7 @@ bool intersect(const Ray &ray, double &t, int &id) {
 Color radiance(const Ray &ray, int depth, int E) {
   depth++;
 
-  int numSpheres = int(sizeof(spheres) / sizeof(Sphere));
+  int numSpheres = spheres.size();
 
   double t;
   int id = 0;
