@@ -59,6 +59,7 @@ vector<Sphere> objects = {
   Sphere(1.5, Vector(50, 81.6 - 16.5, 81.6), Vector(4, 4, 4) * 100, Vector(), DIFF), /* Light */
 };
 
+vector<const SceneObject*> sceneObjects = vector<const SceneObject*>();
 
 /******************************************************************
 * Check for closest intersection of a ray with the scene;
@@ -66,11 +67,11 @@ vector<Sphere> objects = {
 * of intersection and id of intersected object
 *******************************************************************/
 bool intersect(const Ray &ray, double &t, int &id) {
-  const int n = objects.size();
+  const int n = sceneObjects.size();
   t = 1e20;
 
   for (int i = 0; i < n; i++) {
-    double d = objects[i].intersect(ray);
+    double d = sceneObjects[i]->intersect(ray);
     if (d > 0.0  && d < t) {
       t = d;
       id = i;
@@ -268,6 +269,11 @@ int main(int argc, char *argv[]) {
   int width = 1024;
   int height = 768;
   int samples = 1;
+
+  for (auto &sphere : objects) {
+    const SceneObject* s = &sphere;
+    sceneObjects.push_back(s);
+  }
 
   switch (argc) {
     case 2:
