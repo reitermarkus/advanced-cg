@@ -150,29 +150,29 @@ Color radiance(const Ray &ray, int depth, int E) {
     /* Explicit computation of direct lighting */
     Vector e;
     for (int i = 0; i < numSpheres; i++) {
-      const SceneObject &lightSource = objects[i];
-      if (lightSource.emission.x <= 0 && lightSource.emission.y <= 0 && lightSource.emission.z <= 0)
+      const SceneObject* lightSource = sceneObjects[i];
+      if (lightSource->emission.x <= 0 && lightSource->emission.y <= 0 && lightSource->emission.z <= 0)
           continue; /* Skip objects that are not light sources */
 
-      if (!lightSource.isSphere) {
+      if (!lightSource->isSphere) {
         cerr << "Warning: Only spherical light sources are implemented." << endl;
         continue;
       }
 
-      const Sphere &sphere = (const Sphere&) lightSource;
+      const Sphere* sphere = (const Sphere*) lightSource;
 
       /* Randomly sample spherical light source from surface intersection */
 
       /* Set up local orthogonal coordinate system su,sv,sw towards light source */
-      Vector sw = sphere.position - hitpoint;
+      Vector sw = sphere->position - hitpoint;
       Vector su = fabs(sw.x) > 0.1 ? Vector(0.0, 1.0, 0.0) : Vector(1.0, 0.0, 0.0);
 
       su = (su.crossProduct(w)).normalize();
       Vector sv = sw.crossProduct(su);
 
       /* Create random sample direction l towards spherical light source */
-      double cos_a_max = sqrt(1.0 - sphere.radius * sphere.radius /
-                              (hitpoint - sphere.position).dotProduct(hitpoint - sphere.position));
+      double cos_a_max = sqrt(1.0 - sphere->radius * sphere->radius /
+                              (hitpoint - sphere->position).dotProduct(hitpoint - sphere->position));
 
       double eps1 = drand48();
       double eps2 = drand48();
@@ -190,7 +190,7 @@ Color radiance(const Ray &ray, int depth, int E) {
         double omega = 2 * M_PI * (1 - cos_a_max);
 
         /* Add diffusely reflected light from light source; note constant BRDF 1 / π */
-        e += col.entrywiseProduct(sphere.emission * l.dotProduct(nl) * omega) / M_PI;
+        e += col.entrywiseProduct(sphere->emission * l.dotProduct(nl) * omega) / M_PI;
       }
     }
 
