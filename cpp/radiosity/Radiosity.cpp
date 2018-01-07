@@ -96,7 +96,7 @@ vector<Triangle> tris = {
  * Returns true if intersection is found, as well as ray parameter
  * of intersection and id of intersected object
  *******************************************************************/
-bool intersectScene(const Ray &ray, double *t, int *id, Vector *normal) {
+bool intersectScene(const Ray &ray, double *t, int *id) {
   const int n = tris.size();
   *t = 1e20;
   *id = -1;
@@ -106,7 +106,6 @@ bool intersectScene(const Ray &ray, double *t, int *id, Vector *normal) {
     if (d > 0.0 && d < *t) {
       *t = d;
       *id = i;
-      *normal = tris[i].normal;
     }
   }
   return *t < 1e20;
@@ -186,8 +185,7 @@ void calculateFormFactors(const int divisions, const int mc_sample) {
 
             double t;
             int id;
-            Vector normal;
-            if (intersectScene(Ray(xi, ij), &t, &id, &normal) && id != j) {
+            if (intersectScene(Ray(xi, ij), &t, &id) && id != j) {
               continue; /* If intersection with other triangle */
             }
 
@@ -331,10 +329,9 @@ static int findPatchIndex(const Triangle &triangle, const Ray &ray) {
 pair<Color, Color> radiance(const Ray &ray, unordered_map<Vector, unordered_map<Vector, Color>> &vertex_colors) {
   double t;
   int id;
-  Vector normal;
 
   /* Find intersected triangle. */
-  if (!intersectScene(ray, &t, &id, &normal)) {
+  if (!intersectScene(ray, &t, &id)) {
     return make_pair(backgroundColor, backgroundColor);
   }
 
