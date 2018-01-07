@@ -9,8 +9,8 @@ static Vector calculateFaceNormal(const Vector a, const Vector b, const Vector c
 }
 
 Triangle::Triangle(const Vector &a_, const Vector &b_, const Vector &c_, const Color &emission_, const Color &color_, const Refl_t refl_)
-          : SceneObject(a_, color_, emission_, refl_), a(a_), b(b_), c(c_) {
-  this->normal = calculateFaceNormal(a, b, c);
+          : SceneObject(a_, color_, emission_, refl_), a(a_), b(a_ + b_), c(a_ + c_) {
+  this->normal = calculateFaceNormal(a_, b_, c_);
 }
 
 double Triangle::intersect(const Ray &ray) const {
