@@ -63,13 +63,6 @@ vector<Triangle> tris = {
 };
 
 vector<Sphere> spheres = {
-  Sphere(1e5, Vector( 1e5 +  1,        40.8,        81.6), Vector(), Vector(0.75, 0.25, 0.25), DIFF), /* Left wall */
-  Sphere(1e5, Vector(-1e5 + 99,        40.8,        81.6), Vector(), Vector(0.25, .25, 0.75), DIFF),  /* Right wall */
-  Sphere(1e5, Vector(       50,        40.8,        1e5),  Vector(), Vector(0.75, .75, 0.75), DIFF),  /* Back wall */
-  Sphere(1e5, Vector(       50,        40.8, -1e5 + 170),  Vector(), Vector(),            DIFF),      /* Front wall */
-  Sphere(1e5, Vector(       50,         1e5,        81.6), Vector(), Vector(0.75, 0.75, 0.75), DIFF), /* Floor */
-  Sphere(1e5, Vector(       50, -1e5 + 81.6,        81.6), Vector(), Vector(0.75, 0.75, 0.75), DIFF), /* Ceiling */
-
   Sphere(16.5, Vector(27, 16.5, 47), Vector(), Vector(1, 1, 1) * 0.999,  SPEC), /* Mirror sphere */
   Sphere(16.5, Vector(73, 16.5, 78), Vector(), Vector(1, 1, 1) * 0.999,  REFR), /* Glas sphere */
 
