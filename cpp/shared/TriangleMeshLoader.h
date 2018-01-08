@@ -5,6 +5,8 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <algorithm>
+#include <map>
 #include <optional>
 
 #include "Triangle.h"
@@ -16,9 +18,18 @@ class TriangleMeshLoader {
   private:
     template <typename T>
     static vector<T> readLine(ifstream& file, int maxLine);
+    static void checkReflection(ifstream& file, Refl_t& refl);
 
   public:
     static optional<vector<Triangle>> loadTriangleMesh(string filePath);
+};
+
+struct ReflMap : public map<string, Refl_t> {
+  ReflMap() {
+    this->operator[]("DIFF") = DIFF;
+    this->operator[]("SPEC") = SPEC;
+    this->operator[]("REFR") = REFR;
+  };
 };
 
 #endif
