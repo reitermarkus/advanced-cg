@@ -12,4 +12,6 @@ struct Triangle: public SceneObject {
   double intersect(const Ray &ray) const override;
 };
 
+ostream& operator<<(std::ostream &strm, const Triangle &t);
+
 #endif // __TRIANGLE_H__

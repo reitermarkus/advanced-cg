@@ -45,3 +45,8 @@ double Triangle::intersect(const Ray &ray) const {
 
   return t;
 }
+
+ostream& operator<<(std::ostream &strm, const Triangle &t) {
+  return strm << "Triangle:" << std::endl << t.a << std::endl << t.b <<
+    std::endl << t.c << std::endl << t.emission << std::endl << t.color << std::endl;
+}
