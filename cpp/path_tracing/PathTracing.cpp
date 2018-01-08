@@ -316,6 +316,14 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  const auto& cuboid = TriangleMeshLoader::loadTriangleMesh("Cuboid.obj");
+
+  if(cuboid) {
+    for (auto &cb : *cuboid) {
+      objects.push_back(&cb);
+    }
+  }
+
   for (auto &sphere : spheres) {
     objects.push_back(&sphere);
   }
