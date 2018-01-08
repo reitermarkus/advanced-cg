@@ -36,8 +36,6 @@
 
 using namespace std;
 
-static bool isSphere = true;
-
 /******************************************************************
 * Hard-coded scene definition: the geometry is composed of spheres
 * (i.e. Cornell box walls are part of very large spheres).
@@ -289,7 +287,7 @@ Color radiance(const Ray &ray, int depth, int E) {
 int main(int argc, char *argv[]) {
   int width = 1024;
   int height = 768;
-  int samples = 1;
+  int samples = (argc == 2) ? atoi(argv[1]) : 1;
 
   for (auto &sphere : spheres) {
     objects.push_back(&sphere);
@@ -297,21 +295,6 @@ int main(int argc, char *argv[]) {
 
   for (auto &tri : tris) {
     objects.push_back(&tri);
-  }
-
-  switch (argc) {
-    case 2:
-      samples = atoi(argv[1]);
-      break;
-    case 3:
-      auto choice = string(argv[2]);
-
-      if(choice.compare("tris") == 0)
-        isSphere = false;
-
-      if(choice.compare("spheres") == 0)
-        isSphere = true;
-      break;
   }
 
   /* Set camera origin and viewing direction (negative z direction) */
