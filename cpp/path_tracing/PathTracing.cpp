@@ -28,6 +28,7 @@
 
 #include "Sphere.h"
 #include "Triangle.h"
+#include "TriangleMeshLoader.h"
 
 #include "../shared/Vector.h"
 #include "../shared/Ray.h"
@@ -44,32 +45,6 @@ using namespace std;
 * - emitted light (light sources), surface reflectivity (~color),
 *   material
 *******************************************************************/
-vector<Triangle> tris = {
-  /* Cornell Box walls */
-  Triangle(Vector(  0.0,  0.0,   0.0), Vector( 100.0, 0.0,    0.0), Vector(0.0,  80.0,    0.0), Color(), Color(0.75, 0.75, 0.75), DIFF), // Back:   bottom-left
-  Triangle(Vector(100.0, 80.0,   0.0), Vector(-100.0, 0.0,    0.0), Vector(0.0, -80.0,    0.0), Color(), Color(0.75, 0.75, 0.75), DIFF), // Back:   top-right
-  Triangle(Vector(  0.0,  0.0, 170.0), Vector( 100.0, 0.0,    0.0), Vector(0.0,   0.0, -170.0), Color(), Color(0.75, 0.75, 0.75), DIFF), // Bottom: front-left
-  Triangle(Vector(100.0,  0.0,   0.0), Vector(-100.0, 0.0,    0.0), Vector(0.0,   0.0,  170.0), Color(), Color(0.75, 0.75, 0.75), DIFF), // Bottom: back-right
-  Triangle(Vector(  0.0, 80.0,   0.0), Vector( 100.0, 0.0,    0.0), Vector(0.0,   0.0,  170.0), Color(), Color(0.75, 0.75, 0.75), DIFF), // Top:    back-left
-  Triangle(Vector(100.0, 80.0, 170.0), Vector(-100.0, 0.0,    0.0), Vector(0.0,   0.0, -170.0), Color(), Color(0.75, 0.75, 0.75), DIFF), // Top:    front-right
-  Triangle(Vector(  0.0,  0.0, 170.0), Vector(   0.0, 0.0, -170.0), Vector(0.0,  80.0,    0.0), Color(), Color(0.75, 0.25, 0.25), DIFF), // Left:   front-bottom
-  Triangle(Vector(  0.0, 80.0,   0.0), Vector(   0.0, 0.0,  170.0), Vector(0.0, -80.0,    0.0), Color(), Color(0.75, 0.25, 0.25), DIFF), // Left:   back-top
-  Triangle(Vector(100.0,  0.0,   0.0), Vector(   0.0, 0.0,  170.0), Vector(0.0,  80.0,    0.0), Color(), Color(0.25, 0.25, 0.75), DIFF), // Right:  back-bottom
-  Triangle(Vector(100.0, 80.0, 170.0), Vector(   0.0, 0.0, -170.0), Vector(0.0, -80.0,    0.0), Color(), Color(0.25, 0.25, 0.75), DIFF), // Right:  front-top
-  Triangle(Vector(100.0,  0.0, 170.0), Vector(-100.0, 0.0,    0.0), Vector(0.0,  80.0,    0.0), Color(), Color(0.25, 0.75, 0.25), DIFF), // Front:  bottom-right
-  Triangle(Vector(  0.0, 80.0, 170.0), Vector( 100.0, 0.0,    0.0), Vector(0.0, -80.0,    0.0), Color(), Color(0.25, 0.75, 0.25), DIFF), // Front:  top-left
-
-  Triangle(Vector(30.0,  0.0, 100.0), Vector(  0.0, 0.0, -20.0), Vector(0.0,  40.0,   0.0), Color(), Color(1.0, 1.0, 1.0), TRAN), // Right: front-bottom
-  Triangle(Vector(30.0, 40.0,  80.0), Vector(  0.0, 0.0,  20.0), Vector(0.0, -40.0,   0.0), Color(), Color(1.0, 1.0, 1.0), TRAN), // Right: back-top
-  Triangle(Vector(10.0,  0.0,  80.0), Vector(  0.0, 0.0,  20.0), Vector(0.0,  40.0,   0.0), Color(), Color(1.0, 1.0, 1.0), TRAN), // Left:  back-bottom
-  Triangle(Vector(10.0, 40.0, 100.0), Vector(  0.0, 0.0, -20.0), Vector(0.0, -40.0,   0.0), Color(), Color(1.0, 1.0, 1.0), TRAN), // Left:  front-top
-  Triangle(Vector(10.0,  0.0, 100.0), Vector( 20.0, 0.0,   0.0), Vector(0.0,  40.0,   0.0), Color(), Color(1.0, 1.0, 1.0), TRAN), // Front: bottom-left
-  Triangle(Vector(30.0, 40.0, 100.0), Vector(-20.0, 0.0,   0.0), Vector(0.0, -40.0,   0.0), Color(), Color(1.0, 1.0, 1.0), TRAN), // Front: top-right
-  Triangle(Vector(30.0,  0.0,  80.0), Vector(-20.0, 0.0,   0.0), Vector(0.0,  40.0,   0.0), Color(), Color(1.0, 1.0, 1.0), TRAN), // Back:  bottom-right
-  Triangle(Vector(10.0, 40.0,  80.0), Vector( 20.0, 0.0,   0.0), Vector(0.0, -40.0,   0.0), Color(), Color(1.0, 1.0, 1.0), TRAN), // Back:  top-left
-  Triangle(Vector(10.0, 40.0, 100.0), Vector( 20.0, 0.0,   0.0), Vector(0.0,   0.0, -20.0), Color(), Color(1.0, 1.0, 1.0), TRAN), // Top:   front-left
-  Triangle(Vector(30.0, 40.0,  80.0), Vector(-20.0, 0.0,   0.0), Vector(0.0,   0.0,  20.0), Color(), Color(1.0, 1.0, 1.0), TRAN), // Top:   back-right
-};
 
 vector<Sphere> spheres = {
   Sphere(16.5, Vector(27, 16.5, 47), Color(), Color(1.0, 1.0, 1.0),  SPEC), /* Mirror sphere */
@@ -338,8 +313,19 @@ int main(int argc, char *argv[]) {
     objects.push_back(&sphere);
   }
 
-  for (auto &tri : tris) {
-    objects.push_back(&tri);
+  switch (argc) {
+    case 2:
+      samples = atoi(argv[1]);
+      break;
+    case 3:
+      auto choice = string(argv[2]);
+
+      if(choice.compare("tris") == 0)
+        isSphere = false;
+
+      if(choice.compare("spheres") == 0)
+        isSphere = true;
+      break;
   }
 
   /* Set camera origin and viewing direction (negative z direction) */
