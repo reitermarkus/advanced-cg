@@ -74,11 +74,10 @@ vector<const SceneObject*> objects = vector<const SceneObject*>();
 * returns true if intersection is found, as well as ray parameter
 * of intersection and id of intersected object
 *******************************************************************/
-bool intersect(const Ray &ray, double &t, int &id) {
-  const int n = objects.size();
+bool intersect(const Ray &ray, double &t, size_t &id) {
   t = 1e20;
 
-  for (int i = 0; i < n; i++) {
+  for (size_t i = 0; i < objects.size(); i++) {
     double d = objects[i]->intersect(ray);
     if (d > 0.0  && d < t) {
       t = d;
@@ -106,10 +105,8 @@ bool intersect(const Ray &ray, double &t, int &id) {
 Color radiance(const Ray &ray, int depth, int E) {
   depth++;
 
-  int numSpheres = objects.size();
-
   double t;
-  int id = 0;
+  size_t id = 0;
 
   if (!intersect(ray, t, id))   /* No intersection with scene */
     return Color(0.0, 0.0, 0.0);
@@ -168,7 +165,7 @@ Color radiance(const Ray &ray, int depth, int E) {
 
     /* Explicit computation of direct lighting */
     Vector e;
-    for (int i = 0; i < numSpheres; i++) {
+    for (size_t i = 0; i < objects.size(); i++) {
       const SceneObject* lightSource = objects[i];
       if (lightSource->emission.x <= 0 && lightSource->emission.y <= 0 && lightSource->emission.z <= 0)
           continue; /* Skip objects that are not light sources */
