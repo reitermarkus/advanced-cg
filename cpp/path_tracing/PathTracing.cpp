@@ -308,6 +308,13 @@ int main(int argc, char *argv[]) {
 
   double aperture = 15;
   double focal_length = 60;
+  const auto& walls = TriangleMeshLoader::loadTriangleMesh("Walls.obj");
+
+  if(walls) {
+    for (auto &wall : *walls) {
+      objects.push_back(&wall);
+    }
+  }
 
   for (auto &sphere : spheres) {
     objects.push_back(&sphere);
