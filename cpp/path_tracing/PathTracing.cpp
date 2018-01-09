@@ -308,8 +308,8 @@ int main(int argc, char *argv[]) {
   int height = 768;
   int samples = (argc == 2) ? atoi(argv[1]) : 1;
 
-  double aperture = 40;
-  double focal_length = 100;
+  double aperture = 15;
+  double focal_length = 60;
 
   for (auto &sphere : spheres) {
     objects.push_back(&sphere);
