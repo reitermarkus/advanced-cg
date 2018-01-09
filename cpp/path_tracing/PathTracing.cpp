@@ -151,20 +151,19 @@ Color radiance(const Ray &ray, int depth, int E, double aperture, double focal_l
 
   /* Normal at intersection */
   Vector normal;
-  Vector nl;
 
   if (obj->isSphere) {
     normal = (hitpoint - obj->position).normalize();
-    nl = normal;
-
-    /* Obtain flipped normal, if object hit from inside */
-    if (normal.dotProduct(ray.dir) >= 0)
-      nl = -nl;
   } else {
     const Triangle* tri = static_cast<const Triangle*>(obj);
     normal = tri->normal;
-    nl = normal;
   }
+
+  Vector nl = normal;
+
+  /* Obtain flipped normal, if object hit from inside */
+  if (normal.dotProduct(ray.dir) >= 0)
+    nl = -nl;
 
   Color col = obj->color;
 
