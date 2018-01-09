@@ -219,6 +219,28 @@ Color radiance(const Ray &ray, int depth, int E) {
     return obj->emission +
       col.entrywiseProduct(radiance(Ray(hitpoint, ray.dir - normal * 2 * normal.dotProduct(ray.dir)),
                             depth, 1));
+  } else if(obj->refl == GLOS) {
+    /* Set up local orthogonal coordinate system su,sv,sw */
+    Vector sw = nl;
+    Vector su = fabs(sw.x) > 0.1 ? Vector(0.0, 1.0, 0.0) : Vector(1.0, 0.0, 0.0);
+
+    su = (su.crossProduct(nl)).normalize();
+    Vector sv = sw.crossProduct(su);
+
+    double cos_a_max = cos(0.10);
+    double eps1 = drand48();
+    double eps2 = drand48();
+    double cos_a = 1.0 - eps1 + eps1 * cos_a_max;
+    double sin_a = sqrt(1.0 - cos_a * cos_a);
+    double phi = 2.0 * M_PI * eps2;
+    Vector l = su * cos(phi) * sin_a +
+                sv * sin(phi) * sin_a +
+                sw * cos_a;
+
+    l = l.normalize();
+
+    return obj->emission +
+      col.entrywiseProduct(radiance(Ray(hitpoint, l), depth, 1));
   }
 
   /* Otherwise object transparent, i.e. assumed dielectric glass material */

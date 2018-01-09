@@ -9,7 +9,7 @@
 | specular (mirror reflection) or transparent (refraction/reflection)
 | (DIFFuse, SPECular, REFRactive)
 ------------------------------------------------------------------*/
-enum Refl_t { DIFF, SPEC, REFR };
+enum Refl_t { DIFF, SPEC, REFR, GLOS };
 
 struct SceneObject {
   Vector position;
