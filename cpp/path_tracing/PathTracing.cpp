@@ -187,7 +187,8 @@ Color radiance(const Ray &ray, int depth, int E, double aperture, double focal_l
 
     /* Set up local orthogonal coordinate system u,v,w on surface */
     Vector w = nl;
-    Vector u = fabs(w.x) > 0.1 ? Vector(0.0, 1.0, 0.0) : Vector(1.0, 0.0, 0.0).crossProduct(w).normalize();
+    Vector u = fabs(w.x) > 0.1 ? Vector(0.0, 1.0, 0.0) : Vector(1.0, 0.0, 0.0);
+    u = u.crossProduct(w).normalize();
 
     Vector v = w.crossProduct(u);
 
