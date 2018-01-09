@@ -121,7 +121,7 @@ Vector randomDirection(Vector direction, double cos_a_max) {
 * for first 3 bounces obtain reflected and refracted component,
 * afterwards one of the two is chosen randomly
 *******************************************************************/
-Color radiance(const Ray &ray, int depth, int E) {
+Color radiance(const Ray &ray, int depth, int E, double aperture, double focal_length) {
   depth++;
 
   double t;
@@ -214,19 +214,19 @@ Color radiance(const Ray &ray, int depth, int E) {
 
     /* Return potential light emission, direct lighting, and indirect lighting (via
         recursive call for Monte-Carlo integration */
-    return obj->emission * E + e + col.entrywiseProduct(radiance(Ray(hitpoint, d), depth, 0));
+    return obj->emission * E + e + col.entrywiseProduct(radiance(Ray(hitpoint, d), depth, 0, aperture, focal_length));
   } else if (obj->refl == SPEC) {
     /* Return light emission mirror reflection (via recursive call using perfect
         reflection vector) */
     return obj->emission +
       col.entrywiseProduct(radiance(Ray(hitpoint, ray.dir - normal * 2 * normal.dotProduct(ray.dir)),
-                            depth, 1));
+                            depth, 1, aperture, focal_length));
   } else if(obj->refl == GLOS) {
     double cos_a_max = cos(0.10);
     Vector l = randomDirection(nl, cos_a_max);
 
     return obj->emission +
-      col.entrywiseProduct(radiance(Ray(hitpoint, l), depth, 1));
+      col.entrywiseProduct(radiance(Ray(hitpoint, l), depth, 1, aperture, focal_length));
   }
 
   /* Otherwise object transparent, i.e. assumed dielectric glass material */
@@ -241,7 +241,7 @@ Color radiance(const Ray &ray, int depth, int E) {
 
   /* Check for total internal reflection, if so only reflect */
   if (cos2t < 0)
-    return obj->emission + col.entrywiseProduct(radiance(reflRay, depth, 1));
+    return obj->emission + col.entrywiseProduct(radiance(reflRay, depth, 1, aperture, focal_length));
 
   /* Otherwise reflection and/or refraction occurs */
   Vector tdir;
@@ -270,14 +270,14 @@ Color radiance(const Ray &ray, int depth, int E) {
   double TP = Tr / (1 - P);
 
   if (depth < 3) /* Initially both reflection and trasmission */
-    return obj->emission + col.entrywiseProduct(radiance(reflRay, depth, 1) * Re +
-                                                radiance(Ray(hitpoint, tdir), depth, 1) * Tr);
+    return obj->emission + col.entrywiseProduct(radiance(reflRay, depth, 1, aperture, focal_length) * Re +
+                                                radiance(Ray(hitpoint, tdir), depth, 1, aperture, focal_length) * Tr);
 
   /* Russian Roulette */
   if (drand48() < P)
-    return obj->emission + col.entrywiseProduct(radiance(reflRay, depth, 1) * RP);
+    return obj->emission + col.entrywiseProduct(radiance(reflRay, depth, 1, aperture, focal_length) * RP);
 
-  return obj->emission + col.entrywiseProduct(radiance(Ray(hitpoint, tdir), depth, 1) * TP);
+  return obj->emission + col.entrywiseProduct(radiance(Ray(hitpoint, tdir), depth, 1, aperture, focal_length) * TP);
 }
 
 
@@ -293,6 +293,9 @@ int main(int argc, char *argv[]) {
   int width = 1024;
   int height = 768;
   int samples = (argc == 2) ? atoi(argv[1]) : 1;
+
+  double aperture = 40;
+  double focal_length = 100;
 
   for (auto &sphere : spheres) {
     objects.push_back(&sphere);
@@ -344,7 +347,7 @@ int main(int argc, char *argv[]) {
 
             /* Accumulate radiance */
             accumulated_radiance = accumulated_radiance +
-              radiance(Ray(start, dir), 0, 1) / samples;
+              radiance(Ray(start, dir), 0, 1, aperture, focal_length) / samples;
           }
 
           accumulated_radiance = accumulated_radiance.clamp() * 0.25;
