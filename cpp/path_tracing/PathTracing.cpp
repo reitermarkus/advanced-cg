@@ -134,6 +134,21 @@ Color radiance(const Ray &ray, int depth, int E, double aperture, double focal_l
 
   Vector hitpoint = ray.org + ray.dir * t;    /* Intersection point */
 
+  if (depth == 1 && aperture != 0 && focal_length != 0) {
+    Vector focal_point = ray.org - Vector(0, 0, focal_length);
+    bool behindDepthOfField = hitpoint.z < focal_point.z - aperture;
+    bool beforeDepthOfField = hitpoint.z > focal_point.z + aperture;
+
+    if (beforeDepthOfField || behindDepthOfField) {
+      double blur_factor = beforeDepthOfField ? focal_point.z - aperture - hitpoint.z : hitpoint.z - focal_point.z - aperture;
+
+      double cos_a_max = cos(0.005 + blur_factor * 0.00002);
+      Vector l = randomDirection(ray.dir, cos_a_max);
+
+      return radiance(Ray(ray.org, l), 0, E, 0, 0);
+    }
+  }
+
   /* Normal at intersection */
   Vector normal;
   Vector nl;
