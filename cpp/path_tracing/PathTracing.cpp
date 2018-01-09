@@ -88,6 +88,25 @@ bool intersect(const Ray &ray, double &t, size_t &id) {
   return t < 1e20;
 }
 
+Vector randomDirection(Vector direction, double cos_a_max) {
+  // Set up local orthogonal coordinate system u, v, w.
+  Vector w = direction;
+  Vector u = fabs(w.x) > 0.1 ? Vector(0.0, 1.0, 0.0) : Vector(1.0, 0.0, 0.0);
+  u = (u.crossProduct(w)).normalize();
+  Vector v = w.crossProduct(u);
+
+  double eps1 = drand48();
+  double eps2 = drand48();
+  double cos_a = 1.0 - eps1 + eps1 * cos_a_max;
+  double sin_a = sqrt(1.0 - cos_a * cos_a);
+  double phi = 2.0 * M_PI * eps2;
+
+  Vector l = u * cos(phi) * sin_a +
+             v * sin(phi) * sin_a +
+             w * cos_a;
+
+  return l.normalize();
+}
 
 /******************************************************************
 * Recursive path tracing for computing radiance via Monte-Carlo
@@ -179,27 +198,10 @@ Color radiance(const Ray &ray, int depth, int E) {
 
       /* Randomly sample spherical light source from surface intersection */
 
-      /* Set up local orthogonal coordinate system su,sv,sw towards light source */
-      Vector sw = sphere->position - hitpoint;
-      Vector su = fabs(sw.x) > 0.1 ? Vector(0.0, 1.0, 0.0) : Vector(1.0, 0.0, 0.0);
-
-      su = (su.crossProduct(w)).normalize();
-      Vector sv = sw.crossProduct(su);
-
-      /* Create random sample direction l towards spherical light source */
+      // Create random sample direction towards spherical light source.
       double cos_a_max = sqrt(1.0 - sphere->radius * sphere->radius /
                               (hitpoint - sphere->position).dotProduct(hitpoint - sphere->position));
-
-      double eps1 = drand48();
-      double eps2 = drand48();
-      double cos_a = 1.0 - eps1 + eps1 * cos_a_max;
-      double sin_a = sqrt(1.0 - cos_a * cos_a);
-      double phi = 2.0 * M_PI * eps2;
-      Vector l = su * cos(phi) * sin_a +
-                 sv * sin(phi) * sin_a +
-                 sw * cos_a;
-
-      l = l.normalize();
+      Vector l = randomDirection(sphere->position - hitpoint, cos_a_max);
 
       /* Shoot shadow ray, check if intersection is with light source */
       if (intersect(Ray(hitpoint, l), t, id) && id == i) {
@@ -220,24 +222,8 @@ Color radiance(const Ray &ray, int depth, int E) {
       col.entrywiseProduct(radiance(Ray(hitpoint, ray.dir - normal * 2 * normal.dotProduct(ray.dir)),
                             depth, 1));
   } else if(obj->refl == GLOS) {
-    /* Set up local orthogonal coordinate system su,sv,sw */
-    Vector sw = nl;
-    Vector su = fabs(sw.x) > 0.1 ? Vector(0.0, 1.0, 0.0) : Vector(1.0, 0.0, 0.0);
-
-    su = (su.crossProduct(nl)).normalize();
-    Vector sv = sw.crossProduct(su);
-
     double cos_a_max = cos(0.10);
-    double eps1 = drand48();
-    double eps2 = drand48();
-    double cos_a = 1.0 - eps1 + eps1 * cos_a_max;
-    double sin_a = sqrt(1.0 - cos_a * cos_a);
-    double phi = 2.0 * M_PI * eps2;
-    Vector l = su * cos(phi) * sin_a +
-                sv * sin(phi) * sin_a +
-                sw * cos_a;
-
-    l = l.normalize();
+    Vector l = randomDirection(nl, cos_a_max);
 
     return obj->emission +
       col.entrywiseProduct(radiance(Ray(hitpoint, l), depth, 1));
