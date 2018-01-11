@@ -254,7 +254,7 @@ Color radiance(const Ray &ray, int depth, int E, double aperture, double focal_l
 
   Ray reflection_ray = Ray(hitpoint, perfectReflection(ray_dir, normal)); // Perfect reflection.
 
-  /* Check for total internal reflection, if so only reflect */
+  // Check for total internal reflection, if so only reflect.
   if (cos2t < 0)
     return obj->emission + col.entrywiseProduct(radiance(reflection_ray, depth, 1, aperture, focal_length));
 
@@ -263,10 +263,12 @@ Color radiance(const Ray &ray, int depth, int E, double aperture, double focal_l
 
   // Determine transmitted ray direction for refraction.
   if(into) {
-    transmission_direction = (ray_dir * nnt - normal * (ddn * nnt + sqrt(cos2t))).normalize();
+    transmission_direction = ray_dir * nnt - normal * (ddn * nnt + sqrt(cos2t));
   } else {
-    transmission_direction = (ray_dir * nnt + normal * (ddn * nnt + sqrt(cos2t))).normalize();
+    transmission_direction = ray_dir * nnt + normal * (ddn * nnt + sqrt(cos2t));
   }
+
+  transmission_direction = transmission_direction.normalize();
 
   /* Determine R0 for Schlick's approximation */
   double R0 = pow((nt - nc) / (nt + nc), 2);
