@@ -61,10 +61,10 @@ vector<Triangle> tris = {
 };
 
 vector<Sphere> spheres = {
-  Sphere(16.5, Vector(27, 16.5, 47), Vector(), Vector(1.0, 1.0, 1.0),  SPEC), /* Mirror sphere */
-  Sphere(16.5, Vector(73, 16.5, 78), Vector(), Vector(1.0, 1.0, 1.0),  REFR), /* Glas sphere */
+  Sphere(16.5, Vector(27, 16.5, 47), Color(), Color(1.0, 1.0, 1.0),  SPEC), /* Mirror sphere */
+  Sphere(16.5, Vector(73, 16.5, 78), Color(), Color(1.0, 1.0, 1.0),  REFR), /* Glas sphere */
 
-  Sphere(1.5, Vector(50, 81.6 - 16.5, 81.6), Vector(4, 4, 4) * 100, Vector(), DIFF), /* Light */
+  Sphere(1.5, Vector(50, 81.6 - 16.5, 81.6), Color(4, 4, 4) * 100, Color(), DIFF), /* Light */
 };
 
 vector<const SceneObject*> objects = vector<const SceneObject*>();
