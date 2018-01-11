@@ -1,19 +1,48 @@
 #include "TriangleMeshLoader.h"
 
+inline string rightTrim(string &s) {
+  s.erase(find_if(s.rbegin(), s.rend(), [] (int ch) {
+    return !isspace(ch);
+  }).base(), s.end());
+
+  return s;
+};
+
+inline bool getTextLine(ifstream& file, string& line) {
+  if(getline(file, line)) {
+    size_t commentPos = 0;
+    if((commentPos = line.find("#")) != string::npos) {
+      line.erase(commentPos, line.length() - commentPos);
+      rightTrim(line);
+
+      if(line.length() == 0) {
+        return false;
+      }
+    }
+
+    return true;
+  } else {
+    return false;
+  }
+}
+
 template <typename T>
 vector<T> TriangleMeshLoader::readLine(ifstream& file, int maxLine) {
   vector<T> elements;
   string line;
 
   for (int lineCount = 0; lineCount < maxLine; lineCount++) {
-    getline(file, line);
-    istringstream iss(line);
-    float a, b, c;
+    if(getTextLine(file, line)) {
+      istringstream iss(line);
+      float a, b, c;
 
-    if (!(iss >> a >> b >> c)) {
-      elements.push_back(T(0, 0, 0));
+      if (!(iss >> a >> b >> c)) {
+        elements.push_back(T(0, 0, 0));
+      } else {
+        elements.push_back(T(a, b, c));
+      }
     } else {
-      elements.push_back(T(a, b, c));
+      lineCount--;
     }
   }
 
@@ -23,15 +52,7 @@ vector<T> TriangleMeshLoader::readLine(ifstream& file, int maxLine) {
 void TriangleMeshLoader::checkReflection(ifstream& file, Refl_t& refl) {
   string reflectionString;
 
-  auto rightTrim = [] (string &s) {
-    s.erase(find_if(s.rbegin(), s.rend(), [] (int ch) {
-      return !isspace(ch);
-    }).base(), s.end());
-
-    return s;
-  };
-
-  if(getline(file, reflectionString)) {
+  if(getTextLine(file, reflectionString)) {
     istringstream iss(reflectionString);
     float a, b, c;
 
