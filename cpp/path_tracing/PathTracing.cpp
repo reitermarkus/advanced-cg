@@ -58,6 +58,17 @@ vector<Triangle> tris = {
   Triangle(Vector(100.0, 80.0, 170.0), Vector(   0.0, 0.0, -170.0), Vector(0.0, -80.0,    0.0), Color(), Color(0.25, 0.25, 0.75), DIFF), // Right:  front-top
   Triangle(Vector(100.0,  0.0, 170.0), Vector(-100.0, 0.0,    0.0), Vector(0.0,  80.0,    0.0), Color(), Color(0.25, 0.75, 0.25), DIFF), // Front:  bottom-right
   Triangle(Vector(  0.0, 80.0, 170.0), Vector( 100.0, 0.0,    0.0), Vector(0.0, -80.0,    0.0), Color(), Color(0.25, 0.75, 0.25), DIFF), // Front:  top-left
+
+  Triangle(Vector(30.0,  0.0, 100.0), Vector(  0.0, 0.0, -20.0), Vector(0.0,  40.0,   0.0), Color(), Color(1.0, 1.0, 1.0), TRAN), // Right: front-bottom
+  Triangle(Vector(30.0, 40.0,  80.0), Vector(  0.0, 0.0,  20.0), Vector(0.0, -40.0,   0.0), Color(), Color(1.0, 1.0, 1.0), TRAN), // Right: back-top
+  Triangle(Vector(10.0,  0.0,  80.0), Vector(  0.0, 0.0,  20.0), Vector(0.0,  40.0,   0.0), Color(), Color(1.0, 1.0, 1.0), TRAN), // Left:  back-bottom
+  Triangle(Vector(10.0, 40.0, 100.0), Vector(  0.0, 0.0, -20.0), Vector(0.0, -40.0,   0.0), Color(), Color(1.0, 1.0, 1.0), TRAN), // Left:  front-top
+  Triangle(Vector(10.0,  0.0, 100.0), Vector( 20.0, 0.0,   0.0), Vector(0.0,  40.0,   0.0), Color(), Color(1.0, 1.0, 1.0), TRAN), // Front: bottom-left
+  Triangle(Vector(30.0, 40.0, 100.0), Vector(-20.0, 0.0,   0.0), Vector(0.0, -40.0,   0.0), Color(), Color(1.0, 1.0, 1.0), TRAN), // Front: top-right
+  Triangle(Vector(30.0,  0.0,  80.0), Vector(-20.0, 0.0,   0.0), Vector(0.0,  40.0,   0.0), Color(), Color(1.0, 1.0, 1.0), TRAN), // Back:  bottom-right
+  Triangle(Vector(10.0, 40.0,  80.0), Vector( 20.0, 0.0,   0.0), Vector(0.0, -40.0,   0.0), Color(), Color(1.0, 1.0, 1.0), TRAN), // Back:  top-left
+  Triangle(Vector(10.0, 40.0, 100.0), Vector( 20.0, 0.0,   0.0), Vector(0.0,   0.0, -20.0), Color(), Color(1.0, 1.0, 1.0), TRAN), // Top:   front-left
+  Triangle(Vector(30.0, 40.0,  80.0), Vector(-20.0, 0.0,   0.0), Vector(0.0,   0.0,  20.0), Color(), Color(1.0, 1.0, 1.0), TRAN), // Top:   back-right
 };
 
 vector<Sphere> spheres = {
@@ -244,34 +255,45 @@ Color radiance(const Ray &ray, int depth, int E, double aperture, double focal_l
       col.entrywiseProduct(radiance(Ray(hitpoint, l), depth, 1, aperture, focal_length));
   }
 
+  Vector ray_dir = ray.dir;
+
   /* Otherwise object transparent, i.e. assumed dielectric glass material */
-  Ray reflRay(hitpoint, ray.dir - normal * 2 * normal.dotProduct(ray.dir)); /* Perfect reflection */
-  bool into = normal.dotProduct(nl) > 0;       /* Bool for checking if ray from outside going in */
   double nc = 1;                        /* Index of refraction of air (approximately) */
   double nt = 1.5;                      /* Index of refraction of glass (approximately) */
+
+  if (obj->refl == TRAN) {
+    double cos_a_max = cos(0.2);
+    ray_dir = randomDirection(ray.dir, cos_a_max);
+    nt = 1.15;
+  }
+
+  bool into = normal.dotProduct(nl) > 0;       /* Bool for checking if ray from outside going in */
   double nnt = into ? nc / nt : nt / nc; /* Set ratio depending on hit from inside or outside */
 
-  double ddn = ray.dir.dotProduct(nl);
+  double ddn = ray_dir.dotProduct(nl);
   double cos2t = 1 - nnt * nnt * (1 - ddn * ddn);
+
+  Ray reflection_ray(hitpoint, ray_dir - normal * 2 * normal.dotProduct(ray_dir)); /* Perfect reflection */
 
   /* Check for total internal reflection, if so only reflect */
   if (cos2t < 0)
-    return obj->emission + col.entrywiseProduct(radiance(reflRay, depth, 1, aperture, focal_length));
+    return obj->emission + col.entrywiseProduct(radiance(reflection_ray, depth, 1, aperture, focal_length));
 
   /* Otherwise reflection and/or refraction occurs */
-  Vector tdir;
+  Vector transmission_direction;
 
-  /* Determine transmitted ray direction for refraction */
-  if(into)
-    tdir = (ray.dir * nnt - normal * (ddn * nnt + sqrt(cos2t))).normalize();
-  else
-    tdir = (ray.dir * nnt + normal * (ddn * nnt + sqrt(cos2t))).normalize();
+  // Determine transmitted ray direction for refraction.
+  if(into) {
+    transmission_direction = (ray_dir * nnt - normal * (ddn * nnt + sqrt(cos2t))).normalize();
+  } else {
+    transmission_direction = (ray_dir * nnt + normal * (ddn * nnt + sqrt(cos2t))).normalize();
+  }
 
   /* Determine R0 for Schlick's approximation */
   double R0 = pow((nt - nc) / (nt + nc), 2);
 
   /* Cosine of correct angle depending on outside/inside */
-  double c = into ? 1 + ddn : 1 - tdir.dotProduct(normal);
+  double c = into ? 1 + ddn : 1 - transmission_direction.dotProduct(normal);
 
   /* Compute Schlick's approximation of Fresnel equation */
   double Re = R0 + (1 - R0) * pow(c, 5);   /* Reflectance */
@@ -282,15 +304,17 @@ Color radiance(const Ray &ray, int depth, int E, double aperture, double focal_l
   double RP = Re / P;         /* Scaling factors for unbiased estimator */
   double TP = Tr / (1 - P);
 
+  Ray transmission_ray = Ray(hitpoint, transmission_direction);
+
   if (depth < 3) /* Initially both reflection and trasmission */
-    return obj->emission + col.entrywiseProduct(radiance(reflRay, depth, 1, aperture, focal_length) * Re +
-                                                radiance(Ray(hitpoint, tdir), depth, 1, aperture, focal_length) * Tr);
+    return obj->emission + col.entrywiseProduct(radiance(reflection_ray, depth, 1, aperture, focal_length) * Re +
+                                                radiance(transmission_ray, depth, 1, aperture, focal_length) * Tr);
 
   /* Russian Roulette */
   if (drand48() < P)
-    return obj->emission + col.entrywiseProduct(radiance(reflRay, depth, 1, aperture, focal_length) * RP);
+    return obj->emission + col.entrywiseProduct(radiance(reflection_ray, depth, 1, aperture, focal_length) * RP);
 
-  return obj->emission + col.entrywiseProduct(radiance(Ray(hitpoint, tdir), depth, 1, aperture, focal_length) * TP);
+  return obj->emission + col.entrywiseProduct(radiance(transmission_ray, depth, 1, aperture, focal_length) * TP);
 }
 
 
@@ -305,7 +329,7 @@ Color radiance(const Ray &ray, int depth, int E, double aperture, double focal_l
 int main(int argc, char *argv[]) {
   int width = 1024;
   int height = 768;
-  int samples = (argc == 2) ? atoi(argv[1]) : 1;
+  int samples = (argc == 2) ? atoi(argv[1]) : 12;
 
   double aperture = 15;
   double focal_length = 60;
