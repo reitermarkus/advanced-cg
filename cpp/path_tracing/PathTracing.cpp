@@ -341,7 +341,7 @@ Color radiance(const Ray &ray, int depth, int E, double aperture, double focal_l
 int main(int argc, char *argv[]) {
   int width = 1024;
   int height = 768;
-  int samples = (argc == 2) ? atoi(argv[1]) : 12;
+  int samples = (argc == 2) ? atoi(argv[1]) : 4;
 
   double aperture = 1.4;
   double focal_length = 40;
