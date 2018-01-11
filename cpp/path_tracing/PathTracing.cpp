@@ -94,6 +94,10 @@ Vector randomDirection(Vector direction, double cos_a_max) {
   return l.normalize();
 }
 
+Vector perfectReflection(Vector dir, Vector normal) {
+  return dir - normal * 2 * normal.dotProduct(dir);
+}
+
 /******************************************************************
 * Recursive path tracing for computing radiance via Monte-Carlo
 * integration; only considers perfectly diffuse, specular or
@@ -217,18 +221,17 @@ Color radiance(const Ray &ray, int depth, int E, double aperture, double focal_l
     /* Return potential light emission, direct lighting, and indirect lighting (via
         recursive call for Monte-Carlo integration */
     return obj->emission * E + e + col.entrywiseProduct(radiance(Ray(hitpoint, d), depth, 0, aperture, focal_length));
-  } else if (obj->refl == SPEC) {
-    /* Return light emission mirror reflection (via recursive call using perfect
-        reflection vector) */
-    return obj->emission +
-      col.entrywiseProduct(radiance(Ray(hitpoint, ray.dir - normal * 2 * normal.dotProduct(ray.dir)),
-                            depth, 1, aperture, focal_length));
   } else if (obj->refl == GLOS) {
     double cos_a_max = cos(0.10);
     Vector l = randomDirection(nl, cos_a_max);
 
-    return obj->emission +
-      col.entrywiseProduct(radiance(Ray(hitpoint, l), depth, 1, aperture, focal_length));
+    return obj->emission + col.entrywiseProduct(radiance(Ray(hitpoint, l), depth, 1, aperture, focal_length));
+  }
+
+  if (obj->refl == SPEC) {
+    // Return light emission mirror reflection (via recursive call using perfect reflection vector).
+    Ray reflection_ray = Ray(hitpoint, perfectReflection(ray.dir, normal));
+    return obj->emission + col.entrywiseProduct(radiance(reflection_ray, depth, 1, aperture, focal_length));
   }
 
   Vector ray_dir = ray.dir;
@@ -249,7 +252,7 @@ Color radiance(const Ray &ray, int depth, int E, double aperture, double focal_l
   double ddn = ray_dir.dotProduct(nl);
   double cos2t = 1 - nnt * nnt * (1 - ddn * ddn);
 
-  Ray reflection_ray(hitpoint, ray_dir - normal * 2 * normal.dotProduct(ray_dir)); /* Perfect reflection */
+  Ray reflection_ray = Ray(hitpoint, perfectReflection(ray_dir, normal)); // Perfect reflection.
 
   /* Check for total internal reflection, if so only reflect */
   if (cos2t < 0)
