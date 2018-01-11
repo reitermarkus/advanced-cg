@@ -308,7 +308,7 @@ int main(int argc, char *argv[]) {
 
   double aperture = 15;
   double focal_length = 60;
-  const auto& walls = TriangleMeshLoader::loadTriangleMesh("Walls.trim");
+  const auto& walls = TriangleMeshLoader::loadTriangleMesh("meshes/Walls.trim");
 
   if(walls) {
     for (auto &wall : *walls) {
@@ -316,7 +316,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  const auto& cuboid = TriangleMeshLoader::loadTriangleMesh("Cuboid.trim");
+  const auto& cuboid = TriangleMeshLoader::loadTriangleMesh("meshes/Cuboid.trim");
 
   if(cuboid) {
     for (auto &cb : *cuboid) {
