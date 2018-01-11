@@ -160,6 +160,7 @@ Color radiance(const Ray &ray, int depth, int E, double aperture, double focal_l
     //
     // double dof = 2 * N * c * (m + 1) / (pow(m, 2) - pow(N * c / focal_length, 2));
     //
+    // // Shoot ray at random point inside circle of confusion.
     // double cos_a_max = cos(atan(c / 2 / image_distance));
     // Vector l = randomDirection(ray.dir, cos_a_max);
     //
