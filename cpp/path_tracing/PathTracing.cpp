@@ -236,7 +236,7 @@ Color radiance(const Ray &ray, int depth, int E, double aperture, double focal_l
     return obj->emission +
       col.entrywiseProduct(radiance(Ray(hitpoint, ray.dir - normal * 2 * normal.dotProduct(ray.dir)),
                             depth, 1, aperture, focal_length));
-  } else if(obj->refl == GLOS) {
+  } else if (obj->refl == GLOS) {
     double cos_a_max = cos(0.10);
     Vector l = randomDirection(nl, cos_a_max);
 
@@ -245,7 +245,7 @@ Color radiance(const Ray &ray, int depth, int E, double aperture, double focal_l
   }
 
   /* Otherwise object transparent, i.e. assumed dielectric glass material */
-  Ray reflRay(hitpoint, ray.dir - normal * 2 * normal.dotProduct(ray.dir)); /* Prefect reflection */
+  Ray reflRay(hitpoint, ray.dir - normal * 2 * normal.dotProduct(ray.dir)); /* Perfect reflection */
   bool into = normal.dotProduct(nl) > 0;       /* Bool for checking if ray from outside going in */
   double nc = 1;                        /* Index of refraction of air (approximately) */
   double nt = 1.5;                      /* Index of refraction of glass (approximately) */
