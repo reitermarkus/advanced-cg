@@ -187,7 +187,7 @@ Color radiance(const Ray &ray, int depth, int E, double aperture, double focal_l
     if (drand48() >= p)
       return obj->emission * E; /* No further bounces, only return potential emission */
 
-    col = col * (1 / p); /* Scale estimator to remain unbiased */
+    col = col * (1.0 / p); /* Scale estimator to remain unbiased */
   }
 
   if (obj->refl == DIFF) {
@@ -225,7 +225,7 @@ Color radiance(const Ray &ray, int depth, int E, double aperture, double focal_l
       /* Randomly sample spherical light source from surface intersection */
 
       // Create random sample direction towards spherical light source.
-      double cos_a_max = sqrt(1.0 - sphere->radius * sphere->radius /
+      double cos_a_max = sqrt(1.0 - pow(sphere->radius, 2) /
                               (hitpoint - sphere->position).dotProduct(hitpoint - sphere->position));
       Vector l = randomDirection(sphere->position - hitpoint, cos_a_max);
 
