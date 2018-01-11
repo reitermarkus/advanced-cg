@@ -8,10 +8,11 @@
 
 struct Sphere : public SceneObject {
   double radius;
+  Vector position;
 
   Sphere(double radius_, const  Vector &position_, const Vector &emission_, const Vector &color_, const Refl_t refl_) :
-    SceneObject(position_, color_, emission_, refl_, true),
-    radius(radius_) {}
+    SceneObject(color_, emission_, refl_, true),
+    radius(radius_), position(position_) {}
 
   double intersect(const Ray &ray) const override;
 };

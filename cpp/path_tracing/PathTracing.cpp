@@ -139,7 +139,8 @@ Color radiance(const Ray &ray, int depth, int E, double aperture, double focal_l
   Vector normal;
 
   if (obj->isSphere) {
-    normal = (hitpoint - obj->position).normalize();
+    const Sphere* sphere = static_cast<const Sphere*>(obj);
+    normal = (hitpoint - sphere->position).normalize();
   } else {
     const Triangle* tri = static_cast<const Triangle*>(obj);
     normal = tri->normal;
