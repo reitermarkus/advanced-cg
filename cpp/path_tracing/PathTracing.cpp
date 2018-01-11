@@ -61,8 +61,8 @@ vector<Triangle> tris = {
 };
 
 vector<Sphere> spheres = {
-  Sphere(16.5, Vector(27, 16.5, 47), Vector(), Vector(1, 1, 1) * 0.999,  SPEC), /* Mirror sphere */
-  Sphere(16.5, Vector(73, 16.5, 78), Vector(), Vector(1, 1, 1) * 0.999,  REFR), /* Glas sphere */
+  Sphere(16.5, Vector(27, 16.5, 47), Vector(), Vector(1.0, 1.0, 1.0),  SPEC), /* Mirror sphere */
+  Sphere(16.5, Vector(73, 16.5, 78), Vector(), Vector(1.0, 1.0, 1.0),  REFR), /* Glas sphere */
 
   Sphere(1.5, Vector(50, 81.6 - 16.5, 81.6), Vector(4, 4, 4) * 100, Vector(), DIFF), /* Light */
 };
@@ -168,7 +168,7 @@ Color radiance(const Ray &ray, int depth, int E, double aperture, double focal_l
   Color col = obj->color;
 
   /* Maximum RGB reflectivity for Russian Roulette */
-  double p = col.max();
+  double p = clamp(col.max(), 0.0, 0.999);
 
   /* After 5 bounces or if max reflectivity is zero */
   if (depth > 5 || !p) {
