@@ -171,7 +171,7 @@ Color radiance(const Ray &ray, int depth, int E, double aperture, double focal_l
   double p = clamp(col.max(), 0.0, 0.999);
 
   /* After 5 bounces or if max reflectivity is zero */
-  if (depth > 5 || !p) {
+  if (depth > 5 || p == 0) {
     /* Russian Roulette */
     if (drand48() >= p)
       return obj->emission * E; /* No further bounces, only return potential emission */
@@ -268,15 +268,13 @@ Color radiance(const Ray &ray, int depth, int E, double aperture, double focal_l
     tdir = (ray.dir * nnt + normal * (ddn * nnt + sqrt(cos2t))).normalize();
 
   /* Determine R0 for Schlick's approximation */
-  double a = nt - nc;
-  double b = nt + nc;
-  double R0 = a * a / (b * b);
+  double R0 = pow((nt - nc) / (nt + nc), 2);
 
   /* Cosine of correct angle depending on outside/inside */
   double c = into ? 1 + ddn : 1 - tdir.dotProduct(normal);
 
   /* Compute Schlick's approximation of Fresnel equation */
-  double Re = R0 + (1 - R0) * c * c * c * c * c;   /* Reflectance */
+  double Re = R0 + (1 - R0) * pow(c, 5);   /* Reflectance */
   double Tr = 1 - Re;                     /* Transmittance */
 
   /* Probability for selecting reflectance or transmittance */
