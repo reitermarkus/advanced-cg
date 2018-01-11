@@ -20,6 +20,7 @@
 *******************************************************************/
 
 /* Standard includes */
+#include <algorithm>
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
@@ -125,18 +126,44 @@ Color radiance(const Ray &ray, int depth, int E, double aperture, double focal_l
   Vector hitpoint = ray.org + ray.dir * t;    /* Intersection point */
 
   if (depth == 1 && aperture != 0 && focal_length != 0) {
+    double dof = 80;
+
     Vector focal_point = ray.org - Vector(0, 0, focal_length);
-    bool behindDepthOfField = hitpoint.z < focal_point.z - aperture;
-    bool beforeDepthOfField = hitpoint.z > focal_point.z + aperture;
+    bool behindDepthOfField = hitpoint.z < focal_point.z - dof;
+    bool beforeDepthOfField = hitpoint.z > focal_point.z + dof;
 
     if (beforeDepthOfField || behindDepthOfField) {
-      double blur_factor = beforeDepthOfField ? focal_point.z - aperture - hitpoint.z : hitpoint.z - focal_point.z - aperture;
+      double blur_factor;
+
+      if (beforeDepthOfField) {
+        blur_factor = clamp(hitpoint.z - (focal_point.z + dof), 0.0, dof) / dof;
+      } else {
+        blur_factor = clamp(hitpoint.z - (focal_point.z - dof), -dof, 0.0) / -dof;
+      }
 
       double cos_a_max = cos(0.005 + blur_factor * 0.00002);
       Vector l = randomDirection(ray.dir, cos_a_max);
 
       return radiance(Ray(ray.org, l), 0, E, 0, 0);
     }
+
+    // // https://en.wikipedia.org/wiki/Circle_of_confusion
+    // double object_distance = fabs(hitpoint.z - ray.org.z); // Object Distance
+    // double image_distance = focal_length * object_distance / (object_distance - focal_length);
+    // double focused_object_distance = focal_length * image_distance / (image_distance - focal_length);
+    //
+    // double m = image_distance / focused_object_distance;
+    // double C = aperture * fabs(object_distance - focused_object_distance) / object_distance;
+    // double c = C * m;
+    //
+    // double N = focal_length / aperture; // https://en.wikipedia.org/wiki/F-number
+    //
+    // double dof = 2 * N * c * (m + 1) / (pow(m, 2) - pow(N * c / focal_length, 2));
+    //
+    // double cos_a_max = cos(atan(c / 2 / image_distance));
+    // Vector l = randomDirection(ray.dir, cos_a_max);
+    //
+    // return radiance(Ray(ray.org, l), 0, E, 0, 0);
   }
 
   /* Normal at intersection */
@@ -315,8 +342,9 @@ int main(int argc, char *argv[]) {
   int height = 768;
   int samples = (argc == 2) ? atoi(argv[1]) : 12;
 
-  double aperture = 15;
-  double focal_length = 60;
+  double aperture = 1.4;
+  double focal_length = 40;
+
   const auto& walls = TriangleMeshLoader::loadTriangleMesh("meshes/Walls.trim");
 
   if(walls) {
