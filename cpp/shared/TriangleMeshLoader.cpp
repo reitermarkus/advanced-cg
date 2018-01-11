@@ -36,10 +36,10 @@ void TriangleMeshLoader::checkReflection(ifstream& file, Refl_t& refl) {
     float a, b, c;
 
     if (!(iss >> a >> b >> c)) {
-      ReflMap reflMap;
+      ReflectionMap reflectionMap;
 
-      if(reflMap.find(rightTrim(reflectionString)) != reflMap.end()) {
-        refl = reflMap[reflectionString];
+      if(reflectionMap.find(rightTrim(reflectionString)) != reflectionMap.end()) {
+        refl = reflectionMap[reflectionString];
       }
     } else {
       file.clear();

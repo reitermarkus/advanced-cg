@@ -24,11 +24,13 @@ class TriangleMeshLoader {
     static optional<vector<Triangle>> loadTriangleMesh(string filePath);
 };
 
-struct ReflMap : public map<string, Refl_t> {
-  ReflMap() {
+struct ReflectionMap : public map<string, Refl_t> {
+  ReflectionMap() {
     this->operator[]("DIFF") = DIFF;
     this->operator[]("SPEC") = SPEC;
     this->operator[]("REFR") = REFR;
+    this->operator[]("GLOS") = GLOS;
+    this->operator[]("TRAN") = TRAN;
   };
 };
 
