@@ -270,26 +270,29 @@ Color radiance(const Ray &ray, int depth, int E, double aperture, double focal_l
 
   transmission_direction = transmission_direction.normalize();
 
-  /* Determine R0 for Schlick's approximation */
-  double R0 = pow((nt - nc) / (nt + nc), 2);
-
   /* Cosine of correct angle depending on outside/inside */
   double c = into ? 1 + ddn : 1 - transmission_direction.dotProduct(normal);
 
-  /* Compute Schlick's approximation of Fresnel equation */
-  double Re = R0 + (1 - R0) * pow(c, 5);   /* Reflectance */
-  double Tr = 1 - Re;                     /* Transmittance */
+  auto schlickReflectance = [](double n1, double n2, double c) {
+    const double R0 = pow((n1 - n2) / (n1 + n2), 2);
+    return R0 + (1 - R0) * pow(c, 5);
+  };
 
-  /* Probability for selecting reflectance or transmittance */
-  double P = 0.25 + 0.5 * Re;
-  double RP = Re / P;         /* Scaling factors for unbiased estimator */
-  double TP = Tr / (1 - P);
+  /* Compute Schlick's approximation of Fresnel equation */
+  double Re = schlickReflectance(nc, nt, c);   // Reflectance
+  double Tr = 1 - Re;                     // Transmittance
 
   Ray transmission_ray = Ray(hitpoint, transmission_direction);
 
-  if (depth < 3) /* Initially both reflection and trasmission */
+  // Initially, use both reflection and trasmission.
+  if (depth < 3)
     return obj->emission + col.entrywiseProduct(radiance(reflection_ray, depth, 1, aperture, focal_length) * Re +
                                                 radiance(transmission_ray, depth, 1, aperture, focal_length) * Tr);
+
+  // Probability for selecting reflectance or transmittance */
+  double P = 0.25 + 0.5 * Re;
+  double RP = Re / P;         /* Scaling factors for unbiased estimator */
+  double TP = Tr / (1 - P);
 
   /* Russian Roulette */
   if (drand48() < P)
