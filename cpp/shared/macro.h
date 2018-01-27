@@ -8,6 +8,9 @@
 #undef M_PI
 const double M_PI = atan(1) * 4;
 
+#define deg_to_rad(degrees) (degrees * M_PI / 180.0)
+#define rad_to_deg(radians) (radians * 180.0 / M_PI)
+
 inline double non_uniform_filter_sample() {
   // Get uniform filter sample.
   const double r = 2.0 * drand48();
