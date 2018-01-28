@@ -371,10 +371,14 @@ int main(int argc, char *argv[]) {
 
             dir = dir.normalize();
 
-            // Extend ray into box.
-            auto extension = dir * 130;
+            auto ray = Ray(camera.org + lens_sample_point, dir);
 
-            auto ray = Ray(camera.org + lens_sample_point + extension, dir);
+            double t;
+            size_t id = 0;
+            if (intersect(ray, t, id)) {
+              // Extend ray into box.
+              ray = Ray(ray.org + dir * (t + 0.1), ray.dir);
+            }
 
             /* Accumulate radiance */
             accumulated_radiance = accumulated_radiance + radiance(ray, 0, 1) / samples;
