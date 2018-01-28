@@ -112,7 +112,7 @@ Vector perfectReflection(Vector dir, Vector normal) {
 * for first 3 bounces obtain reflected and refracted component,
 * afterwards one of the two is chosen randomly
 *******************************************************************/
-Color radiance(const Ray &ray, int depth, int E, double aperture, double focal_length) {
+Color radiance(const Ray &ray, int depth, int E) {
   depth++;
 
   double t;
@@ -124,48 +124,6 @@ Color radiance(const Ray &ray, int depth, int E, double aperture, double focal_l
   const SceneObject* obj = objects[id];
 
   Vector hitpoint = ray.org + ray.dir * t;    /* Intersection point */
-
-  if (depth == 1 && aperture != 0 && focal_length != 0) {
-    double dof = 80;
-
-    Vector focal_point = ray.org - Vector(0, 0, focal_length);
-    bool behindDepthOfField = hitpoint.z < focal_point.z - dof;
-    bool beforeDepthOfField = hitpoint.z > focal_point.z + dof;
-
-    if (beforeDepthOfField || behindDepthOfField) {
-      double blur_factor;
-
-      if (beforeDepthOfField) {
-        blur_factor = clamp(hitpoint.z - (focal_point.z + dof), 0.0, dof) / dof;
-      } else {
-        blur_factor = clamp(hitpoint.z - (focal_point.z - dof), -dof, 0.0) / -dof;
-      }
-
-      double cos_a_max = cos(0.005 + blur_factor * 0.00002);
-      Vector l = randomDirection(ray.dir, cos_a_max);
-
-      return radiance(Ray(ray.org, l), 0, E, 0, 0);
-    }
-
-    // // https://en.wikipedia.org/wiki/Circle_of_confusion
-    // double object_distance = fabs(hitpoint.z - ray.org.z); // Object Distance
-    // double image_distance = focal_length * object_distance / (object_distance - focal_length);
-    // double focused_object_distance = focal_length * image_distance / (image_distance - focal_length);
-    //
-    // double m = image_distance / focused_object_distance;
-    // double C = aperture * fabs(object_distance - focused_object_distance) / object_distance;
-    // double c = C * m;
-    //
-    // double N = focal_length / aperture; // https://en.wikipedia.org/wiki/F-number
-    //
-    // double dof = 2 * N * c * (m + 1) / (pow(m, 2) - pow(N * c / focal_length, 2));
-    //
-    // // Shoot ray at random point inside circle of confusion.
-    // double cos_a_max = cos(atan(c / 2 / image_distance));
-    // Vector l = randomDirection(ray.dir, cos_a_max);
-    //
-    // return radiance(Ray(ray.org, l), 0, E, 0, 0);
-  }
 
   /* Normal at intersection */
   Vector normal;
@@ -248,18 +206,18 @@ Color radiance(const Ray &ray, int depth, int E, double aperture, double focal_l
 
     /* Return potential light emission, direct lighting, and indirect lighting (via
         recursive call for Monte-Carlo integration */
-    return obj->emission * E + e + col.entrywiseProduct(radiance(Ray(hitpoint, d), depth, 0, aperture, focal_length));
+    return obj->emission * E + e + col.entrywiseProduct(radiance(Ray(hitpoint, d), depth, 0));
   } else if (obj->refl == GLOS) {
     double cos_a_max = cos(0.10);
     Vector l = randomDirection(nl, cos_a_max);
 
-    return obj->emission + col.entrywiseProduct(radiance(Ray(hitpoint, l), depth, 1, aperture, focal_length));
+    return obj->emission + col.entrywiseProduct(radiance(Ray(hitpoint, l), depth, 1));
   }
 
   if (obj->refl == SPEC) {
     // Return light emission mirror reflection (via recursive call using perfect reflection vector).
     Ray reflection_ray = Ray(hitpoint, perfectReflection(ray.dir, normal));
-    return obj->emission + col.entrywiseProduct(radiance(reflection_ray, depth, 1, aperture, focal_length));
+    return obj->emission + col.entrywiseProduct(radiance(reflection_ray, depth, 1));
   }
 
   Vector ray_dir = ray.dir;
@@ -284,7 +242,7 @@ Color radiance(const Ray &ray, int depth, int E, double aperture, double focal_l
 
   // Check for total internal reflection, if so only reflect.
   if (cos2t < 0)
-    return obj->emission + col.entrywiseProduct(radiance(reflection_ray, depth, 1, aperture, focal_length));
+    return obj->emission + col.entrywiseProduct(radiance(reflection_ray, depth, 1));
 
   /* Otherwise reflection and/or refraction occurs */
   Vector transmission_direction;
@@ -314,8 +272,8 @@ Color radiance(const Ray &ray, int depth, int E, double aperture, double focal_l
 
   // Initially, use both reflection and trasmission.
   if (depth < 3)
-    return obj->emission + col.entrywiseProduct(radiance(reflection_ray, depth, 1, aperture, focal_length) * Re +
-                                                radiance(transmission_ray, depth, 1, aperture, focal_length) * Tr);
+    return obj->emission + col.entrywiseProduct(radiance(reflection_ray, depth, 1) * Re +
+                                                radiance(transmission_ray, depth, 1) * Tr);
 
   // Probability for selecting reflectance or transmittance */
   double P = 0.25 + 0.5 * Re;
@@ -324,9 +282,9 @@ Color radiance(const Ray &ray, int depth, int E, double aperture, double focal_l
 
   /* Russian Roulette */
   if (drand48() < P)
-    return obj->emission + col.entrywiseProduct(radiance(reflection_ray, depth, 1, aperture, focal_length) * RP);
+    return obj->emission + col.entrywiseProduct(radiance(reflection_ray, depth, 1) * RP);
 
-  return obj->emission + col.entrywiseProduct(radiance(transmission_ray, depth, 1, aperture, focal_length) * TP);
+  return obj->emission + col.entrywiseProduct(radiance(transmission_ray, depth, 1) * TP);
 }
 
 
@@ -341,10 +299,10 @@ Color radiance(const Ray &ray, int depth, int E, double aperture, double focal_l
 int main(int argc, char *argv[]) {
   int width = 1024;
   int height = 768;
-  int samples = (argc == 2) ? atoi(argv[1]) : 4;
+  int samples = (argc == 2) ? atoi(argv[1]) : 8;
 
   double aperture = 1.4;
-  double focal_length = 40;
+  double focal_length = 120.0;
 
   const auto& walls = TriangleMeshLoader::loadTriangleMesh("meshes/Walls.trim");
 
@@ -368,6 +326,7 @@ int main(int argc, char *argv[]) {
 
   /* Set camera origin and viewing direction (negative z direction) */
   Ray camera(Vector(50.0, 52.0, 295.6), Vector(0.0, -0.042612, -1.0).normalize());
+  Vector focal_point = camera.org + camera.dir * focal_length;
 
   /* Image edge vectors for pixel sampling */
   Vector cx = Vector(width * 0.5135 / height);
@@ -393,22 +352,32 @@ int main(int argc, char *argv[]) {
 
           /* Compute radiance at subpixel using multiple samples */
           for (int s = 0; s < samples; s++) {
+            // Generate random sample on circular lens.
+            float random_radius = drand48();
+            float random_angle = drand48();
+            Vector lens_sample_point = aperture * Vector(sqrt(random_radius) * cos(2 * M_PI * random_angle), sqrt(random_radius) * sin(2 * M_PI * random_angle), 0);
+
+            Vector dir = (focal_point - (camera.org + lens_sample_point)).normalize();
+
+            dir = (camera.dir + dir).normalize();
+
             double dx = non_uniform_filter_sample();
             double dy = non_uniform_filter_sample();
 
-            /* Ray direction into scene from camera through sample */
-            Vector dir = cx * ((x + (sx + 0.5 + dx) / 2.0) / width - 0.5) +
-                         cy * ((y + (sy + 0.5 + dy) / 2.0) / height - 0.5) +
-                         camera.dir;
-
-            /* Extend camera ray to start inside box */
-            Vector start = camera.org + dir * 130.0;
+            // Ray direction into scene from camera through sample.
+            dir = cx * ((x + (sx + 0.5 + dx) / 2.0) / width - 0.5) +
+                  cy * ((y + (sy + 0.5 + dy) / 2.0) / height - 0.5) +
+                  dir;
 
             dir = dir.normalize();
 
+            // Extend ray into box.
+            auto extension = dir * 130;
+
+            auto ray = Ray(camera.org + lens_sample_point + extension, dir);
+
             /* Accumulate radiance */
-            accumulated_radiance = accumulated_radiance +
-              radiance(Ray(start, dir), 0, 1, aperture, focal_length) / samples;
+            accumulated_radiance = accumulated_radiance + radiance(ray, 0, 1) / samples;
           }
 
           accumulated_radiance = accumulated_radiance.clamp() * 0.25;
