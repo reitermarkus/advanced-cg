@@ -301,7 +301,7 @@ int main(int argc, char *argv[]) {
   int height = 768;
   int samples = (argc == 2) ? atoi(argv[1]) : 8;
 
-  double aperture = 1.4;
+  double aperture = 2.6;
   double focal_length = 120.0;
 
   const auto& walls = TriangleMeshLoader::loadTriangleMesh("meshes/Walls.trim");
