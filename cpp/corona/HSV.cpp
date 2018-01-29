@@ -12,7 +12,7 @@ float HSV::hue_as_wavelength() const {
   return WAVELENGTH_MAX - WAVELENGTH_RANGE / HUE_RANGE * rad_to_deg(this->h);
 }
 
-float HSV::random_hue() {
+float HSV::randomHue() {
   random_device rd;
   mt19937 gen(rd());
   uniform_real_distribution<> dis(0.0, 1.0);
@@ -20,8 +20,8 @@ float HSV::random_hue() {
   return dis(gen) * HUE_RANGE;
 }
 
-HSV HSV::with_random_hue(float s, float v) {
-  auto hue = random_hue();
+HSV HSV::withRandomHue(float s, float v) {
+  auto hue = randomHue();
   return HSV(hue, s, v);
 }
 
