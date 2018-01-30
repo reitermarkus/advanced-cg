@@ -324,6 +324,17 @@ int main(int argc, char *argv[]) {
     objects.push_back(&sphere);
   }
 
+  vector<Triangle> layers;
+
+  for(int i = 10; i < 80; i += 10) {
+    layers.push_back(Triangle(Vector(0.0, i , 170.0), Vector(100.0, 0.0, 0.0), Vector(0.0, 0.0, -170.0), Color(), Color(0.75, 0.75, 0.75), DIFF));
+    layers.push_back(Triangle(Vector(100.0, i + 1 , 0.0), Vector(-100.0, 0.0, 0.0), Vector(0.0, 0.0, 170.0), Color(), Color(0.75, 0.75, 0.75), DIFF));
+  }
+
+  for(const auto& layer : layers) {
+    objects.push_back(&layer);
+  }
+
   /* Set camera origin and viewing direction (negative z direction) */
   Ray camera(Vector(50.0, 52.0, 295.6), Vector(0.0, -0.042612, -1.0).normalize());
   Vector focal_point = camera.org + camera.dir * focal_length;
