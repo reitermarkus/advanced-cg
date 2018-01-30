@@ -326,9 +326,20 @@ int main(int argc, char *argv[]) {
 
   vector<Triangle> layers;
 
-  for(int i = 10; i < 80; i += 10) {
-    layers.push_back(Triangle(Vector(0.0, i , 170.0), Vector(100.0, 0.0, 0.0), Vector(0.0, 0.0, -170.0), Color(), Color(0.75, 0.75, 0.75), DIFF));
-    layers.push_back(Triangle(Vector(100.0, i + 1 , 0.0), Vector(-100.0, 0.0, 0.0), Vector(0.0, 0.0, 170.0), Color(), Color(0.75, 0.75, 0.75), DIFF));
+  for(int i = 0; i < 10; i++) {
+    const auto h = Vector( 0.0, 50.0,  0.0);
+    const auto w = Vector(50.0,  0.0,  0.0);
+    const auto d = Vector( 0.0,  0.0, 1.0);
+
+    const auto color = Color(1.0, 0.75, 0.75);
+
+    const auto position = Vector(20.0, 0.0, 100 + i);
+
+    layers.push_back(Triangle(i * d + position, w + h,     h, Color(), color, REFR)); // Front
+    layers.push_back(Triangle(i * d + position,     w, w + h, Color(), color, REFR)); // Front
+
+    layers.push_back(Triangle(i * d + d + position + w,     -w, -w + h, Color(), color, REFR)); // Back
+    layers.push_back(Triangle(i * d + d + position + w, -w + h,      h, Color(), color, REFR)); // Back
   }
 
   for(const auto& layer : layers) {
