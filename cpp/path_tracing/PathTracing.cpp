@@ -142,10 +142,10 @@ Color radiance(const Ray &ray, int depth, int E) {
   if (normal.dotProduct(ray.dir) >= 0)
     nl = -nl;
 
-  Color col = obj->color;
+  Color col = Color(clamp(obj->color.x, 0.0, 0.999), clamp(obj->color.y, 0.0, 0.999), clamp(obj->color.z, 0.0, 0.999));
 
   /* Maximum RGB reflectivity for Russian Roulette */
-  double p = clamp(col.max(), 0.0, 0.999);
+  double p = col.max();
 
   /* After 5 bounces or if max reflectivity is zero */
   if (depth > 5 || p == 0) {
