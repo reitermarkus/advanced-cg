@@ -34,7 +34,7 @@ HSV HSV::rgbToHsv(const Color& color) {
   float min = fmin(fmin(color.x, color.y), color.z);
   float delta = max - min;
 
-  HSV hsv = HSV(0, 0, max);
+  HSV hsv = HSV(0, 0, max / 255);
 
   if (delta > 0) {
     if (max > 0) { hsv.s = delta / max; }
