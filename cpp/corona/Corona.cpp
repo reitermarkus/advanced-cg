@@ -95,7 +95,33 @@ int main() {
     objects.push_back(&light);
   }
 
+  vector<Triangle> layers;
+
+
+  for(int i = 0; i < 5; i++) {
+    const auto h = Vector( 0.0, 100.0,  0.0);
+    const auto w = Vector(100.0,  0.0,  0.0);
+    const auto d = Vector( 0.0,  0.0, 1.0);
+
+    const auto color = Color(1.0, 1.0, 1.0);
+
+    const auto position = Vector(0.0, 0.0, 100 + i);
+
+    layers.push_back(Triangle(i * d + position, w + h,     h, Color(), color, REFR)); // Front
+    layers.push_back(Triangle(i * d + position,     w, w + h, Color(), color, REFR)); // Front
+
+    layers.push_back(Triangle(i * d + d + position + w,     -w, -w + h, Color(), color, REFR)); // Back
+    layers.push_back(Triangle(i * d + d + position + w, -w + h,      h, Color(), color, REFR)); // Back
+  }
+
+  for(const auto& layer : layers) {
+    objects.push_back(&layer);
+  }
+
+
   Image img(width, height);
+
+  long hits = 0;
 
   auto ray_samples = width * height * samples;
 
@@ -111,13 +137,19 @@ int main() {
 
       if (!(pixels.first == -1 || pixels.second == -1)) {
         #pragma omp critical
-        cout << pixels.first << ", " << pixels.second << endl;
+        {
+          cout << pixels.first << ", " << pixels.second << endl;
+          img.addColor(pixels.first, pixels.second, light.emission);
+          hits++;
+        }
 
-        #pragma omp critical
-        img.addColor(pixels.first, pixels.second, light.emission);
+
       }
     }
   }
+
+  cout << hits << "/" << ray_samples << endl;
+  cout << (double)hits / (double)ray_samples * 100 << " %" << endl;
 
   img.save("image");
 }
