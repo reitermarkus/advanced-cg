@@ -29,7 +29,7 @@ ostream& operator<<(std::ostream &strm, const HSV &c) {
   return strm << "HSV(" << c.h << ", " << c.s << ", " << c.v << ")";
 }
 
-HSV HSV::rgbToHsv(const RGB& color) {
+HSV HSV::from(const RGB& color) {
   float max = fmax(fmax(color.r, color.g), color.b);
   float min = fmin(fmin(color.r, color.g), color.b);
   float delta = max - min;
