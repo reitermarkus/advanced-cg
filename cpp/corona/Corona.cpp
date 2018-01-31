@@ -16,5 +16,9 @@ int main() {
   auto hsv = HSV::rgbToHsv(RGB(255, 138, 0));
 
   cout << hsv.h << " " << hsv.s << " " << hsv.v << endl;
+
+
+  cout << Sampler::sphericalRay(Vector(0.0, 0.0, 0.0), 2.5) << endl;
+
   return 0;
 }

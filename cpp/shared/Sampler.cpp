@@ -23,6 +23,16 @@ Vector Sampler::pointOnSphere() {
   return Vector(x, y, z);
 }
 
+// Generates a random ray originating from the surface of a sphere.
+Ray Sampler::sphericalRay(const Vector &position, double radius) {
+  auto sample = pointOnSphere();
+
+  auto point = position + sample * radius;
+  auto direction = sample;
+
+  return Ray(point, direction);
+}
+
 // Generates a random direction with a given maximum angle in respect to initial direction.
 Vector Sampler::randomDirection(Vector direction, double max_angle) {
   // Set up local orthogonal coordinate system u, v, w.
