@@ -31,6 +31,7 @@
 #include "Triangle.h"
 #include "TriangleMeshLoader.h"
 
+#include "../shared/Sampler.h"
 #include "../shared/Vector.h"
 #include "../shared/Ray.h"
 #include "../shared/Image.h"
@@ -73,26 +74,6 @@ bool intersect(const Ray &ray, double &t, size_t &id) {
   }
 
   return t < 1e20;
-}
-
-Vector randomDirection(Vector direction, double cos_a_max) {
-  // Set up local orthogonal coordinate system u, v, w.
-  Vector w = direction;
-  Vector u = fabs(w.x) > 0.1 ? Vector(0.0, 1.0, 0.0) : Vector(1.0, 0.0, 0.0);
-  u = (u.crossProduct(w)).normalize();
-  Vector v = w.crossProduct(u);
-
-  double eps1 = drand48();
-  double eps2 = drand48();
-  double cos_a = 1.0 - eps1 + eps1 * cos_a_max;
-  double sin_a = sqrt(1.0 - cos_a * cos_a);
-  double phi = 2.0 * M_PI * eps2;
-
-  Vector l = u * cos(phi) * sin_a +
-             v * sin(phi) * sin_a +
-             w * cos_a;
-
-  return l.normalize();
 }
 
 Vector perfectReflection(Vector dir, Vector normal) {
@@ -193,7 +174,7 @@ Color radiance(const Ray &ray, int depth, int E) {
       // Create random sample direction towards spherical light source.
       double cos_a_max = sqrt(1.0 - pow(sphere->radius, 2) /
                               (hitpoint - sphere->position).dotProduct(hitpoint - sphere->position));
-      Vector l = randomDirection(sphere->position - hitpoint, cos_a_max);
+      Vector l = Sampler::randomDirection(sphere->position - hitpoint, acos(cos_a_max));
 
       /* Shoot shadow ray, check if intersection is with light source */
       if (intersect(Ray(hitpoint, l), t, id) && id == i) {
@@ -208,8 +189,8 @@ Color radiance(const Ray &ray, int depth, int E) {
         recursive call for Monte-Carlo integration */
     return obj->emission * E + e + col.entrywiseProduct(radiance(Ray(hitpoint, d), depth, 0));
   } else if (obj->refl == GLOS) {
-    double cos_a_max = cos(0.10);
-    Vector l = randomDirection(nl, cos_a_max);
+    auto angle = 0.10;
+    Vector l = Sampler::randomDirection(nl, angle);
 
     return obj->emission + col.entrywiseProduct(radiance(Ray(hitpoint, l), depth, 1));
   }
@@ -227,8 +208,8 @@ Color radiance(const Ray &ray, int depth, int E) {
   double nt = 1.5;                      /* Index of refraction of glass (approximately) */
 
   if (obj->refl == TRAN) {
-    double cos_a_max = cos(0.2);
-    ray_dir = randomDirection(ray.dir, cos_a_max);
+    auto angle = 0.2;
+    ray_dir = Sampler::randomDirection(ray.dir, angle);
     nt = 1.15;
   }
 

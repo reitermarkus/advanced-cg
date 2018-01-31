@@ -13,7 +13,7 @@ inline double deg_to_rad(double degrees) {
 }
 
 inline double rad_to_deg(double radians) {
-  radians * 180.0 / M_PI;
+  return radians * 180.0 / M_PI;
 }
 
 inline double non_uniform_filter_sample() {
