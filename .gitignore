@@ -1,4 +1,5 @@
 cpp/radiosity/Radiosity
+cpp/corona/Corona
 cpp/path_tracing/PathTracing
 cpp/radiosity/test/run
 
