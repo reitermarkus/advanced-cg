@@ -1,10 +1,18 @@
-#ifndef __HSV_H__
-#define __HSV_H__
+#ifndef __COLOR_H__
+#define __COLOR_H__
 
 #include <iostream>
 #include <cmath>
 
 using namespace std;
+
+struct RGB {
+  float r;
+  float g;
+  float b;
+
+  RGB(const float r_, const float g_, const float b_): r(r_), g(g_), b(b_) {};
+};
 
 struct HSV {
   float h;
@@ -16,13 +24,9 @@ struct HSV {
   float hueAsWavelength() const;
   static float randomHue();
   static HSV withRandomHue(float s, float v);
-  static HSV rgbToHsv(struct RGB& color);
-};
-
-struct RGB {
-  float r, g, b;
+  static HSV rgbToHsv(const RGB& color);
 };
 
 ostream& operator<<(std::ostream &strm, const HSV &c);
 
-#endif // __HSV_H__
+#endif // __COLOR_H__

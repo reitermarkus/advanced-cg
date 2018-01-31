@@ -1,4 +1,4 @@
-#include "HSV.h"
+#include "Color.h"
 
 #include "macro.h"
 
@@ -29,7 +29,7 @@ ostream& operator<<(std::ostream &strm, const HSV &c) {
   return strm << "HSV(" << c.h << ", " << c.s << ", " << c.v << ")";
 }
 
-HSV HSV::rgbToHsv(struct RGB& color) {
+HSV HSV::rgbToHsv(const RGB& color) {
   float max = fmax(fmax(color.r, color.g), color.b);
   float min = fmin(fmin(color.r, color.g), color.b);
   float delta = max - min;

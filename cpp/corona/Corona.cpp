@@ -1,5 +1,6 @@
 #include <iostream>
 #include "Sampler.h"
+#include "Color.h"
 
 using namespace std;
 
@@ -12,5 +13,8 @@ int main() {
     cout << randomSpherePoint << endl;
   }
 
+  auto hsv = HSV::rgbToHsv(RGB(255, 138, 0));
+
+  cout << hsv.h << " " << hsv.s << " " << hsv.v << endl;
   return 0;
 }
