@@ -126,7 +126,7 @@ int main() {
   auto ray_samples = width * height * samples;
 
   for (auto &light : lights) {
-    auto emission = HSV::from(RGB(light.emission.x, light.emission.y, light.emission.z));
+    auto emission = HSV::rgbToHsv(Color(light.emission.x, light.emission.y, light.emission.z));
 
     #pragma omp parallel for schedule(dynamic, 1)
     for (auto s = 0; s < ray_samples; s++) {
