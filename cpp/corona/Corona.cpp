@@ -73,19 +73,18 @@ pair<long, long> traceRay(Ray &ray, HSV &emission, double aperture, double focal
   if (normal.dotProduct(ray.dir) >= 0)
     nl = -nl;
 
-  Ray reflection_ray = Ray(hitpoint, perfectReflection(ray.dir, normal));
-
-  auto wavelength = emission.hueAsWavelength();
-  auto min_diffraction_angle = diffractionAngle(wavelength);
-
   // Ray hit the lens.
   if (id == lens_id) {
     return make_pair(0, 0);
   }
 
-  return make_pair(-1, -1);
-}
+  auto wavelength = emission.hueAsWavelength();
+  auto min_diffraction_angle = diffractionAngle(wavelength);
 
+  Ray new_ray = Ray(hitpoint, Sampler::randomDirection(ray.dir, min_diffraction_angle));
+
+  return traceRay(new_ray, emission, aperture, focal_length, lens_id);
+}
 
 int main() {
   srand(time(0));
