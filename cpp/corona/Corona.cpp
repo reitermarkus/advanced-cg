@@ -44,7 +44,7 @@ Vector perfectReflection(Vector dir, Vector normal) {
   return dir - normal * 2 * normal.dotProduct(dir);
 }
 
-pair<long, long> traceRay(Ray &ray, HSV &emission, double aperture, double focal_length) {
+pair<long, long> traceRay(Ray &ray, HSV &emission, double aperture, double focal_length, size_t lens_id) {
   double t;
   size_t id = 0;
 
@@ -77,6 +77,10 @@ pair<long, long> traceRay(Ray &ray, HSV &emission, double aperture, double focal
 
   auto wavelength = emission.hueAsWavelength();
   auto min_diffraction_angle = diffractionAngle(wavelength);
+
+  if (id == lens_id) {
+    cout << "HIT THE LENS!!!" << endl;
+  }
 
   return make_pair(0, 0);
 }
@@ -120,6 +124,18 @@ int main() {
     objects.push_back(&layer);
   }
 
+  /* Set camera origin and viewing direction (negative z direction) */
+  Ray camera(Vector(50.0, 52.0, 295.6), Vector(0.0, -0.042612, -1.0).normalize());
+  Vector focal_point = camera.org + camera.dir * focal_length;
+
+  /* Image edge vectors for pixel sampling */
+  Vector cx = Vector(width * 0.5135 / height);
+  Vector cy = (cx.crossProduct(camera.dir)).normalize() * 0.5135;
+
+  size_t lens_id = objects.size();
+  Sphere lens = Sphere(aperture, camera.org, Color(), Color(), REFR);
+  objects.push_back(&lens);
+
   Image img(width, height);
 
   long hits = 0;
@@ -134,12 +150,11 @@ int main() {
       auto ray = Sampler::sphericalRay(light.position, light.radius);
       auto ray_emission = HSV::withRandomHue(emission.s, emission.v);
 
-      auto pixels = traceRay(ray, ray_emission, aperture, focal_length);
+      auto pixels = traceRay(ray, ray_emission, aperture, focal_length, lens_id);
 
       if (!(pixels.first == -1 || pixels.second == -1)) {
         #pragma omp critical
         {
-          cout << pixels.first << ", " << pixels.second << endl;
           img.addColor(pixels.first, pixels.second, light.emission);
           hits++;
         }
