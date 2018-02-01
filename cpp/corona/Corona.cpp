@@ -1,6 +1,8 @@
 #include <iostream>
 #include <vector>
 
+#include "macro.h"
+
 #include "Sampler.h"
 #include "HSV.h"
 #include "SceneObject.h"
@@ -74,7 +76,7 @@ pair<long, long> traceRay(Ray &ray, HSV &emission, double aperture, double focal
   Ray reflection_ray = Ray(hitpoint, perfectReflection(ray.dir, normal));
 
   auto wavelength = emission.hueAsWavelength();
-  auto min_diffraction_angle = minDiffractionAngle(wavelength, aperture, focal_length);
+  auto min_diffraction_angle = diffractionAngle(wavelength);
 
   return make_pair(0, 0);
 }
@@ -118,7 +120,6 @@ int main() {
     objects.push_back(&layer);
   }
 
-
   Image img(width, height);
 
   long hits = 0;
@@ -142,8 +143,6 @@ int main() {
           img.addColor(pixels.first, pixels.second, light.emission);
           hits++;
         }
-
-
       }
     }
   }

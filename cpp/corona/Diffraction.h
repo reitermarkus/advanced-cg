@@ -15,4 +15,8 @@ inline double minDiffractionAngle(double wavelength, double aperture, double foc
   return asin(sin_angle);
 }
 
+inline double diffractionAngle(double wavelength) {
+  return wavelength / 270.0 * deg_to_rad(45);
+}
+
 #endif // __DIFFRACTION_H__
