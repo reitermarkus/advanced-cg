@@ -1,6 +1,8 @@
 #ifndef __MACRO_H__
 #define __MACRO_H__
 
+#include <cmath>
+
 inline double drand48() {
   return (double)rand() / (double)RAND_MAX;
 }
