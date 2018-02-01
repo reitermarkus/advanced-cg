@@ -78,11 +78,12 @@ pair<long, long> traceRay(Ray &ray, HSV &emission, double aperture, double focal
   auto wavelength = emission.hueAsWavelength();
   auto min_diffraction_angle = diffractionAngle(wavelength);
 
+  // Ray hit the lens.
   if (id == lens_id) {
-    cout << "HIT THE LENS!!!" << endl;
+    return make_pair(0, 0);
   }
 
-  return make_pair(0, 0);
+  return make_pair(-1, -1);
 }
 
 
