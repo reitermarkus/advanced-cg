@@ -126,7 +126,7 @@ Color radiance(const Ray &ray, int depth, int E) {
   Color col = obj->color;
 
   /* Maximum RGB reflectivity for Russian Roulette */
-  double p = clamp(col.max(), 0.0, 0.999);
+  double p = col.clamp(0.0, 0.999).max();
 
   /* After 5 bounces or if max reflectivity is zero */
   if (depth > 5 || p == 0) {
@@ -365,7 +365,7 @@ int main(int argc, char *argv[]) {
             accumulated_radiance = accumulated_radiance + radiance(ray, 0, 1) / samples;
           }
 
-          accumulated_radiance = accumulated_radiance.clamp() * 0.25;
+          accumulated_radiance = accumulated_radiance.clamp(0.0, 1.0) * 0.25;
 
           img.addColor(x, y, accumulated_radiance);
         }

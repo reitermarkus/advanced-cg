@@ -81,16 +81,20 @@ Vector Vector::crossProduct(const Vector &b) const {
   );
 }
 
-Vector& Vector::clamp() {
-  x = std::clamp(x, 0.0, 1.0);
-  y = std::clamp(y, 0.0, 1.0);
-  z = std::clamp(z, 0.0, 1.0);
-
-  return *this;
+Vector Vector::clamp(double min, double max) {
+  return Vector(
+    std::clamp(x, min, max),
+    std::clamp(y, min, max),
+    std::clamp(z, min, max)
+  );
 }
 
 double Vector::max() const {
-  return fmax(x, fmax(x, y));
+  return std::max(x, std::max(y, z));
+}
+
+double Vector::min() const {
+  return std::min(x, std::min(y, z));
 }
 
 ostream& operator<<(std::ostream &strm, const Vector &v) {

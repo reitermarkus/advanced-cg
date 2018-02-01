@@ -31,8 +31,9 @@ struct Vector {
     double dotProduct(const Vector &b) const;
     Vector crossProduct(const Vector &b) const;
     Vector entrywiseProduct(const Vector &b) const;
-    Vector& clamp();
+    Vector clamp(double min, double max);
     double max() const;
+    double min() const;
 
     double x, y, z;
 };
