@@ -17,7 +17,7 @@ using namespace std;
 vector<const SceneObject*> objects = vector<const SceneObject*>();
 
 vector<Sphere> lights = {
-  Sphere(4.0, Vector(50, 81.6 - 16.5, 81.6), Color(4, 4, 4) * 100, Color(), DIFF), /* Light */
+  Sphere(10.0, Vector(50, 50, 0), Color(4, 4, 4) * 100, Color(), DIFF), // Light
 };
 
 
@@ -126,7 +126,7 @@ int main() {
   }
 
   /* Set camera origin and viewing direction (negative z direction) */
-  Ray camera(Vector(50.0, 52.0, 295.6), Vector(0.0, -0.042612, -1.0).normalize());
+  Ray camera(Vector(50.0, 50.0, 300.0), Vector(0.0, 0.0, -1.0).normalize());
   Vector focal_point = camera.org + camera.dir * focal_length;
 
   /* Image edge vectors for pixel sampling */
