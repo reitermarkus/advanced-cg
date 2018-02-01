@@ -350,16 +350,11 @@ int main(int argc, char *argv[]) {
                   cy * ((y + (sy + 0.5 + dy) / 2.0) / height - 0.5) +
                   dir;
 
+            auto start = camera.org + dir * 130;
+
             dir = dir.normalize();
 
-            auto ray = Ray(camera.org + lens_sample_point, dir);
-
-            double t;
-            size_t id = 0;
-            if (intersect(ray, t, id)) {
-              // Extend ray into box.
-              ray = Ray(ray.org + dir * (t + 0.1), ray.dir);
-            }
+            auto ray = Ray(start + lens_sample_point, dir);
 
             /* Accumulate radiance */
             accumulated_radiance = accumulated_radiance + radiance(ray, 0, 1) / samples;
