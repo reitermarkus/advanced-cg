@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <iomanip>
 
 #include "macro.h"
 
@@ -11,6 +12,7 @@
 #include "Vector.h"
 #include "Diffraction.h"
 #include "Image.h"
+#include "refractive_index.h"
 
 using namespace std;
 
@@ -87,6 +89,22 @@ pair<long, long> traceRay(Ray &ray, HSV &emission, double aperture, double focal
 }
 
 int main() {
+
+  for (int i = 0; i < 10; i++) {
+    auto color = HSV::withRandomHue(1.0, 1.0);
+
+    auto lambda = color.hueAsWavelength();
+
+
+    auto n = refractive_index_of_air(lambda);
+
+    cout << fixed << setprecision(10)
+      << "λ = " << lambda << " nm" << endl
+      << "n = " << n << endl;
+  }
+
+  exit(0);
+
   srand(time(0));
 
   auto width = 1024;
