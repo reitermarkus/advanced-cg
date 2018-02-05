@@ -1,6 +1,7 @@
 #include "HSV.h"
 
 #include "macro.h"
+#include "Vector.h"
 
 #include <random>
 
@@ -9,13 +10,13 @@ const float WAVELENGTH_RANGE = 170;
 const float HUE_RANGE = 270;
 
 float HSV::hueAsWavelength() const {
-  return WAVELENGTH_MAX - WAVELENGTH_RANGE / HUE_RANGE * rad_to_deg(this->h);
+  return WAVELENGTH_MAX - WAVELENGTH_RANGE / HUE_RANGE * this->h;
 }
 
 float HSV::randomHue() {
   random_device rd;
   mt19937 gen(rd());
-  uniform_real_distribution<> dis(0.0, deg_to_rad(HUE_RANGE));
+  uniform_real_distribution<> dis(0.0, HUE_RANGE);
 
   return dis(gen);
 }
@@ -47,4 +48,24 @@ HSV HSV::rgbToHsv(const Color& color) {
   }
 
   return hsv;
+}
+
+Color HSV::toRGB() const {
+  float hue = this->h;
+
+  while (hue < 0) { hue += 360; }
+
+  float chroma = this->v * this->s;
+  float hue_mod = fmod(hue / 60.0, 6);
+  float m = this->v - chroma;
+  float x = chroma * (1.0 - fabs(1.0 - fmod(hue_mod, 2))) + m;
+
+  switch ((int)hue_mod) {
+    case 0: return Color(this->v, x,       m);
+    case 1: return Color(x,       this->v, m);
+    case 2: return Color(m,       this->v, x);
+    case 3: return Color(m,       x,       this->v);
+    case 4: return Color(x,       m,       this->v);
+    case 5: return Color(this->v, m,       x);
+  }
 }

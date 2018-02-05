@@ -16,6 +16,8 @@ struct HSV {
   HSV(const float h_, const float s_, const float v_): h(h_), s(s_), v(v_) {};
 
   float hueAsWavelength() const;
+  Color toRGB() const;
+
   static float randomHue();
   static HSV withRandomHue(float s, float v);
   static HSV rgbToHsv(const Color& color);
