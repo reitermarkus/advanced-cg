@@ -15,9 +15,9 @@ float HSV::hueAsWavelength() const {
 float HSV::randomHue() {
   random_device rd;
   mt19937 gen(rd());
-  uniform_real_distribution<> dis(0.0, 1.0);
+  uniform_real_distribution<> dis(0.0, deg_to_rad(HUE_RANGE));
 
-  return dis(gen) * HUE_RANGE;
+  return dis(gen);
 }
 
 HSV HSV::withRandomHue(float s, float v) {
