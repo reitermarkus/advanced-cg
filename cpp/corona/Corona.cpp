@@ -18,10 +18,7 @@ using namespace std;
 
 vector<const SceneObject*> objects = vector<const SceneObject*>();
 
-vector<Sphere> lights = {
-  Sphere(10.0, Vector(50, 50, 0), Color(4, 4, 4) * 100, Color(), DIFF), // Light
-};
-
+const auto light = Sphere(10.0, Vector(50.0, 50.0, -250.0), Color(4, 4, 4) * 100, Color(), DIFF);
 
 /******************************************************************
 * Check for closest intersection of a ray with the scene;
@@ -106,9 +103,7 @@ int main(int argc, char *argv[]) {
   double aperture = 0;
   double focal_length = 96.5;
 
-  for (auto &light : lights) {
-    objects.push_back(&light);
-  }
+  objects.push_back(&light);
 
   vector<Triangle> layers;
 
