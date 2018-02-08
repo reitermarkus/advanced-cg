@@ -20,7 +20,7 @@ struct HSV {
 
   static float randomHue();
   static HSV withRandomHue(float s, float v);
-  static HSV rgbToHsv(const Color& color);
+  static HSV from(const Color& color);
 };
 
 ostream& operator<<(std::ostream &strm, const HSV &c);

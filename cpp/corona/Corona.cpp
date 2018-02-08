@@ -61,7 +61,6 @@ Color radiance(const Ray &ray, HSV &ray_color) {
     const Sphere* sphere = static_cast<const Sphere*>(obj);
     normal = (hitpoint - sphere->position).normalize();
 
-
     // Only the light is a sphere, so return if the ray reaches the light.
     return ray_color.toRGB();
   } else {
@@ -93,7 +92,6 @@ Color radiance(const Ray &ray, HSV &ray_color) {
   // Initially, use both reflection and trasmission.
   return radiance(refraction_ray, ray_color);
 }
-
 
 int main(int argc, char *argv[]) {
   int width = 1024;
@@ -127,7 +125,6 @@ int main(int argc, char *argv[]) {
   for(const auto& layer : layers) {
     objects.push_back(&layer);
   }
-
 
   /* Set camera origin and viewing direction (negative z direction) */
   Ray camera(Vector(50.0, 52.0, 295.6), Vector(0.0, -0.042612, -1.0).normalize());
