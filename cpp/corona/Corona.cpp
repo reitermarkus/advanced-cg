@@ -82,19 +82,19 @@ Color radiance(const Ray &ray, Wave wave) {
   auto offset = (drand48() - 0.5) / 10.0;
 
   switch (wave) {
-    case R: n2 = n2 + 0.01 + offset; break;
-    case G: n2 = n2 + 0.07 + offset; break;
-    case B: n2 = n2 + 0.13 + offset; break;
+    case R: n2 += 0.01 + offset; break;
+    case G: n2 += 0.07 + offset; break;
+    case B: n2 += 0.13 + offset; break;
   }
 
   double nn = n1 / n2;
   double ddn = ray.dir.dotProduct(nl);
-  double cos = 1 - nn * nn * (1 - ddn*ddn);
+  double cos2t = 1 - pow(nn, 2) * (1 - pow(ddn, 2));
 
-  /* Determine transmitted ray direction */
-  Vector refraction_dir = (ray.dir * nn - normal * (ddn * nn + sqrt(cos)));
+  // Determine refracted ray direction.
+  Vector refraction_dir = (ray.dir * nn - normal * (ddn * nn + sqrt(cos2t)));
 
-  return radiance(Ray(hitpoint, refraction_dir), wave);
+  return radiance(Ray(hitpoint, refraction_dir), wave) * cos2t;
 }
 
 int main(int argc, char *argv[]) {
