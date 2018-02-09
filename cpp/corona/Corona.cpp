@@ -189,28 +189,11 @@ int main(int argc, char *argv[]) {
             ) / samples;
           }
 
-          accumulated_radiance = accumulated_radiance / 4.0;
+          accumulated_radiance = accumulated_radiance.clamp(0.0, 1.0) / 4.0;
 
           img.addColor(x, y, accumulated_radiance);
         }
       }
-    }
-  }
-
-  double max_color_value = 0.0;
-
-  for (int x = 0; x < width; x++) {
-    for (int y = 0; y < height; y++) {
-      max_color_value = max(max_color_value, img.getColor(x, y).max());
-    }
-  }
-
-  cout << "Max color: " << max_color_value << endl;
-
-  for (int x = 0; x < width; x++) {
-    for (int y = 0; y < height; y++) {
-      auto color = img.getColor(x, y) / max_color_value;
-      img.setColor(x, y, color);
     }
   }
 
