@@ -100,10 +100,10 @@ Color radiance(const Ray &ray, Wave wave) {
 int main(int argc, char *argv[]) {
   int width = 1024;
   int height = 768;
-  int samples = (argc == 2) ? atoi(argv[1]) : 8;
+  int samples = (argc == 2) ? atoi(argv[1]) : 4;
 
-  double aperture = 2.4;
-  double focal_length = 96.5;
+  double aperture = 5.0;
+  double focal_length = 100.0;
 
   objects.push_back(&light);
 
