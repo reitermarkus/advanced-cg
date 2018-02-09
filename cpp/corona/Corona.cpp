@@ -16,6 +16,8 @@
 
 using namespace std;
 
+enum Wave { R, G, B };
+
 vector<const SceneObject*> objects = vector<const SceneObject*>();
 
 const auto light = Sphere(10.0, Vector(50.0, 50.0, 0.0), Color(4, 4, 4) * 100, Color(), DIFF);
@@ -43,7 +45,7 @@ Vector perfectReflection(Vector dir, Vector normal) {
   return dir - normal * 2 * normal.dotProduct(dir);
 }
 
-Color radiance(const Ray &ray, HSV &ray_color) {
+Color radiance(const Ray &ray, Wave wave) {
   double t;
   size_t id = 0;
 
@@ -62,7 +64,7 @@ Color radiance(const Ray &ray, HSV &ray_color) {
     normal = (hitpoint - sphere->position).normalize();
 
     // Only the light is a sphere, so return if the ray reaches the light.
-    return ray_color.toRGB();
+    return sphere->emission;
   } else {
     const Triangle* tri = static_cast<const Triangle*>(obj);
     normal = tri->normal;
@@ -75,27 +77,27 @@ Color radiance(const Ray &ray, HSV &ray_color) {
     nl = -nl;
 
   double n1 = 1.0;
-  double n2 = refractive_index_of_air(ray_color.hueAsWavelength());
+  double n2 = 1.0;
+  
+  if (wave == R) {
+		double vr = drand48();
+		n2 = n2 + 0.01 + (vr/10) - 0.02;
+	} else if (wave == G) {
+		double vg = drand48();
+		n2 = n2 + 0.07 + (vg/10) - 0.02;
+	} else if (wave == B) {
+		double vb = drand48();
+		n2 = n2 + 0.13 + (vb/10) - 0.02;
+	}
 
-  auto color = ray_color.toRGB();
+  double nn = n1/n2;
+  double ddn = ray.dir.dotProduct(nl);
+  double cos = 1 - nn * nn * (1 - ddn*ddn);
 
-  if (color.x > 0.0 && color.y > 0.0 && color.z > 0.0) {
-    n2 = 1.0;
-  }
-
-  double phi2 = acos((-ray.dir).dotProduct(nl));
-  double phi1 = asin(n2 / n1 * sin(phi2));
-
-  auto n = nl;
-  auto q = -ray.dir;
-
-  auto u = q + cos(phi2) * n / sin(phi2);
-
-  auto l = (sin(phi1) * u - cos(phi1) * n).normalize();
-
-  Ray refraction_ray = Ray(hitpoint, -l);
-
-  return radiance(refraction_ray, ray_color) * cos(phi1);
+  /* Determine transmitted ray direction */    
+  Vector refraction_dir = (ray.dir * nn - normal * (ddn * nn + sqrt(cos)));
+  
+  return radiance(Ray(hitpoint, refraction_dir), wave);
 }
 
 int main(int argc, char *argv[]) {
@@ -110,7 +112,7 @@ int main(int argc, char *argv[]) {
 
   vector<Triangle> layers;
 
-  for(int i = 0; i < 20; i++) {
+  for(int i = 0; i < 8; i++) {
     const auto h = Vector( 0.0, 250.0,  0.0);
     const auto w = Vector(250.0,  0.0,  0.0);
     const auto d = Vector( 0.0,  0.0, 0.5);
@@ -121,9 +123,6 @@ int main(int argc, char *argv[]) {
 
     layers.push_back(Triangle(i * d + position, w + h,     h, Color(), color, REFR)); // Front
     layers.push_back(Triangle(i * d + position,     w, w + h, Color(), color, REFR)); // Front
-
-    layers.push_back(Triangle(i * d + d + position + w,     -w, -w + h, Color(), color, REFR)); // Back
-    layers.push_back(Triangle(i * d + d + position + w, -w + h,      h, Color(), color, REFR)); // Back
   }
 
   for(const auto& layer : layers) {
@@ -140,11 +139,6 @@ int main(int argc, char *argv[]) {
 
   /* Final rendering */
   Image img(width, height);
-
-  const auto r = HSV::from(Color(1.0, 0.0, 0.0));
-  const auto g = HSV::from(Color(0.0, 1.0, 0.0));
-  const auto b = HSV::from(Color(0.0, 0.0, 1.0));
-  const auto w = HSV::from(Color(1.0, 1.0, 1.0));
 
   /* Loop over image rows */
   for (int y = 0; y < height; y++) {
@@ -191,11 +185,11 @@ int main(int argc, char *argv[]) {
 
 
             /* Accumulate radiance */
-            accumulated_radiance += (Color(
-              radiance(ray, r).x,
-              radiance(ray, g).y,
-              radiance(ray, b).z
-            ) + radiance(ray, w)) / samples;
+            accumulated_radiance += Color(
+              radiance(ray, R).x,
+              radiance(ray, G).y,
+              radiance(ray, B).z
+            ) / samples;
           }
 
           accumulated_radiance = accumulated_radiance / 4.0;
