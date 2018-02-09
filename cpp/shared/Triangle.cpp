@@ -14,7 +14,7 @@ Triangle::Triangle(const Vector &a_, const Vector &b_, const Vector &c_, const C
 }
 
 double Triangle::intersect(const Ray &ray) const {
-  static const double EPSILON = 0.0000001;
+  static const double EPSILON = numeric_limits<double>::epsilon();
 
   Vector edge_1 = this->b - this->a;
   Vector edge_2 = this->c - this->a;

@@ -78,7 +78,7 @@ Color radiance(const Ray &ray, Wave wave) {
 
   double n1 = 1.0;
   double n2 = 1.0;
-  
+
   if (wave == R) {
 		double vr = drand48();
 		n2 = n2 + 0.01 + (vr/10) - 0.02;
@@ -94,9 +94,9 @@ Color radiance(const Ray &ray, Wave wave) {
   double ddn = ray.dir.dotProduct(nl);
   double cos = 1 - nn * nn * (1 - ddn*ddn);
 
-  /* Determine transmitted ray direction */    
+  /* Determine transmitted ray direction */
   Vector refraction_dir = (ray.dir * nn - normal * (ddn * nn + sqrt(cos)));
-  
+
   return radiance(Ray(hitpoint, refraction_dir), wave);
 }
 

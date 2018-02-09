@@ -82,21 +82,13 @@ Vector Vector::crossProduct(const Vector &b) const {
 }
 
 Vector Vector::clamp(double min, double max) {
-	return Vector(
-		x<0 ? 0.0 : x>1.0 ? 1.0 : x,
-		y<0 ? 0.0 : y>1.0 ? 1.0 : y,
-		z<0 ? 0.0 : z>1.0 ? 1.0 : z
-	); 
-}
-/*
-Vector Vector::clamp(double min, double max) {
   return Vector(
     std::clamp(x, min, max),
     std::clamp(y, min, max),
     std::clamp(z, min, max)
   );
 }
-*/
+
 double Vector::max() const {
   return std::max(x, std::max(y, z));
 }
