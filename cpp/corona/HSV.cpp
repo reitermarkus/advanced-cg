@@ -66,6 +66,6 @@ Color HSV::toRGB() const {
     case 2: return Color(m,       this->v, x);
     case 3: return Color(m,       x,       this->v);
     case 4: return Color(x,       m,       this->v);
-    case 5: return Color(this->v, m,       x);
+    default: return Color(this->v, m,       x);
   }
 }

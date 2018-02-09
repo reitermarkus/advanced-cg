@@ -5,7 +5,6 @@
 #include "macro.h"
 
 #include "Sampler.h"
-#include "HSV.h"
 #include "SceneObject.h"
 #include "Triangle.h"
 #include "Sphere.h"
