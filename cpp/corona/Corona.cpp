@@ -79,18 +79,15 @@ Color radiance(const Ray &ray, Wave wave) {
   double n1 = 1.0;
   double n2 = 1.0;
 
-  if (wave == R) {
-		double vr = drand48();
-		n2 = n2 + 0.01 + (vr/10) - 0.02;
-	} else if (wave == G) {
-		double vg = drand48();
-		n2 = n2 + 0.07 + (vg/10) - 0.02;
-	} else if (wave == B) {
-		double vb = drand48();
-		n2 = n2 + 0.13 + (vb/10) - 0.02;
-	}
+  auto offset = (drand48() - 0.5) / 10.0;
 
-  double nn = n1/n2;
+  switch (wave) {
+    case R: n2 = n2 + 0.01 + offset; break;
+    case G: n2 = n2 + 0.07 + offset; break;
+    case B: n2 = n2 + 0.13 + offset; break;
+  }
+
+  double nn = n1 / n2;
   double ddn = ray.dir.dotProduct(nl);
   double cos = 1 - nn * nn * (1 - ddn*ddn);
 
@@ -103,16 +100,16 @@ Color radiance(const Ray &ray, Wave wave) {
 int main(int argc, char *argv[]) {
   int width = 1024;
   int height = 768;
-  int samples = (argc == 2) ? atoi(argv[1]) : 1;
+  int samples = (argc == 2) ? atoi(argv[1]) : 8;
 
-  double aperture = 0;
+  double aperture = 2.4;
   double focal_length = 96.5;
 
   objects.push_back(&light);
 
   vector<Triangle> layers;
 
-  for(int i = 0; i < 8; i++) {
+  for (int i = 0; i < 20; i++) {
     const auto h = Vector( 0.0, 250.0,  0.0);
     const auto w = Vector(250.0,  0.0,  0.0);
     const auto d = Vector( 0.0,  0.0, 0.5);
@@ -125,7 +122,7 @@ int main(int argc, char *argv[]) {
     layers.push_back(Triangle(i * d + position,     w, w + h, Color(), color, REFR)); // Front
   }
 
-  for(const auto& layer : layers) {
+  for (const auto& layer : layers) {
     objects.push_back(&layer);
   }
 
