@@ -18,7 +18,7 @@ using namespace std;
 
 vector<const SceneObject*> objects = vector<const SceneObject*>();
 
-const auto light = Sphere(10.0, Vector(50.0, 50.0, -250.0), Color(4, 4, 4) * 100, Color(), DIFF);
+const auto light = Sphere(10.0, Vector(50.0, 50.0, 0.0), Color(4, 4, 4) * 100, Color(), DIFF);
 
 /******************************************************************
 * Check for closest intersection of a ray with the scene;
@@ -77,7 +77,13 @@ Color radiance(const Ray &ray, HSV &ray_color) {
   double n1 = 1.0;
   double n2 = refractive_index_of_air(ray_color.hueAsWavelength());
 
-  double phi2 = acos((-ray.dir).dotProduct(-nl));
+  auto color = ray_color.toRGB();
+
+  if (color.x > 0.0 && color.y > 0.0 && color.z > 0.0) {
+    n2 = 1.0;
+  }
+
+  double phi2 = acos((-ray.dir).dotProduct(nl));
   double phi1 = asin(n2 / n1 * sin(phi2));
 
   auto n = nl;
@@ -85,12 +91,11 @@ Color radiance(const Ray &ray, HSV &ray_color) {
 
   auto u = q + cos(phi2) * n / sin(phi2);
 
-  auto l = sin(phi1) * u - cos(phi1) * n;
+  auto l = (sin(phi1) * u - cos(phi1) * n).normalize();
 
-  Ray refraction_ray = Ray(hitpoint, l.normalize());
+  Ray refraction_ray = Ray(hitpoint, -l);
 
-  // Initially, use both reflection and trasmission.
-  return radiance(refraction_ray, ray_color);
+  return radiance(refraction_ray, ray_color) * cos(phi1);
 }
 
 int main(int argc, char *argv[]) {
@@ -104,7 +109,6 @@ int main(int argc, char *argv[]) {
   objects.push_back(&light);
 
   vector<Triangle> layers;
-
 
   for(int i = 0; i < 20; i++) {
     const auto h = Vector( 0.0, 250.0,  0.0);
@@ -136,6 +140,11 @@ int main(int argc, char *argv[]) {
 
   /* Final rendering */
   Image img(width, height);
+
+  const auto r = HSV::from(Color(1.0, 0.0, 0.0));
+  const auto g = HSV::from(Color(0.0, 1.0, 0.0));
+  const auto b = HSV::from(Color(0.0, 0.0, 1.0));
+  const auto w = HSV::from(Color(1.0, 1.0, 1.0));
 
   /* Loop over image rows */
   for (int y = 0; y < height; y++) {
@@ -180,17 +189,37 @@ int main(int argc, char *argv[]) {
 
             auto ray = Ray(start + lens_sample_point, dir);
 
-            auto color = HSV::withRandomHue(1.0, 1.0);
 
             /* Accumulate radiance */
-            accumulated_radiance = accumulated_radiance + radiance(ray, color) / samples;
+            accumulated_radiance += (Color(
+              radiance(ray, r).x,
+              radiance(ray, g).y,
+              radiance(ray, b).z
+            ) + radiance(ray, w)) / samples;
           }
 
-          accumulated_radiance = accumulated_radiance.clamp(0.0, 1.0) * 0.25;
+          accumulated_radiance = accumulated_radiance / 4.0;
 
           img.addColor(x, y, accumulated_radiance);
         }
       }
+    }
+  }
+
+  double max_color_value = 0.0;
+
+  for (int x = 0; x < width; x++) {
+    for (int y = 0; y < height; y++) {
+      max_color_value = max(max_color_value, img.getColor(x, y).max());
+    }
+  }
+
+  cout << "Max color: " << max_color_value << endl;
+
+  for (int x = 0; x < width; x++) {
+    for (int y = 0; y < height; y++) {
+      auto color = img.getColor(x, y) / max_color_value;
+      img.setColor(x, y, color);
     }
   }
 
