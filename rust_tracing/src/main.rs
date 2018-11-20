@@ -194,24 +194,24 @@ fn radiance(objects: &[Box<&SceneObject>], ray: &Ray, mut depth: i32, E: i32) ->
 
         if intersect_scene(objects, &Ray::new(hitpoint, l), &mut t, &mut id) && id == i {
           let omega = 2.0 * PI * (1.0 - cos_a_max);
-          e += col.entrywise_product(&(sphere.emission() * l.dot_product(&nl) * omega)) / PI;
+          e += col.entrywise_product(sphere.emission() * l.dot_product(&nl) * omega) / PI;
         }
       }
 
           /* Return potential light emission, direct lighting, and indirect lighting (via
         recursive call for Monte-Carlo integration */
-      return obj.emission() * E as f64 + e + col.entrywise_product(&radiance(objects, &Ray::new(hitpoint, d), depth, 0));
+      return obj.emission() * E as f64 + e + col.entrywise_product(radiance(objects, &Ray::new(hitpoint, d), depth, 0));
     },
     ReflType::GLOS => {
       let angle = 0.10;
       let l = random_direction(nl, angle);
 
-      return obj.emission() + col.entrywise_product(&radiance(objects, &Ray::new(hitpoint, l), depth, 1));
+      return obj.emission() + col.entrywise_product(radiance(objects, &Ray::new(hitpoint, l), depth, 1));
     },
     ReflType::SPEC => {
       // Return light emission mirror reflection (via recursive call using perfect reflection vector).
       let reflection_ray = Ray::new(hitpoint, perfect_reflection(&ray.dir, &normal));
-      return obj.emission() + col.entrywise_product(&radiance(objects, &reflection_ray, depth, 1));
+      return obj.emission() + col.entrywise_product(radiance(objects, &reflection_ray, depth, 1));
     },
     ReflType::TRAN => {
       let angle = 0.2;
@@ -233,7 +233,7 @@ fn radiance(objects: &[Box<&SceneObject>], ray: &Ray, mut depth: i32, E: i32) ->
 
     // Check for total internal reflection, if so only reflect.
   if cos2t < 0.0 {
-    return obj.emission() +  col.entrywise_product(&radiance(objects, &reflection_ray, depth, 1));
+    return obj.emission() +  col.entrywise_product(radiance(objects, &reflection_ray, depth, 1));
   }
 
 
@@ -261,8 +261,8 @@ fn radiance(objects: &[Box<&SceneObject>], ray: &Ray, mut depth: i32, E: i32) ->
 
   // Initially, use both reflection and trasmission.
   if depth < 3 {
-    return obj.emission() +  col.entrywise_product(&(radiance(objects, &reflection_ray, depth, 1) * Re
-                                                   + radiance(objects, &transmission_ray, depth, 1) * Tr));
+    return obj.emission() +  col.entrywise_product(radiance(objects, &reflection_ray, depth, 1) * Re
+                                                   + radiance(objects, &transmission_ray, depth, 1) * Tr);
   }
   // Probability for selecting reflectance or transmittance */
   let P = 0.25 + 0.5 * Re;
@@ -271,10 +271,10 @@ fn radiance(objects: &[Box<&SceneObject>], ray: &Ray, mut depth: i32, E: i32) ->
 
   /* Russian Roulette */
   if drand48(0.0, 1.0) < P {
-    return obj.emission() +  col.entrywise_product(&(radiance(objects, &reflection_ray, depth, 1) * RP));
+    return obj.emission() +  col.entrywise_product(radiance(objects, &reflection_ray, depth, 1) * RP);
   }
 
-  return obj.emission() +  col.entrywise_product(&(radiance(objects, &transmission_ray, depth, 1) * TP));
+  return obj.emission() +  col.entrywise_product(radiance(objects, &transmission_ray, depth, 1) * TP);
 }
 
 fn main() {

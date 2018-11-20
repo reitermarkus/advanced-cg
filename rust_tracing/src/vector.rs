@@ -18,7 +18,7 @@ impl Vector {
     Vector { x: x, y: y, z: z }
   }
 
-  pub fn entrywise_product(&self, other: &Vector) -> Vector {
+  pub fn entrywise_product(&self, other: Vector) -> Vector {
     Vector {
       x: self.x * other.x,
       y: self.y * other.y,
