@@ -47,10 +47,6 @@ lazy_static! {
       Triangle::new(Vector::new(100.0,  0.0, 170.0), Vector::new(-100.0, 0.0,    0.0), Vector::new(0.0,  80.0,    0.0), Color::zero(), Color::new(0.25, 0.75,  0.25), ReflType::DIFF),  // Front:  bottom-right (not visible)
       Triangle::new(Vector::new(  0.0, 80.0, 170.0), Vector::new( 100.0, 0.0,    0.0), Vector::new(0.0, -80.0,    0.0), Color::zero(), Color::new(0.25, 0.75,  0.25), ReflType::DIFF),  // Front:  top-left (not visible)
 
-      /* Area light source on top */
-      Triangle::new(Vector::new(40.0, 79.99, 65.0), Vector::new( 20.0, 0.0, 0.0), Vector::new(0.0, 0.0,  20.0), Color::new(12.0, 12.0, 12.0), Color::new(0.75, 0.75, 0.75), ReflType::DIFF), // back-left
-      Triangle::new(Vector::new(60.0, 79.99, 85.0), Vector::new(-20.0, 0.0, 0.0), Vector::new(0.0, 0.0, -20.0), Color::new(12.0, 12.0, 12.0), Color::new(0.75, 0.75, 0.75), ReflType::DIFF), // front-right
-
       /* Cuboid in room */
       Triangle::new(Vector::new(30.0,  0.0, 100.0), Vector::new(  0.0, 0.0, -20.0), Vector::new(0.0,  40.0,   0.0), Color::zero(), Color::new(0.75, 0.75, 0.75), ReflType::DIFF), // Right: front-bottom
       Triangle::new(Vector::new(30.0, 40.0,  80.0), Vector::new(  0.0, 0.0,  20.0), Vector::new(0.0, -40.0,   0.0), Color::zero(), Color::new(0.75, 0.75, 0.75), ReflType::DIFF), // Right: back-top
@@ -67,7 +63,7 @@ lazy_static! {
 
   static ref SPHERES: Vec<Sphere> = {
     vec![
-      Sphere::new(16.5, Vector::new(27.0, 16.5, 47.0), Color::zero(), Color::new(1.0, 1.0, 1.0), ReflType::SPEC),  /* Mirror sphere */
+      Sphere::new(16.5, Vector::new(27.0, 16.5, 47.0), Color::zero(), Color::new(1.0, 1.0, 1.0), ReflType::REFR),  /* Mirror sphere */
       Sphere::new(16.5, Vector::new(73.0, 16.5, 78.0), Color::zero(), Color::new(1.0, 1.0, 1.0), ReflType::SPEC),  /* Mirror sphere */
       Sphere::new(1.5, Vector::new(50.0, 81.6 - 16.5, 81.6), Color::new(4.0, 4.0, 4.0) * 100.0, Color::zero(), ReflType::DIFF) /* Light */
     ]
@@ -125,7 +121,7 @@ fn radiance(objects: &[Box<&SceneObject>], ray: &Ray, mut depth: i32, E: i32) ->
     normal = triangle.normal;
   }
 
-  let mut nl = normal.clone();
+  let mut nl = normal;
 
   /* Obtain flipped normal, if object hit from inside */
   if normal.dot_product(&ray.dir) >= 0.0 {
@@ -170,7 +166,7 @@ fn radiance(objects: &[Box<&SceneObject>], ray: &Ray, mut depth: i32, E: i32) ->
                v * r1.sin() * r2s +
                w * (1.0 - r2).sqrt()).normalize();
 
-      let mut e: Vector = Vector::new(0.0, 0.0, 0.0);
+      let mut e: Vector = Vector::zero();
       for i in 0..objects.len() {
         let light_source = &objects[i];
 
@@ -198,7 +194,7 @@ fn radiance(objects: &[Box<&SceneObject>], ray: &Ray, mut depth: i32, E: i32) ->
 
         if intersect_scene(objects, &Ray::new(hitpoint, l), &mut t, &mut id) && id == i {
           let omega = 2.0 * PI * (1.0 - cos_a_max);
-          e += col.entrywise_product(&radiance(objects, &Ray::new(hitpoint, l), depth, 0));
+          e += col.entrywise_product(&(sphere.emission() * l.dot_product(&nl) * omega)) / PI;
         }
       }
 
@@ -246,9 +242,9 @@ fn radiance(objects: &[Box<&SceneObject>], ray: &Ray, mut depth: i32, E: i32) ->
 
   // Determine transmitted ray direction for refraction.
   if into {
-    transmission_direction = ray_dir * nnt - normal * (ddn * nnt + (cos2t).sqrt());
+    transmission_direction = ray_dir * nnt - normal * (ddn * nnt + cos2t.sqrt());
   } else {
-    transmission_direction = ray_dir * nnt + normal * (ddn * nnt + (cos2t).sqrt());
+    transmission_direction = ray_dir * nnt + normal * (ddn * nnt + cos2t.sqrt());
   }
 
   let transmission_direction = transmission_direction.normalize();
@@ -265,7 +261,7 @@ fn radiance(objects: &[Box<&SceneObject>], ray: &Ray, mut depth: i32, E: i32) ->
 
   // Initially, use both reflection and trasmission.
   if depth < 3 {
-    return obj.emission() +  col.entrywise_product(&(radiance(objects, &reflection_ray, depth, 1)
+    return obj.emission() +  col.entrywise_product(&(radiance(objects, &reflection_ray, depth, 1) * Re
                                                    + radiance(objects, &transmission_ray, depth, 1) * Tr));
   }
   // Probability for selecting reflectance or transmittance */
@@ -275,10 +271,10 @@ fn radiance(objects: &[Box<&SceneObject>], ray: &Ray, mut depth: i32, E: i32) ->
 
   /* Russian Roulette */
   if drand48(0.0, 1.0) < P {
-    return obj.emission() +  col.entrywise_product(&radiance(objects, &reflection_ray, depth, 1));
+    return obj.emission() +  col.entrywise_product(&(radiance(objects, &reflection_ray, depth, 1) * RP));
   }
 
-  return obj.emission() +  col.entrywise_product(&radiance(objects, &transmission_ray, depth, 1));
+  return obj.emission() +  col.entrywise_product(&(radiance(objects, &transmission_ray, depth, 1) * TP));
 }
 
 fn main() {
