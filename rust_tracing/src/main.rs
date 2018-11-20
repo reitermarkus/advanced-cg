@@ -347,9 +347,9 @@ fn main() {
             let dy = nu_filter_samples();
 
             // Ray direction into scene from camera through sample.
-            dir = cx * (((x as f64) + ((sx as f64) + 0.5 + dx) / 2.0) / (width as f64) - 0.5) +
-                              cy * ((((height - y - 1) as f64) + ((sy as f64) + 0.5 + dy) / 2.0) / (height as f64) - 0.5) +
-                              camera.dir;
+            dir = cx * ((x as f64 + (sx as f64 + 0.5 + dx) / 2.0) / width as f64 - 0.5) +
+                              cy * ((y as f64 + (sy as f64 + 0.5 + dy) / 2.0) / height as f64 - 0.5) +
+                              dir;
 
             // Extend camera ray to start inside box.
             let start: Vector = camera.org + dir * 130.0;
@@ -366,7 +366,7 @@ fn main() {
         }
       }
 
-      image.add_color(x, y, accumulated_radiance / samples as f64);
+      image.set_color(x, y, accumulated_radiance / samples as f64);
 
       if y == start_saving {
         image_thread.thread().unpark();
