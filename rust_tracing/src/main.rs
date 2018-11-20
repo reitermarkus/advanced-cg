@@ -187,7 +187,7 @@ fn radiance(objects: &[Box<&SceneObject>], ray: &Ray, mut depth: i32, E: i32) ->
           continue;
         }
 
-        let sphere: &Sphere = match obj.as_any().downcast_ref::<Sphere>() {
+        let sphere: &Sphere = match light_source.as_any().downcast_ref::<Sphere>() {
           Some(s) => s,
           None => panic!("obj is not a sphere!"),
         };
