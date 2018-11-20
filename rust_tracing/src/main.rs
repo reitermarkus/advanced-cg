@@ -27,7 +27,6 @@ use sphere::Sphere;
 use image::Image;
 
 use sampler::{drand48, random_direction};
-use rand::distributions::{IndependentSample, Range};
 use num_traits::cast::*;
 use rayon::prelude::*;
 
@@ -325,8 +324,6 @@ fn main() {
 
   // Loop over image rows.
   (0..height).into_par_iter().for_each(move |y| {
-    let between = Range::new(0.0, 1.0);
-    let mut rng = rand::thread_rng();
 
     // Loop over image columns.
     for x in 0..width {
@@ -349,7 +346,7 @@ fn main() {
             dir = (camera.dir + dir).normalize();
 
             let mut nu_filter_samples = || -> f64 {
-              let r = 2.0 * between.ind_sample(&mut rng) as f64;
+              let r = 2.0 * drand48(0.0, 1.0) as f64;
               if r < 1.0 { r.sqrt() - 1.0 } else { 1.0 - (2.0 - r).sqrt() }
             };
 

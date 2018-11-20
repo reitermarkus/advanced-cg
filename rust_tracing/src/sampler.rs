@@ -1,12 +1,10 @@
 use std::f64::consts::PI;
 use vector::Vector;
 use ray::Ray;
-use rand::distributions::{IndependentSample, Range};
+use rand::Rng;
 
 pub fn drand48(from: f64, to: f64) -> f64 {
-  let between = Range::new(from, to);
-  let mut rng = rand::thread_rng();
-  between.ind_sample(&mut rng) as f64
+  rand::thread_rng().gen_range(from, to)
 }
 
 pub fn point_on_sphere() -> Vector {
