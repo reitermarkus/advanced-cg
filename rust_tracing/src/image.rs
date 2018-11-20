@@ -45,14 +45,11 @@ impl Image {
     let guard = epoch::pin();
 
     loop {
-      match self.pixels[image_index].load(Acquire, &guard) {
-        Some(previous_color) => {
-          panic!("Pixel ({}, {}) was already set to {:?}.", x, y, previous_color.deref());
-        },
-        None => match self.pixels[image_index].cas_and_ref(None, color, Release, &guard) {
-          Ok(_) => return,
-          Err(c) => color = c,
-        }
+      let c = self.pixels[image_index].load(Acquire, &guard);
+
+      match self.pixels[image_index].cas_and_ref(c, color, Release, &guard) {
+        Ok(_) => return,
+        Err(c) => color = c,
       }
     }
   }
