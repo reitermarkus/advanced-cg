@@ -324,6 +324,7 @@ fn main() {
 
   // Loop over image rows.
   (0..height).into_par_iter().for_each(move |y| {
+     println!("\rRendering ({}spp) {}%     ", samples * 4, (100 * y / (height - 1)));
 
     // Loop over image columns.
     for x in 0..width {
