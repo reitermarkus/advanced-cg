@@ -315,7 +315,7 @@ fn main() {
   let start_saving = if height < 20 { height / 2 } else { height - 20 };
 
   // Loop over image rows.
-  (0..height).into_par_iter().for_each(move |y| {
+  (0..height).into_par_iter().for_each(|y| {
      println!("\rRendering ({}spp) {}%     ", samples * 4, (100 * y / (height - 1)));
 
     // Loop over image columns.
@@ -373,4 +373,6 @@ fn main() {
       }
     }
   });
+
+  image_thread.join().unwrap();
 }
