@@ -1,16 +1,12 @@
-use ordered_float::NotNan;
-use num_traits::cast::*;
-
 use std::ops::{Add, AddAssign, Sub, Mul, Div, DivAssign, Neg};
 use std::fmt::{Debug, Formatter, Result};
 use std::iter::Sum;
-use std::cmp::max;
 
-#[derive(Hash, PartialEq, Eq, Clone, Copy)]
+#[derive(PartialEq, Clone, Copy)]
 pub struct Vector {
-  pub x: NotNan<f64>,
-  pub y: NotNan<f64>,
-  pub z: NotNan<f64>,
+  pub x: f64,
+  pub y: f64,
+  pub z: f64,
 }
 
 impl Vector {
@@ -18,8 +14,8 @@ impl Vector {
     Vector::new(0.0, 0.0, 0.0)
   }
 
-  pub fn new<T: Into<NotNan<f64>>>(x: T, y: T, z: T) -> Vector {
-    Vector { x: x.into(), y: y.into(), z: z.into() }
+  pub fn new(x: f64, y: f64, z: f64) -> Vector {
+    Vector { x: x, y: y, z: z }
   }
 
   pub fn entrywise_product(&self, other: &Vector) -> Vector {
@@ -31,7 +27,7 @@ impl Vector {
   }
 
   pub fn dot_product(&self, other: &Vector) -> f64 {
-    (self.x * other.x + self.y * other.y + self.z * other.z).into_inner()
+    self.x * other.x + self.y * other.y + self.z * other.z
   }
 
   pub fn cross_product(&self, other: &Vector) -> Vector {
@@ -58,22 +54,23 @@ impl Vector {
     self.length_squared().sqrt()
   }
 
-  pub fn clamp<T: Into<NotNan<f64>> + Copy>(&self, min: T, max: T) -> Vector {
-    let clamp_sub = |input : &NotNan<f64>, min : &NotNan<f64>, max: &NotNan<f64>| match input {
-      i if i > max => max.clone(),
-      i if i < min => min.clone(),
-      i => i.clone(),
+  pub fn clamp(&self, min: f64, max: f64) -> Vector {
+    let clamp_sub = |input: f64, min: f64, max: f64| match input {
+      i if i > max => max,
+      i if i < min => min,
+      i => i,
     };
 
     Vector::new(
-      clamp_sub(&self.x, &min.into(), &max.into()),
-      clamp_sub(&self.y, &min.into(), &max.into()),
-      clamp_sub(&self.z, &min.into(), &max.into()),
+      clamp_sub(self.x, min, max),
+      clamp_sub(self.y, min, max),
+      clamp_sub(self.z, min, max),
     )
   }
 
   pub fn max(&self) -> f64 {
-    (max(self.x, max(self.y, self.z))).to_f64().unwrap()
+    let maxf = |a: f64, b: f64| if a > b { a } else { b };
+    maxf(self.x, maxf(self.y, self.z))
   }
 }
 

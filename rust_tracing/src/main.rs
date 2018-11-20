@@ -1,8 +1,5 @@
-#![feature(extern_prelude)]
 extern crate rand;
-extern crate ordered_float;
 extern crate crossbeam;
-extern crate num_traits;
 extern crate rayon;
 
 #[macro_use]
@@ -27,7 +24,6 @@ use sphere::Sphere;
 use image::Image;
 
 use sampler::{drand48, random_direction};
-use num_traits::cast::*;
 use rayon::prelude::*;
 
 use std::f64::consts::PI;
@@ -178,7 +174,7 @@ fn radiance(objects: &[Box<&SceneObject>], ray: &Ray, mut depth: i32, E: i32) ->
       for i in 0..objects.len() {
         let light_source = &objects[i];
 
-        if light_source.emission().x.to_f32().unwrap() <= 0.0 && light_source.emission().y.to_f32().unwrap() <= 0.0 && light_source.emission().z.to_f32().unwrap() <= 0.0 {
+        if light_source.emission().x <= 0.0 && light_source.emission().y <= 0.0 && light_source.emission().z <= 0.0 {
           continue;
         }
 
