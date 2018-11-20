@@ -1,10 +1,10 @@
-use crossbeam::epoch::{self, Atomic, Owned};
-
 use std::sync::atomic::Ordering::{Acquire, Release};
 use std::vec::Vec;
 use std::fs::File;
 use std::io::{BufWriter, Write, Error};
 use std::ops::Deref;
+
+use crossbeam::epoch::{self, Atomic, Owned};
 
 use color::Color;
 
@@ -50,6 +50,27 @@ impl Image {
       match self.pixels[image_index].cas_and_ref(c, color, Release, &guard) {
         Ok(_) => return,
         Err(c) => color = c,
+      }
+    }
+  }
+
+  pub fn add_color(&self, x: usize, y: usize, color: Color) {
+    let image_index = self.index(x, y);
+
+    let guard = epoch::pin();
+
+    loop {
+      let c = self.pixels[image_index].load(Acquire, &guard);
+
+      let mut color = if let Some(c) = c {
+        Owned::new(color + *c)
+      } else {
+        Owned::new(color)
+      };
+
+      match self.pixels[image_index].cas_and_ref(c, color, Release, &guard) {
+        Ok(_) => return,
+        Err(c) => continue,
       }
     }
   }
