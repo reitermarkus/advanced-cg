@@ -2,9 +2,8 @@ use std::sync::atomic::Ordering::{Acquire, Release};
 use std::vec::Vec;
 use std::fs::File;
 use std::io::{BufWriter, Write, Error};
-use std::ops::Deref;
 
-use crossbeam::epoch::{self, Atomic, Owned};
+use crossbeam::epoch::{self, Atomic, Owned, CompareAndSetError};
 
 use color::Color;
 
@@ -47,9 +46,9 @@ impl Image {
     loop {
       let c = self.pixels[image_index].load(Acquire, &guard);
 
-      match self.pixels[image_index].cas_and_ref(c, color, Release, &guard) {
+      match self.pixels[image_index].compare_and_set(c, color, Release, &guard) {
         Ok(_) => return,
-        Err(c) => color = c,
+        Err(CompareAndSetError { new, .. }) => color = new,
       }
     }
   }
@@ -62,15 +61,15 @@ impl Image {
     loop {
       let c = self.pixels[image_index].load(Acquire, &guard);
 
-      let mut color = if let Some(c) = c {
-        Owned::new(color + *c)
-      } else {
+      let color = if c.is_null() {
         Owned::new(color)
+      } else {
+        Owned::new(color + unsafe { c.deref() })
       };
 
-      match self.pixels[image_index].cas_and_ref(c, color, Release, &guard) {
+      match self.pixels[image_index].compare_and_set(c, color, Release, &guard) {
         Ok(_) => return,
-        Err(c) => continue,
+        Err(_) => continue,
       }
     }
   }
@@ -87,16 +86,17 @@ impl Image {
         let guard = epoch::pin();
 
         loop {
-          match self.pixels[i].load(Acquire, &guard) {
-            Some(color) => {
-              let Color { x: r, y: g, z: b } = **color;
+          let color = self.pixels[i].load(Acquire, &guard);
 
-              writer.write(&[to_byte(r), to_byte(g), to_byte(b)])?;
-
-              break;
-            },
-            None => continue,
+          if color.is_null() {
+            continue
           }
+
+          let Color { x: r, y: g, z: b } = *unsafe { color.deref() };
+
+          writer.write(&[to_byte(r), to_byte(g), to_byte(b)])?;
+
+          break;
         }
       }
     }

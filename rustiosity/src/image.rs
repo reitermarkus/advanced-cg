@@ -1,10 +1,9 @@
-use crossbeam::epoch::{self, Atomic, Owned};
-
 use std::sync::atomic::Ordering::{Acquire, Release};
 use std::vec::Vec;
 use std::fs::File;
 use std::io::{BufWriter, Write, Error};
-use std::ops::Deref;
+
+use crossbeam::epoch::{self, Atomic, Owned, CompareAndSetError};
 
 use color::Color;
 
@@ -45,14 +44,11 @@ impl Image {
     let guard = epoch::pin();
 
     loop {
-      match self.pixels[image_index].load(Acquire, &guard) {
-        Some(previous_color) => {
-          panic!("Pixel ({}, {}) was already set to {:?}.", x, y, previous_color.deref());
-        },
-        None => match self.pixels[image_index].cas_and_ref(None, color, Release, &guard) {
-          Ok(_) => return,
-          Err(c) => color = c,
-        }
+      let c = self.pixels[image_index].load(Acquire, &guard);
+
+      match self.pixels[image_index].compare_and_set(c, color, Release, &guard) {
+        Ok(_) => return,
+        Err(CompareAndSetError { new, .. }) => color = new,
       }
     }
   }
@@ -69,16 +65,17 @@ impl Image {
         let guard = epoch::pin();
 
         loop {
-          match self.pixels[i].load(Acquire, &guard) {
-            Some(color) => {
-              let Color { x: r, y: g, z: b } = **color;
+          let color = self.pixels[i].load(Acquire, &guard);
 
-              writer.write(&[to_byte(r), to_byte(g), to_byte(b)])?;
-
-              break;
-            },
-            None => continue,
+          if color.is_null() {
+            continue
           }
+
+          let Color { x: r, y: g, z: b } = *unsafe { color.deref() };
+
+          writer.write(&[to_byte(r), to_byte(g), to_byte(b)])?;
+
+          break;
         }
       }
     }

@@ -366,7 +366,7 @@ fn main() {
         }
       }
 
-      image.set_color(x, y, accumulated_radiance / samples as f64);
+      image.add_color(x, y, accumulated_radiance / samples as f64);
 
       if y == start_saving {
         image_thread.thread().unpark();
