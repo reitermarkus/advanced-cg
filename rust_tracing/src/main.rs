@@ -48,16 +48,16 @@ lazy_static! {
       Triangle::new(Vector::new(  0.0, 80.0, 170.0), Vector::new( 100.0, 0.0,    0.0), Vector::new(0.0, -80.0,    0.0), Color::zero(), Color::new(0.25, 0.75,  0.25), ReflType::DIFF),  // Front:  top-left (not visible)
 
       /* Cuboid in room */
-      Triangle::new(Vector::new(30.0,  0.0, 100.0), Vector::new(  0.0, 0.0, -20.0), Vector::new(0.0,  40.0,   0.0), Color::zero(), Color::new(0.75, 0.75, 0.75), ReflType::DIFF), // Right: front-bottom
-      Triangle::new(Vector::new(30.0, 40.0,  80.0), Vector::new(  0.0, 0.0,  20.0), Vector::new(0.0, -40.0,   0.0), Color::zero(), Color::new(0.75, 0.75, 0.75), ReflType::DIFF), // Right: back-top
-      Triangle::new(Vector::new(10.0,  0.0,  80.0), Vector::new(  0.0, 0.0,  20.0), Vector::new(0.0,  40.0,   0.0), Color::zero(), Color::new(0.75, 0.75, 0.75), ReflType::DIFF), // Left:  back-bottom
-      Triangle::new(Vector::new(10.0, 40.0, 100.0), Vector::new(  0.0, 0.0, -20.0), Vector::new(0.0, -40.0,   0.0), Color::zero(), Color::new(0.75, 0.75, 0.75), ReflType::DIFF), // Left:  front-top
-      Triangle::new(Vector::new(10.0,  0.0, 100.0), Vector::new( 20.0, 0.0,   0.0), Vector::new(0.0,  40.0,   0.0), Color::zero(), Color::new(0.75, 0.75, 0.75), ReflType::DIFF), // Front: bottom-left
-      Triangle::new(Vector::new(30.0, 40.0, 100.0), Vector::new(-20.0, 0.0,   0.0), Vector::new(0.0, -40.0,   0.0), Color::zero(), Color::new(0.75, 0.75, 0.75), ReflType::DIFF), // Front: top-right
-      Triangle::new(Vector::new(30.0,  0.0,  80.0), Vector::new(-20.0, 0.0,   0.0), Vector::new(0.0,  40.0,   0.0), Color::zero(), Color::new(0.75, 0.75, 0.75), ReflType::DIFF), // Back:  bottom-right
-      Triangle::new(Vector::new(10.0, 40.0,  80.0), Vector::new( 20.0, 0.0,   0.0), Vector::new(0.0, -40.0,   0.0), Color::zero(), Color::new(0.75, 0.75, 0.75), ReflType::DIFF), // Back:  top-left
-      Triangle::new(Vector::new(10.0, 40.0, 100.0), Vector::new( 20.0, 0.0,   0.0), Vector::new(0.0,   0.0, -20.0), Color::zero(), Color::new(0.75, 0.75, 0.75), ReflType::DIFF), // Top:   front-left
-      Triangle::new(Vector::new(30.0, 40.0,  80.0), Vector::new(-20.0, 0.0,   0.0), Vector::new(0.0,   0.0,  20.0), Color::zero(), Color::new(0.75, 0.75, 0.75), ReflType::DIFF), // Top:   back-right
+      Triangle::new(Vector::new(30.0,  0.0, 100.0), Vector::new(  0.0, 0.0, -20.0), Vector::new(0.0,  40.0,   0.0), Color::zero(), Color::new(0.75, 0.75, 0.75), ReflType::TRAN), // Right: front-bottom
+      Triangle::new(Vector::new(30.0, 40.0,  80.0), Vector::new(  0.0, 0.0,  20.0), Vector::new(0.0, -40.0,   0.0), Color::zero(), Color::new(0.75, 0.75, 0.75), ReflType::TRAN), // Right: back-top
+      Triangle::new(Vector::new(10.0,  0.0,  80.0), Vector::new(  0.0, 0.0,  20.0), Vector::new(0.0,  40.0,   0.0), Color::zero(), Color::new(0.75, 0.75, 0.75), ReflType::TRAN), // Left:  back-bottom
+      Triangle::new(Vector::new(10.0, 40.0, 100.0), Vector::new(  0.0, 0.0, -20.0), Vector::new(0.0, -40.0,   0.0), Color::zero(), Color::new(0.75, 0.75, 0.75), ReflType::TRAN), // Left:  front-top
+      Triangle::new(Vector::new(10.0,  0.0, 100.0), Vector::new( 20.0, 0.0,   0.0), Vector::new(0.0,  40.0,   0.0), Color::zero(), Color::new(0.75, 0.75, 0.75), ReflType::TRAN), // Front: bottom-left
+      Triangle::new(Vector::new(30.0, 40.0, 100.0), Vector::new(-20.0, 0.0,   0.0), Vector::new(0.0, -40.0,   0.0), Color::zero(), Color::new(0.75, 0.75, 0.75), ReflType::TRAN), // Front: top-right
+      Triangle::new(Vector::new(30.0,  0.0,  80.0), Vector::new(-20.0, 0.0,   0.0), Vector::new(0.0,  40.0,   0.0), Color::zero(), Color::new(0.75, 0.75, 0.75), ReflType::TRAN), // Back:  bottom-right
+      Triangle::new(Vector::new(10.0, 40.0,  80.0), Vector::new( 20.0, 0.0,   0.0), Vector::new(0.0, -40.0,   0.0), Color::zero(), Color::new(0.75, 0.75, 0.75), ReflType::TRAN), // Back:  top-left
+      Triangle::new(Vector::new(10.0, 40.0, 100.0), Vector::new( 20.0, 0.0,   0.0), Vector::new(0.0,   0.0, -20.0), Color::zero(), Color::new(0.75, 0.75, 0.75), ReflType::TRAN), // Top:   front-left
+      Triangle::new(Vector::new(30.0, 40.0,  80.0), Vector::new(-20.0, 0.0,   0.0), Vector::new(0.0,   0.0,  20.0), Color::zero(), Color::new(0.75, 0.75, 0.75), ReflType::TRAN), // Top:   back-right
     ]
   };
 
@@ -181,7 +181,7 @@ fn radiance(objects: &[Box<&SceneObject>], ray: &Ray, mut depth: i32, E: i32) ->
         let cos_a_max = (1.0 - sphere.radius.powf(2.0) /
                                 (hitpoint - sphere.position).dot_product(&(hitpoint - sphere.position))).sqrt();
 
-        let l = random_direction(sphere.position - hitpoint, (cos_a_max).acos());
+        let l = random_direction(sphere.position - hitpoint, cos_a_max.acos());
 
         if intersect_scene(objects, &Ray::new(hitpoint, l), &mut t, &mut id) && id == i {
           let omega = 2.0 * PI * (1.0 - cos_a_max);
@@ -226,7 +226,6 @@ fn radiance(objects: &[Box<&SceneObject>], ray: &Ray, mut depth: i32, E: i32) ->
   if cos2t < 0.0 {
     return obj.emission() +  col.entrywise_product(radiance(objects, &reflection_ray, depth, 1));
   }
-
 
   /* Otherwise reflection and/or refraction occurs */
   let mut transmission_direction;
@@ -311,12 +310,12 @@ fn main() {
 
     // Loop over image columns.
     for x in 0..width {
-      image.set_color(x, y, Color::zero());
-      let mut accumulated_radiance = Color::zero();
+      let mut total_radiance = Color::zero();
 
       // 2 x 2 subsampling per pixel.
       for sy in 0..2 {
         for sx in 0..2 {
+          let mut accumulated_radiance = Color::zero();
 
           // Computes radiance at subpixel using multiple samples.
           for _ in 0..samples {
@@ -350,14 +349,14 @@ fn main() {
             let ray = Ray::new(start + lens_sample_point, dir);
 
             /* Accumulate radiance */
-            accumulated_radiance = accumulated_radiance + radiance(&scene_objects, &ray, 0, 1) / samples as f64;
+            accumulated_radiance += radiance(&scene_objects, &ray, 0, 1) / samples as f64;
           }
 
-          accumulated_radiance = accumulated_radiance.clamp(0.0, 1.0) * 0.25;
+          total_radiance += accumulated_radiance.clamp(0.0, 1.0) * 0.25;
         }
       }
 
-      image.set_color(x, y, accumulated_radiance / samples as f64);
+      image.set_color(x, y, total_radiance);
 
       if y == start_saving {
         image_thread.thread().unpark();

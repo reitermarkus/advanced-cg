@@ -229,7 +229,7 @@ Color radiance(const Ray &ray, int depth, int E) {
   Vector transmission_direction;
 
   // Determine transmitted ray direction for refraction.
-  if(into) {
+  if (into) {
     transmission_direction = ray_dir * nnt - normal * (ddn * nnt + sqrt(cos2t));
   } else {
     transmission_direction = ray_dir * nnt + normal * (ddn * nnt + sqrt(cos2t));
