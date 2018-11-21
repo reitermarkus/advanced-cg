@@ -63,9 +63,10 @@ lazy_static! {
 
   static ref SPHERES: Vec<Sphere> = {
     vec![
-      Sphere::new(16.5, Vector::new(27.0, 16.5, 47.0), Color::zero(), Color::new(1.0, 1.0, 1.0), ReflType::REFR),  /* Mirror sphere */
-      Sphere::new(16.5, Vector::new(73.0, 16.5, 78.0), Color::zero(), Color::new(1.0, 1.0, 1.0), ReflType::SPEC),  /* Mirror sphere */
-      Sphere::new(1.5, Vector::new(50.0, 81.6 - 16.5, 81.6), Color::new(4.0, 4.0, 4.0) * 100.0, Color::zero(), ReflType::DIFF) /* Light */
+      Sphere::new(16.5, Vector::new(27.0, 16.5, 47.0), Color::zero(), Color::new(1.0, 1.0, 1.0), ReflType::SPEC),  // Mirror Sphere
+      Sphere::new(16.5, Vector::new(73.0, 16.5, 78.0), Color::zero(), Color::new(1.0, 1.0, 1.0), ReflType::REFR),  // Mirror Sphere
+
+      Sphere::new(1.5, Vector::new(50.0, 81.6 - 16.5, 81.6), Color::new(4.0, 4.0, 4.0) * 100.0, Color::zero(), ReflType::DIFF) // Light
     ]
   };
 }
@@ -99,7 +100,7 @@ fn radiance(objects: &[Box<&SceneObject>], ray: &Ray, mut depth: i32, E: i32) ->
   }
 
   /* Intersection point */
-  let hitpoint = ray.org + ray.dir + t;
+  let hitpoint = ray.org + ray.dir * t;
   let obj = &objects[id];
 
   /* Normal at intersection */
@@ -347,8 +348,8 @@ fn main() {
             let dy = nu_filter_samples();
 
             // Ray direction into scene from camera through sample.
-            dir = cx * ((x as f64 + (sx as f64 + 0.5 + dx) / 2.0) / width as f64 - 0.5) +
-                              cy * ((y as f64 + (sy as f64 + 0.5 + dy) / 2.0) / height as f64 - 0.5) +
+            dir = cx * (((x as f64) + ((sx as f64) + 0.5 + dx) / 2.0) / (width as f64) - 0.5) +
+                              cy * ((((height - y - 1) as f64) + ((sy as f64) + 0.5 + dy) / 2.0) / (height as f64) - 0.5) +
                               dir;
 
             // Extend camera ray to start inside box.
