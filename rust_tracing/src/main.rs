@@ -106,20 +106,12 @@ fn radiance(objects: &[Box<&SceneObject>], ray: &Ray, mut depth: i32, E: i32) ->
   /* Normal at intersection */
   let mut normal: Vector;
 
-  if obj.is_sphere() {
-    let sphere: &Sphere = match obj.as_any().downcast_ref::<Sphere>() {
-      Some(s) => s,
-      None => panic!("obj is not a sphere!"),
-    };
-
+  if let Some(sphere) = obj.as_any().downcast_ref::<Sphere>() {
     normal = (hitpoint - sphere.position).normalize();
-  } else {
-    let triangle: &Triangle = match obj.as_any().downcast_ref::<Triangle>() {
-      Some(tr) => tr,
-      None => panic!("obj is not a triangle!"),
-    };
-
+  } else if let Some(triangle) = obj.as_any().downcast_ref::<Triangle>() {
     normal = triangle.normal;
+  } else {
+    panic!("obj is not a sphere or a triangle!")
   }
 
   let mut nl = normal;
