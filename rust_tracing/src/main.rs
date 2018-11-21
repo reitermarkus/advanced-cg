@@ -167,14 +167,12 @@ fn radiance(objects: &[Box<&SceneObject>], ray: &Ray, mut depth: i32, E: i32) ->
           continue;
         }
 
-        if !light_source.is_sphere() {
-          println!("Warning: Only spherical light sources are implemented.");
-          continue;
-        }
-
         let sphere: &Sphere = match light_source.as_any().downcast_ref::<Sphere>() {
           Some(s) => s,
-          None => panic!("obj is not a sphere!"),
+          None => {
+            println!("Warning: Only spherical light sources are implemented.");
+            continue;
+          }
         };
 
         /* Randomly sample spherical light source from surface intersection */
