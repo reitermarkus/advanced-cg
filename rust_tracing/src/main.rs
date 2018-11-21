@@ -89,7 +89,7 @@ fn perfect_reflection(dir: &Vector, normal: &Vector) -> Vector {
   *dir - *normal * 2.0 * (*normal).dot_product(dir)
 }
 
-fn radiance(objects: &[Box<&SceneObject>], ray: &Ray, mut depth: i32, E: i32) -> Color {
+fn radiance(objects: &[Box<&SceneObject>], ray: &Ray, mut depth: i32, q: i32) -> Color {
   depth += 1;
   let mut t = 0.0;
   let mut id = 0;
@@ -104,7 +104,7 @@ fn radiance(objects: &[Box<&SceneObject>], ray: &Ray, mut depth: i32, E: i32) ->
   let obj = &objects[id];
 
   /* Normal at intersection */
-  let mut normal: Vector;
+  let normal;
 
   if let Some(sphere) = obj.as_any().downcast_ref::<Sphere>() {
     normal = (hitpoint - sphere.position).normalize();
@@ -130,7 +130,7 @@ fn radiance(objects: &[Box<&SceneObject>], ray: &Ray, mut depth: i32, E: i32) ->
   if depth > 5 || p == 0.0 {
     if drand48(0.0, 1.0) >= p {
       /* No further bounces, only return potential emission */
-      return obj.emission() * E as f64;
+      return obj.emission() * q as f64;
     }
 
     /* Scale estimator to remain unbiased */
@@ -191,7 +191,7 @@ fn radiance(objects: &[Box<&SceneObject>], ray: &Ray, mut depth: i32, E: i32) ->
 
           /* Return potential light emission, direct lighting, and indirect lighting (via
         recursive call for Monte-Carlo integration */
-      return obj.emission() * E as f64 + e + col.entrywise_product(radiance(objects, &Ray::new(hitpoint, d), depth, 0));
+      return obj.emission() * q as f64 + e + col.entrywise_product(radiance(objects, &Ray::new(hitpoint, d), depth, 0));
     },
     ReflType::GLOS => {
       let angle = 0.10;
@@ -228,7 +228,7 @@ fn radiance(objects: &[Box<&SceneObject>], ray: &Ray, mut depth: i32, E: i32) ->
   }
 
   /* Otherwise reflection and/or refraction occurs */
-  let mut transmission_direction;
+  let transmission_direction;
 
   // Determine transmitted ray direction for refraction.
   if into {
@@ -243,28 +243,28 @@ fn radiance(objects: &[Box<&SceneObject>], ray: &Ray, mut depth: i32, E: i32) ->
   let c = if into { 1.0 + ddn } else { 1.0 - transmission_direction.dot_product(&normal) };
 
   /* Compute Schlick's approximation of Fresnel equation */
-  let R0 = ((nc - nt) / (nc + nt)).powf(2.0);
-  let Re = R0 + (1.0 - R0) * c.powf(5.0);   // Reflectance
-  let Tr = 1.0 - Re;                     // Transmittance
+  let r0 = ((nc - nt) / (nc + nt)).powf(2.0);
+  let re = r0 + (1.0 - r0) * c.powf(5.0);   // Reflectance
+  let tr = 1.0 - re;                     // Transmittance
 
   let transmission_ray = Ray::new(hitpoint, transmission_direction);
 
   // Initially, use both reflection and trasmission.
   if depth < 3 {
-    return obj.emission() +  col.entrywise_product(radiance(objects, &reflection_ray, depth, 1) * Re
-                                                   + radiance(objects, &transmission_ray, depth, 1) * Tr);
+    return obj.emission() +  col.entrywise_product(radiance(objects, &reflection_ray, depth, 1) * re
+                                                   + radiance(objects, &transmission_ray, depth, 1) * tr);
   }
   // Probability for selecting reflectance or transmittance */
-  let P = 0.25 + 0.5 * Re;
-  let RP = Re / P;         /* Scaling factors for unbiased estimator */
-  let TP = Tr / (1.0 - P);
+  let p = 0.25 + 0.5 * re;
+  let rp = re / p;         /* Scaling factors for unbiased estimator */
+  let tp = tr / (1.0 - p);
 
   /* Russian Roulette */
-  if drand48(0.0, 1.0) < P {
-    return obj.emission() +  col.entrywise_product(radiance(objects, &reflection_ray, depth, 1) * RP);
+  if drand48(0.0, 1.0) < p {
+    return obj.emission() +  col.entrywise_product(radiance(objects, &reflection_ray, depth, 1) * rp);
   }
 
-  return obj.emission() +  col.entrywise_product(radiance(objects, &transmission_ray, depth, 1) * TP);
+  return obj.emission() +  col.entrywise_product(radiance(objects, &transmission_ray, depth, 1) * tp);
 }
 
 fn main() {
