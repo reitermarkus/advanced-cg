@@ -53,27 +53,6 @@ impl Image {
     }
   }
 
-  pub fn add_color(&self, x: usize, y: usize, color: Color) {
-    let image_index = self.index(x, y);
-
-    let guard = epoch::pin();
-
-    loop {
-      let c = self.pixels[image_index].load(Acquire, &guard);
-
-      let color = if c.is_null() {
-        Owned::new(color)
-      } else {
-        Owned::new(color + unsafe { c.deref() })
-      };
-
-      match self.pixels[image_index].compare_and_set(c, color, Release, &guard) {
-        Ok(_) => return,
-        Err(_) => continue,
-      }
-    }
-  }
-
   pub fn save(&self, file_name: &str) -> Result<File, Error> {
     let file = File::create(file_name)?;
 
