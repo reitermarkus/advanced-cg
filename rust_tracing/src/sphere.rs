@@ -20,7 +20,6 @@ impl SceneObject for Sphere {
   fn color(&self) -> Color { self.color }
   fn emission(&self) -> Color { self.emission }
   fn refl(&self) -> ReflType { self.refl }
-  fn is_sphere(&self) -> bool { true }
 
   fn as_any(&self) -> &dyn Any {
     self

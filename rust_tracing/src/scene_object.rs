@@ -15,7 +15,6 @@ pub enum ReflType {
 pub trait SceneObject: Sync + Send {
   fn color(&self) -> Color;
   fn emission(&self) -> Color;
-  fn is_sphere(&self) -> bool;
   fn refl(&self) -> ReflType;
 
   fn as_any(&self) -> &dyn Any;
