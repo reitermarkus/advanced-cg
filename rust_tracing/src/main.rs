@@ -33,6 +33,7 @@ use rayon::prelude::*;
 use std::f64::consts::PI;
 use std::sync::Arc;
 use std::thread;
+use std::time::{Duration, Instant};
 
 lazy_static! {
   static ref TRIS: Vec<Triangle> = {
@@ -319,6 +320,8 @@ fn main() {
   let aperture = 2.6;
   let focal_length = 120.0;
 
+  let total_bench = Instant::now();
+
   let mut scene_objects: Vec<Box<&dyn SceneObject>> = Vec::new();
 
   for tris in TRIS.iter() {
@@ -409,4 +412,12 @@ fn main() {
   });
 
   image_thread.join().unwrap();
+
+  let into_ms = |x: Duration| (x.as_secs() * 1_000) + (x.subsec_nanos() / 1_000_000) as u64;
+
+  let total_bench_elapsed = total_bench.elapsed();
+
+  println!("┢━━━━━━━━━━━━━━━━━━━━╈━━━━━━━━━━━┪");
+  println!("┃ Total              ┃ {:#6 } ms ┃", into_ms(total_bench_elapsed));
+  println!("┗━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━┛");
 }
