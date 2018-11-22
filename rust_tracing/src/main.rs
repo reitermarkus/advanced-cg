@@ -94,7 +94,7 @@ fn perfect_reflection(dir: &Vector, normal: &Vector) -> Vector {
   *dir - *normal * 2.0 * (*normal).dot_product(dir)
 }
 
-fn radiance(objects: &[Box<&dyn SceneObject>], ray: &Ray, mut depth: i32, E: i32) -> Color {
+fn radiance(objects: &[Box<&dyn SceneObject>], ray: &Ray, mut depth: i32, q: i32) -> Color {
   depth += 1;
   let mut t = 0.0;
   let mut id = 0;
@@ -237,7 +237,7 @@ fn radiance(objects: &[Box<&dyn SceneObject>], ray: &Ray, mut depth: i32, E: i32
     ray_dir * nnt - normal * (ddn * nnt + cos2t.sqrt())
   } else {
     ray_dir * nnt + normal * (ddn * nnt + cos2t.sqrt())
-  }
+  };
 
   let transmission_direction = transmission_direction.normalize();
 
@@ -262,7 +262,7 @@ fn radiance(objects: &[Box<&dyn SceneObject>], ray: &Ray, mut depth: i32, E: i32
   let tp = tr / (1.0 - p);
 
   /* Russian Roulette */
-  if drand48(0.0, 1.0) < p {
+  if drand48() < p {
     return obj.emission() +  col.entrywise_product(radiance(objects, &reflection_ray, depth, 1) * rp);
   }
 
