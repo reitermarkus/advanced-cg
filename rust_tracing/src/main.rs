@@ -231,14 +231,11 @@ fn radiance(objects: &[Box<&SceneObject>], ray: &Ray, mut depth: i32, q: i32) ->
     return obj.emission() +  col.entrywise_product(radiance(objects, &reflection_ray, depth, 1));
   }
 
-  /* Otherwise reflection and/or refraction occurs */
-  let transmission_direction;
-
   // Determine transmitted ray direction for refraction.
-  if into {
-    transmission_direction = ray_dir * nnt - normal * (ddn * nnt + cos2t.sqrt());
+  let transmission_direction = if into {
+    ray_dir * nnt - normal * (ddn * nnt + cos2t.sqrt())
   } else {
-    transmission_direction = ray_dir * nnt + normal * (ddn * nnt + cos2t.sqrt());
+    ray_dir * nnt + normal * (ddn * nnt + cos2t.sqrt())
   }
 
   let transmission_direction = transmission_direction.normalize();
