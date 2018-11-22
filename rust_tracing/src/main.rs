@@ -5,6 +5,10 @@ extern crate rayon;
 #[macro_use]
 extern crate lazy_static;
 
+#[macro_use]
+extern crate clap;
+use clap::{App, Arg};
+
 mod color;
 mod vector;
 mod triangle;
@@ -268,9 +272,51 @@ fn radiance(objects: &[Box<&SceneObject>], ray: &Ray, mut depth: i32, q: i32) ->
 }
 
 fn main() {
-  let width = 1024;
-  let height = 768;
-  let samples = 2;
+  let matches = App::new("rust_tracing")
+                  .arg(Arg::with_name("height")
+                    .long("height")
+                    .takes_value(true)
+                    .min_values(1)
+                    .max_values(1)
+                    .multiple(true)
+                    .help("Sets height of image"))
+                  .arg(Arg::with_name("width")
+                    .long("width")
+                    .takes_value(true)
+                    .min_values(1)
+                    .max_values(1)
+                    .multiple(true)
+                    .help("Sets width of image"))
+                  .arg(Arg::with_name("samples")
+                    .long("samples")
+                    .short("s")
+                    .takes_value(true)
+                    .min_values(1)
+                    .max_values(1)
+                    .multiple(true)
+                    .help("Sets samples"))
+                  .get_matches();
+
+  let width = if matches.is_present("width") {
+    match value_t!(matches, "width", usize) {
+      Ok(w) => w,
+      Err(_) => 1024
+    }
+  } else { 1024 };
+
+  let height = if matches.is_present("height") {
+    match value_t!(matches, "height", usize) {
+      Ok(h) => h,
+      Err(_) => 768
+    }
+  } else { 768 };
+
+  let samples = if matches.is_present("samples") {
+    match value_t!(matches, "samples", usize) {
+      Ok(s) => s,
+      Err(_) => 2
+    }
+  } else { 2 };
 
   let aperture = 2.6;
   let focal_length = 120.0;
