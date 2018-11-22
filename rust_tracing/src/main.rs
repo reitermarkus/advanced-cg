@@ -75,7 +75,7 @@ lazy_static! {
   };
 }
 
-fn intersect_scene(objects: &[Box<&SceneObject>], ray: &Ray, t: &mut f64, id: &mut usize) -> bool {
+fn intersect_scene(objects: &[Box<&dyn SceneObject>], ray: &Ray, t: &mut f64, id: &mut usize) -> bool {
   *t = 1e20;
 
   for i in 0..objects.len() {
@@ -93,7 +93,7 @@ fn perfect_reflection(dir: &Vector, normal: &Vector) -> Vector {
   *dir - *normal * 2.0 * (*normal).dot_product(dir)
 }
 
-fn radiance(objects: &[Box<&SceneObject>], ray: &Ray, mut depth: i32, q: i32) -> Color {
+fn radiance(objects: &[Box<&dyn SceneObject>], ray: &Ray, mut depth: i32, E: i32) -> Color {
   depth += 1;
   let mut t = 0.0;
   let mut id = 0;
@@ -318,7 +318,7 @@ fn main() {
   let aperture = 2.6;
   let focal_length = 120.0;
 
-  let mut scene_objects: Vec<Box<&SceneObject>> = Vec::new();
+  let mut scene_objects: Vec<Box<&dyn SceneObject>> = Vec::new();
 
   for tris in TRIS.iter() {
     scene_objects.push(Box::new(tris));
