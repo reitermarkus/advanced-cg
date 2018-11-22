@@ -12,7 +12,7 @@ pub enum ReflType {
   TRAN
 }
 
-pub trait SceneObject: Sync + Send {
+pub trait SceneObject: Any + Sync + Send {
   fn color(&self) -> Color;
   fn emission(&self) -> Color;
   fn refl(&self) -> ReflType;
