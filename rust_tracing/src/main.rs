@@ -69,6 +69,7 @@ lazy_static! {
     vec![
       Sphere::new(16.5, Vector::new(27.0, 16.5, 47.0), Color::zero(), Color::new(1.0, 1.0, 1.0), ReflType::SPEC),  // Mirror Sphere
       Sphere::new(16.5, Vector::new(73.0, 16.5, 78.0), Color::zero(), Color::new(1.0, 1.0, 1.0), ReflType::REFR),  // Mirror Sphere
+      Sphere::new(12.5, Vector::new(48.0, 12.5, 117.0), Color::zero(), Color::new(1.0, 1.0, 1.0), ReflType::GLOS),  // Mirror Sphere
 
       Sphere::new(1.5, Vector::new(50.0, 81.6 - 16.5, 81.6), Color::new(4.0, 4.0, 4.0) * 100.0, Color::zero(), ReflType::DIFF) // Light
     ]
