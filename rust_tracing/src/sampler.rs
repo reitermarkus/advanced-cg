@@ -1,6 +1,8 @@
 use std::f64::consts::PI;
-use vector::Vector;
+
 use rand::Rng;
+
+use vector::Vector;
 
 pub fn drand48() -> f64 {
   rand::thread_rng().gen_range(0.0, 1.0)

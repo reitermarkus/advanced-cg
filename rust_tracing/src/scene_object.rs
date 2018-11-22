@@ -1,7 +1,7 @@
+use downcast_rs::Downcast;
+
 use color::Color;
 use ray::Ray;
-
-use std::any::Any;
 
 #[derive(Copy, Clone)]
 pub enum ReflType {
@@ -12,12 +12,12 @@ pub enum ReflType {
   TRAN
 }
 
-pub trait SceneObject: Any + Sync + Send {
+pub trait SceneObject: Downcast + Sync + Send {
   fn color(&self) -> Color;
   fn emission(&self) -> Color;
   fn refl(&self) -> ReflType;
 
-  fn as_any(&self) -> &dyn Any;
-
   fn intersect(&self, ray: &Ray) -> f64;
 }
+
+impl_downcast!(SceneObject);

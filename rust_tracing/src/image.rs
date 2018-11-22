@@ -1,7 +1,6 @@
-use std::sync::atomic::Ordering::{Acquire, Release};
-use std::vec::Vec;
 use std::fs::File;
 use std::io::{BufWriter, Write, Error};
+use std::sync::atomic::Ordering::{Acquire, Release};
 
 use crossbeam::epoch::{self, Atomic, Owned, CompareAndSetError};
 

@@ -1,6 +1,6 @@
-use std::ops::{Add, AddAssign, Sub, Mul, Div, DivAssign, Neg};
 use std::fmt::{Debug, Formatter, Result};
 use std::iter::Sum;
+use std::ops::{Add, AddAssign, Sub, Mul, Div, DivAssign, Neg};
 
 #[derive(PartialEq, Clone, Copy)]
 pub struct Vector {

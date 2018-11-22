@@ -1,10 +1,7 @@
-use std::any::Any;
-
 use color::Color;
-use vector::Vector;
-use scene_object::ReflType;
-use scene_object::SceneObject;
 use ray::Ray;
+use scene_object::{ReflType, SceneObject};
+use vector::Vector;
 
 use std::f64::EPSILON;
 
@@ -18,18 +15,16 @@ pub struct Triangle {
 
   pub normal: Vector,
 
-  pub emission: Vector,
-  pub color: Vector,
+  emission: Vector,
+  color: Vector,
 
-  pub refl: ReflType
+  refl: ReflType
 }
 
 impl SceneObject for Triangle {
   fn color(&self) -> Color { self.color }
   fn emission(&self) -> Color { self.emission }
   fn refl(&self) -> ReflType { self.refl }
-
-  fn as_any(&self) -> &dyn Any { self }
 
   fn intersect(&self, ray: &Ray) -> f64 {
     let edge_1: Vector = &self.b - &self.a;

@@ -1,29 +1,22 @@
-use std::any::Any;
-
-use scene_object::SceneObject;
-use scene_object::ReflType;
-use vector::Vector;
 use color::Color;
 use ray::Ray;
+use scene_object::{ReflType, SceneObject};
+use vector::Vector;
 
 pub struct Sphere {
   pub radius: f64,
   pub position: Vector,
 
-  pub emission: Vector,
-  pub color: Vector,
+  emission: Vector,
+  color: Vector,
 
-  pub refl: ReflType
+  refl: ReflType
 }
 
 impl SceneObject for Sphere {
   fn color(&self) -> Color { self.color }
   fn emission(&self) -> Color { self.emission }
   fn refl(&self) -> ReflType { self.refl }
-
-  fn as_any(&self) -> &dyn Any {
-    self
-  }
 
   fn intersect(&self, ray: &Ray) -> f64 {
     /* Check for ray-sphere intersection by solving for t:

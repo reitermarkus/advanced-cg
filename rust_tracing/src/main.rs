@@ -1,39 +1,36 @@
-extern crate rand;
-extern crate crossbeam;
-extern crate rayon;
-
-#[macro_use]
-extern crate lazy_static;
-
-#[macro_use]
-extern crate clap;
-use clap::{App, Arg};
-
-mod color;
-mod vector;
-mod triangle;
-mod ray;
-mod scene_object;
-mod sphere;
-mod image;
-mod sampler;
-
-use ray::Ray;
-use triangle::Triangle;
-use vector::Vector;
-use color::Color;
-use scene_object::SceneObject;
-use scene_object::ReflType;
-use sphere::Sphere;
-use image::Image;
-
-use sampler::{drand48, random_direction};
-use rayon::prelude::*;
-
 use std::f64::consts::PI;
 use std::sync::Arc;
 use std::thread;
 use std::time::{Duration, Instant};
+
+#[macro_use]
+extern crate clap;
+use clap::{App, Arg};
+extern crate crossbeam;
+#[macro_use]
+extern crate downcast_rs;
+#[macro_use]
+extern crate lazy_static;
+extern crate rand;
+extern crate rayon;
+use rayon::prelude::*;
+
+mod color;
+use color::Color;
+mod image;
+use image::Image;
+mod ray;
+use ray::Ray;
+mod sampler;
+use sampler::{drand48, random_direction};
+mod scene_object;
+use scene_object::{ReflType, SceneObject};
+mod sphere;
+use sphere::Sphere;
+mod triangle;
+use triangle::Triangle;
+mod vector;
+use vector::Vector;
 
 lazy_static! {
   static ref TRIS: Vec<Triangle> = {
@@ -112,12 +109,12 @@ fn radiance(objects: &[Box<&dyn SceneObject>], ray: &Ray, mut depth: i32, q: i32
   /* Normal at intersection */
   let normal;
 
-  if let Some(sphere) = obj.as_any().downcast_ref::<Sphere>() {
+  if let Some(sphere) = obj.downcast_ref::<Sphere>() {
     normal = (hitpoint - sphere.position).normalize();
-  } else if let Some(triangle) = obj.as_any().downcast_ref::<Triangle>() {
+  } else if let Some(triangle) = obj.downcast_ref::<Triangle>() {
     normal = triangle.normal;
   } else {
-    panic!("obj is not a sphere or a triangle!")
+    panic!("Object is not a sphere nor a triangle!")
   }
 
   let mut nl = normal;
@@ -173,7 +170,7 @@ fn radiance(objects: &[Box<&dyn SceneObject>], ray: &Ray, mut depth: i32, q: i32
           continue;
         }
 
-        let sphere: &Sphere = match light_source.as_any().downcast_ref::<Sphere>() {
+        let sphere: &Sphere = match light_source.downcast_ref::<Sphere>() {
           Some(s) => s,
           None => {
             println!("Warning: Only spherical light sources are implemented.");
