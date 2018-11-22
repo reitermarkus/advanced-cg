@@ -359,10 +359,8 @@ fn main() {
       // 2 x 2 subsampling per pixel.
       for sy in 0..2 {
         for sx in 0..2 {
-          let mut accumulated_radiance = Color::zero();
-
           // Computes radiance at subpixel using multiple samples.
-          for _ in 0..samples {
+          let accumulated_radiance = (0..samples).map(|_| {
             // Generate random sample on circular lens.
             let random_radius = drand48();
             let random_angle = drand48();
@@ -372,7 +370,7 @@ fn main() {
 
             dir = (camera.dir + dir).normalize();
 
-            let mut nu_filter_samples = || -> f64 {
+            let nu_filter_samples = || -> f64 {
               let r = 2.0 * drand48() as f64;
               if r < 1.0 { r.sqrt() - 1.0 } else { 1.0 - (2.0 - r).sqrt() }
             };
@@ -393,8 +391,8 @@ fn main() {
             let ray = Ray::new(start + lens_sample_point, dir);
 
             /* Accumulate radiance */
-            accumulated_radiance += radiance(&scene_objects, &ray, 0, 1) / samples as f64;
-          }
+            radiance(&scene_objects, &ray, 0, 1) / samples as f64
+          }).sum::<Color>();
 
           total_radiance += accumulated_radiance.clamp(0.0, 1.0) * 0.25;
         }
