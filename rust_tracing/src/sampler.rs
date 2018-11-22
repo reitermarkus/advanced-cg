@@ -2,8 +2,8 @@ use std::f64::consts::PI;
 use vector::Vector;
 use rand::Rng;
 
-pub fn drand48(from: f64, to: f64) -> f64 {
-  rand::thread_rng().gen_range(from, to)
+pub fn drand48() -> f64 {
+  rand::thread_rng().gen_range(0.0, 1.0)
 }
 pub fn random_direction(direction: Vector, max_angle: f64)  -> Vector {
     /* Set up local orthogonal coordinate system u,v,w on surface */
@@ -13,8 +13,8 @@ pub fn random_direction(direction: Vector, max_angle: f64)  -> Vector {
 
   let v = w.cross_product(&u);
 
-  let eps1 = drand48(0.0, 1.0);
-  let eps2 = drand48(0.0, 1.0);
+  let eps1 = drand48();
+  let eps2 = drand48();
 
   let cos_a = 1.0 - eps1 + eps1 * max_angle.cos();
   let sin_a = (1.0 - cos_a * cos_a).sqrt();

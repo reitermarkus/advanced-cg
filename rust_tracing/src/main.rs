@@ -132,7 +132,7 @@ fn radiance(objects: &[Box<&dyn SceneObject>], ray: &Ray, mut depth: i32, E: i32
 
   /* After 5 bounces or if max reflectivity is zero */
   if depth > 5 || p == 0.0 {
-    if drand48(0.0, 1.0) >= p {
+    if drand48() >= p {
       /* No further bounces, only return potential emission */
       return obj.emission() * q as f64;
     }
@@ -147,8 +147,8 @@ fn radiance(objects: &[Box<&dyn SceneObject>], ray: &Ray, mut depth: i32, E: i32
   match obj.refl() {
     ReflType::DIFF => {
       /* Compute random reflection vector on hemisphere */
-      let r1 = 2.0 * PI * drand48(0.0, 1.0);
-      let r2 = drand48(0.0, 1.0);
+      let r1 = 2.0 * PI * drand48();
+      let r2 = drand48();
       let r2s = r2.sqrt();
 
       /* Set up local orthogonal coordinate system u,v,w on surface */
@@ -363,8 +363,8 @@ fn main() {
           // Computes radiance at subpixel using multiple samples.
           for _ in 0..samples {
             // Generate random sample on circular lens.
-            let random_radius = drand48(0.0, 1.0);
-            let random_angle = drand48(0.0, 1.0);
+            let random_radius = drand48();
+            let random_angle = drand48();
             let lens_sample_point = aperture * Vector::new(random_radius.sqrt() * (2.0 * PI * random_angle).cos(), random_radius.sqrt() * (2.0 * PI * random_angle).sin(), 0.0);
 
             let mut dir = (focal_point - (camera.org + lens_sample_point)).normalize();
@@ -372,7 +372,7 @@ fn main() {
             dir = (camera.dir + dir).normalize();
 
             let mut nu_filter_samples = || -> f64 {
-              let r = 2.0 * drand48(0.0, 1.0) as f64;
+              let r = 2.0 * drand48() as f64;
               if r < 1.0 { r.sqrt() - 1.0 } else { 1.0 - (2.0 - r).sqrt() }
             };
 
