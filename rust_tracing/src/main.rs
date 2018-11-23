@@ -15,6 +15,9 @@ extern crate rand;
 extern crate rayon;
 use rayon::prelude::*;
 
+extern crate indicatif;
+use indicatif::{ProgressBar, ProgressStyle};
+
 mod color;
 use color::Color;
 mod image;
@@ -348,9 +351,14 @@ fn main() {
 
   let start_saving = if height < 20 { height / 2 } else { height - 20 };
 
+  let bar = ProgressBar::new(height as u64);
+
+  bar.set_style(ProgressStyle::default_bar()
+      .template("[{elapsed_precise}] {wide_bar:.cyan/blue} {percent:>3}% {msg}"));
+
   // Loop over image rows.
   (0..height).into_par_iter().for_each(|y| {
-     println!("\rRendering ({}spp) {}%     ", samples * 4, (100 * y / (height - 1)));
+    bar.inc(1);
 
     // Loop over image columns.
     (0..width).for_each(|x| {
@@ -394,6 +402,8 @@ fn main() {
       }
     });
   });
+
+  bar.finish();
 
   image_thread.join().unwrap();
 
