@@ -360,7 +360,7 @@ fn main() {
     "
       #version 330 core
       void main() {
-        const vec4 vertices[] = vec4[](vec4(-1.0, -1.0, 0.5, 1.0),
+        const vec4 vertices[] = vec4[] (vec4(-1.0, -1.0, 0.5, 1.0),
                                         vec4( 1.0, -1.0, 0.5, 1.0),
                                         vec4(-1.0,  1.0, 0.5, 1.0),
                                         vec4( 1.0,  1.0, 0.5, 1.0));
@@ -416,8 +416,8 @@ fn main() {
 
     let start_saving = if height < 20 { height / 2 } else { height - 20 };
     // Loop over image rows.
-    let total_radiances = (0..height).flat_map(|y| {
-      println!("\rRendering ({}spp) {}%     ", samples * 4, (100 * y / (height - 1)));
+    let total_radiances = (0..height).rev().zip(0..height).flat_map(|(y, i)| {
+      println!("\rRendering ({}spp) {}%     ", samples * 4, (100 * i / (height - 1)));
 
       // Loop over image columns.
       let radiances : Vec<Color> = (0..width).into_par_iter().map(|x| {
