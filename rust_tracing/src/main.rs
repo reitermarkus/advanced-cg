@@ -423,26 +423,24 @@ fn main() {
       let radiances : Vec<Color> = (0..width).into_par_iter().map(|x| {
         let mut total_radiance = Color::zero();
 
-        // 2 x 2 subsampling per pixel.
-        for sy in 0..2 {
-          for sx in 0..2 {
-            let mut accumulated_radiance = Color::zero();
-
-            // Computes radiance at subpixel using multiple samples.
-            for _ in 0..samples {
-              // Generate random sample on circular lens.
-              let random_radius = drand48();
-              let random_angle = drand48();
-              let lens_sample_point = aperture * Vector::new(random_radius.sqrt() * (2.0 * PI * random_angle).cos(), random_radius.sqrt() * (2.0 * PI * random_angle).sin(), 0.0);
+      // 2 x 2 subsampling per pixel.
+      for sy in 0..2 {
+        for sx in 0..2 {
+          // Computes radiance at subpixel using multiple samples.
+          let accumulated_radiance = (0..samples).map(|_| {
+            // Generate random sample on circular lens.
+            let random_radius = drand48();
+            let random_angle = drand48();
+            let lens_sample_point = aperture * Vector::new(random_radius.sqrt() * (2.0 * PI * random_angle).cos(), random_radius.sqrt() * (2.0 * PI * random_angle).sin(), 0.0);
 
               let mut dir = (focal_point - (camera.org + lens_sample_point)).normalize();
 
               dir = (camera.dir + dir).normalize();
 
-              let mut nu_filter_samples = || -> f64 {
-                let r = 2.0 * drand48() as f64;
-                if r < 1.0 { r.sqrt() - 1.0 } else { 1.0 - (2.0 - r).sqrt() }
-              };
+            let nu_filter_samples = || -> f64 {
+              let r = 2.0 * drand48() as f64;
+              if r < 1.0 { r.sqrt() - 1.0 } else { 1.0 - (2.0 - r).sqrt() }
+            };
 
               let dx = nu_filter_samples();
               let dy = nu_filter_samples();
@@ -459,13 +457,9 @@ fn main() {
 
               let ray = Ray::new(start + lens_sample_point, dir);
 
-              /* Accumulate radiance */
-              accumulated_radiance += radiance(&scene_objects, &ray, 0, 1) / samples as f64;
-            }
-
-            total_radiance += accumulated_radiance.clamp(0.0, 1.0) * 0.25;
-          }
-        }
+            /* Accumulate radiance */
+            radiance(&scene_objects, &ray, 0, 1) / samples as f64
+          }).sum::<Color>();
 
         image.set_color(x, y, total_radiance);
 
