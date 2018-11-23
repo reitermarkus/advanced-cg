@@ -353,22 +353,18 @@ fn main() {
      println!("\rRendering ({}spp) {}%     ", samples * 4, (100 * y / (height - 1)));
 
     // Loop over image columns.
-    for x in 0..width {
-      let mut total_radiance = Color::zero();
-
+    (0..width).for_each(|x| {
       // 2 x 2 subsampling per pixel.
-      for sy in 0..2 {
-        for sx in 0..2 {
+      image.set_color(x, y, (0..2).map(|sx| {
+        (0..2).map(|sy| {
           // Computes radiance at subpixel using multiple samples.
-          let accumulated_radiance = (0..samples).map(|_| {
+          (0..samples).map(|_| {
             // Generate random sample on circular lens.
             let random_radius = drand48();
             let random_angle = drand48();
             let lens_sample_point = aperture * Vector::new(random_radius.sqrt() * (2.0 * PI * random_angle).cos(), random_radius.sqrt() * (2.0 * PI * random_angle).sin(), 0.0);
 
-            let mut dir = (focal_point - (camera.org + lens_sample_point)).normalize();
-
-            dir = (camera.dir + dir).normalize();
+            let dir = (focal_point - (camera.org + lens_sample_point)).normalize();
 
             let nu_filter_samples = || -> f64 {
               let r = 2.0 * drand48() as f64;
@@ -379,31 +375,24 @@ fn main() {
             let dy = nu_filter_samples();
 
             // Ray direction into scene from camera through sample.
-            dir = cx * (((x as f64) + ((sx as f64) + 0.5 + dx) / 2.0) / (width as f64) - 0.5) +
-                              cy * ((((height - y - 1) as f64) + ((sy as f64) + 0.5 + dy) / 2.0) / (height as f64) - 0.5) +
-                              dir;
+            let dir = cx * ((x as f64                       + (sx as f64 + 0.5 + dx as f64) / 2.0) / width as f64  - 0.5) +
+                      cy * (((height - y - 1) as f64 + (sy as f64 + 0.5 + dy as f64) / 2.0) / height as f64 - 0.5) +
+                      (camera.dir + dir).normalize();
 
             // Extend camera ray to start inside box.
-            let start: Vector = camera.org + dir * 130.0;
+            let start = camera.org + dir * 130.0;
 
-            dir = dir.normalize();
+            let ray = Ray::new(start + lens_sample_point, dir.normalize());
 
-            let ray = Ray::new(start + lens_sample_point, dir);
-
-            /* Accumulate radiance */
             radiance(&scene_objects, &ray, 0, 1) / samples as f64
-          }).sum::<Color>();
-
-          total_radiance += accumulated_radiance.clamp(0.0, 1.0) * 0.25;
-        }
-      }
-
-      image.set_color(x, y, total_radiance);
+          }).sum::<Color>().clamp(0.0, 1.0) * 0.25
+        }).sum()
+      }).sum());
 
       if y == start_saving {
         image_thread.thread().unpark();
       }
-    }
+    });
   });
 
   image_thread.join().unwrap();
