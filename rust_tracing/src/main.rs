@@ -2,7 +2,7 @@ use std::f64::consts::PI;
 use std::sync::Arc;
 use std::thread;
 use std::time::{Duration, Instant};
-use std::sync::mpsc::{channel, RecvTimeoutError};
+use std::sync::mpsc::channel;
 
 #[macro_use]
 extern crate clap;
@@ -416,11 +416,11 @@ fn main() {
 
     let start_saving = if height < 20 { height / 2 } else { height - 20 };
     // Loop over image rows.
-    for y in 0..height {
+    let total_radiances = (0..height).flat_map(|y| {
       println!("\rRendering ({}spp) {}%     ", samples * 4, (100 * y / (height - 1)));
 
       // Loop over image columns.
-      let radiances = (0..width).into_par_iter().map(|x| {
+      let radiances : Vec<Color> = (0..width).into_par_iter().map(|x| {
         let mut total_radiance = Color::zero();
 
         // 2 x 2 subsampling per pixel.
@@ -476,10 +476,10 @@ fn main() {
         total_radiance
       }).collect();
 
-      println!("{:?}", radiances);
+      radiances
+    }).collect();
 
-      worker_send.send(radiances).unwrap();
-    }
+    worker_send.send(total_radiances).unwrap();
 
     image_thread.join().unwrap();
   });
