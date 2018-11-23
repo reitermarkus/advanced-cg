@@ -2,6 +2,7 @@ use std::f64::consts::PI;
 use std::sync::Arc;
 use std::thread;
 use std::time::{Duration, Instant};
+use std::sync::mpsc::{channel, RecvTimeoutError};
 
 #[macro_use]
 extern crate clap;
@@ -14,6 +15,15 @@ extern crate lazy_static;
 extern crate rand;
 extern crate rayon;
 use rayon::prelude::*;
+
+#[macro_use]
+extern crate glium;
+
+use glium::{
+    glutin::{Api, GlProfile, GlRequest}, glutin::dpi::LogicalSize, index::{NoIndices, PrimitiveType},
+    texture::buffer_texture::{BufferTexture, BufferTextureType}, vertex::EmptyVertexAttributes,
+    Surface,
+};
 
 mod color;
 use color::Color;
@@ -317,6 +327,61 @@ fn main() {
   let aperture = 2.6;
   let focal_length = 120.0;
 
+  let mut events_loop = glium::glutin::EventsLoop::new();
+  let window = glium::glutin::WindowBuilder::new()
+    .with_dimensions(LogicalSize::new(width as f64, height as f64))
+    .with_title("rust_tracing");
+
+  let context = glium::glutin::ContextBuilder::new()
+    .with_vsync(true)
+    .with_gl(GlRequest::Specific(Api::OpenGl, (3, 2)))
+    .with_gl_profile(GlProfile::Core);
+
+  let display = glium::Display::new(window, context, &events_loop).expect("Failed to create display");
+
+  let mut buffer_texture: BufferTexture<(u8, u8, u8, u8)> =
+    BufferTexture::empty_persistent(
+      &display,
+      width * height * 4,
+      BufferTextureType::Float,
+    ).expect("Failed to create rgb_buffer texture");
+
+  {
+    // init buffer texture to something
+    let mut mapping = buffer_texture.map();
+
+    for texel in mapping.iter_mut() {
+      *texel = (0, 0, 0, 255);
+    }
+  }
+
+  let program = glium::Program::from_source(
+    &display,
+    "
+      #version 330 core
+      void main() {
+        const vec4 vertices[] = vec4[](vec4(-1.0, -1.0, 0.5, 1.0),
+                                        vec4( 1.0, -1.0, 0.5, 1.0),
+                                        vec4(-1.0,  1.0, 0.5, 1.0),
+                                        vec4( 1.0,  1.0, 0.5, 1.0));
+        gl_Position = vertices[gl_VertexID];
+      }
+    ",
+    "
+      #version 330 core
+      uniform int stride;
+      uniform samplerBuffer tex;
+      out vec4 color;
+      void main() {
+        int x = int(gl_FragCoord.x);
+        int y = int(gl_FragCoord.y);
+        int index = y * stride + x;
+        color = texelFetch(tex, index);
+      }
+    ",
+    None,
+  ).expect("Failed to create shader");
+
   let total_bench = Instant::now();
 
   let mut scene_objects: Vec<Box<&dyn SceneObject>> = Vec::new();
@@ -338,81 +403,140 @@ fn main() {
   let image = Arc::new(Image::new(width, height));
   let image_clone = image.clone();
 
-  let image_thread = thread::spawn(move || {
-    thread::park();
+  let (worker_send, main_recv) = channel::<Vec<Color>>();
 
-    if let Err(e) = image_clone.save("image.ppm") {
-      panic!("{:?}", e)
-    }
-  });
+  let worker = thread::spawn(move || {
+    let image_thread = thread::spawn(move || {
+      thread::park();
 
-  let start_saving = if height < 20 { height / 2 } else { height - 20 };
+      if let Err(e) = image_clone.save("image.ppm") {
+        panic!("{:?}", e)
+      }
+    });
 
-  // Loop over image rows.
-  (0..height).into_par_iter().for_each(|y| {
-     println!("\rRendering ({}spp) {}%     ", samples * 4, (100 * y / (height - 1)));
+    let start_saving = if height < 20 { height / 2 } else { height - 20 };
+    // Loop over image rows.
+    for y in 0..height {
+      println!("\rRendering ({}spp) {}%     ", samples * 4, (100 * y / (height - 1)));
 
-    // Loop over image columns.
-    for x in 0..width {
-      let mut total_radiance = Color::zero();
+      // Loop over image columns.
+      let radiances = (0..width).into_par_iter().map(|x| {
+        let mut total_radiance = Color::zero();
 
-      // 2 x 2 subsampling per pixel.
-      for sy in 0..2 {
-        for sx in 0..2 {
-          let mut accumulated_radiance = Color::zero();
+        // 2 x 2 subsampling per pixel.
+        for sy in 0..2 {
+          for sx in 0..2 {
+            let mut accumulated_radiance = Color::zero();
 
-          // Computes radiance at subpixel using multiple samples.
-          for _ in 0..samples {
-            // Generate random sample on circular lens.
-            let random_radius = drand48();
-            let random_angle = drand48();
-            let lens_sample_point = aperture * Vector::new(random_radius.sqrt() * (2.0 * PI * random_angle).cos(), random_radius.sqrt() * (2.0 * PI * random_angle).sin(), 0.0);
+            // Computes radiance at subpixel using multiple samples.
+            for _ in 0..samples {
+              // Generate random sample on circular lens.
+              let random_radius = drand48();
+              let random_angle = drand48();
+              let lens_sample_point = aperture * Vector::new(random_radius.sqrt() * (2.0 * PI * random_angle).cos(), random_radius.sqrt() * (2.0 * PI * random_angle).sin(), 0.0);
 
-            let mut dir = (focal_point - (camera.org + lens_sample_point)).normalize();
+              let mut dir = (focal_point - (camera.org + lens_sample_point)).normalize();
 
-            dir = (camera.dir + dir).normalize();
+              dir = (camera.dir + dir).normalize();
 
-            let mut nu_filter_samples = || -> f64 {
-              let r = 2.0 * drand48() as f64;
-              if r < 1.0 { r.sqrt() - 1.0 } else { 1.0 - (2.0 - r).sqrt() }
-            };
+              let mut nu_filter_samples = || -> f64 {
+                let r = 2.0 * drand48() as f64;
+                if r < 1.0 { r.sqrt() - 1.0 } else { 1.0 - (2.0 - r).sqrt() }
+              };
 
-            let dx = nu_filter_samples();
-            let dy = nu_filter_samples();
+              let dx = nu_filter_samples();
+              let dy = nu_filter_samples();
 
-            // Ray direction into scene from camera through sample.
-            dir = cx * (((x as f64) + ((sx as f64) + 0.5 + dx) / 2.0) / (width as f64) - 0.5) +
-                              cy * ((((height - y - 1) as f64) + ((sy as f64) + 0.5 + dy) / 2.0) / (height as f64) - 0.5) +
-                              dir;
+              // Ray direction into scene from camera through sample.
+              dir = cx * (((x as f64) + ((sx as f64) + 0.5 + dx) / 2.0) / (width as f64) - 0.5) +
+                                cy * ((((height - y - 1) as f64) + ((sy as f64) + 0.5 + dy) / 2.0) / (height as f64) - 0.5) +
+                                dir;
 
-            // Extend camera ray to start inside box.
-            let start: Vector = camera.org + dir * 130.0;
+              // Extend camera ray to start inside box.
+              let start: Vector = camera.org + dir * 130.0;
 
-            dir = dir.normalize();
+              dir = dir.normalize();
 
-            let ray = Ray::new(start + lens_sample_point, dir);
+              let ray = Ray::new(start + lens_sample_point, dir);
 
-            /* Accumulate radiance */
-            accumulated_radiance += radiance(&scene_objects, &ray, 0, 1) / samples as f64;
+              /* Accumulate radiance */
+              accumulated_radiance += radiance(&scene_objects, &ray, 0, 1) / samples as f64;
+            }
+
+            total_radiance += accumulated_radiance.clamp(0.0, 1.0) * 0.25;
           }
-
-          total_radiance += accumulated_radiance.clamp(0.0, 1.0) * 0.25;
         }
-      }
 
-      image.set_color(x, y, total_radiance);
+        image.set_color(x, y, total_radiance);
 
-      if y == start_saving {
-        image_thread.thread().unpark();
-      }
+        if y == start_saving {
+          image_thread.thread().unpark();
+        }
+
+        total_radiance
+      }).collect();
+
+      println!("{:?}", radiances);
+
+      worker_send.send(radiances).unwrap();
     }
-  });
 
-  image_thread.join().unwrap();
+    image_thread.join().unwrap();
+  });
 
   let into_ms = |x: Duration| (x.as_secs() * 1_000) + (x.subsec_nanos() / 1_000_000) as u64;
 
   let total_bench_elapsed = total_bench.elapsed();
+
+  let mut quit = false;
+
+  while !quit {
+    events_loop.poll_events(|event| {
+      use glium::glutin::{ElementState, Event, VirtualKeyCode, WindowEvent};
+      if let Event::WindowEvent { event, .. } = event {
+        match event {
+          WindowEvent::KeyboardInput { input, .. } => {
+            if let ElementState::Released = input.state {
+              if let Some(VirtualKeyCode::Escape) = input.virtual_keycode {
+                quit = true;
+              }
+            }
+          }
+          _ => (),
+        };
+      }
+    });
+
+    if quit { break; }
+
+    if let Ok(buffer) = main_recv.recv() {
+      {
+        let mut mapping = buffer_texture.map();
+        for (texel, rgb) in mapping.iter_mut().zip(buffer.iter()) {
+          *texel = (
+            (255.99 * rgb.x.min(1.0).max(0.0)) as u8,
+            (255.99 * rgb.y.min(1.0).max(0.0)) as u8,
+            (255.99 * rgb.z.min(1.0).max(0.0)) as u8,
+            255,
+          );
+        }
+      }
+
+      let mut target = display.draw();
+
+      target.draw(
+        EmptyVertexAttributes { len: 4 },
+        NoIndices(PrimitiveType::TriangleStrip),
+        &program,
+        &uniform!{ tex: &buffer_texture, stride: width as i32 },
+        &Default::default(),
+      ).unwrap();
+
+      target.finish().unwrap();
+    }
+  }
+
+  worker.join().unwrap();
 
   println!("┢━━━━━━━━━━━━━━━━━━━━╈━━━━━━━━━━━┪");
   println!("┃ Total              ┃ {:#6 } ms ┃", into_ms(total_bench_elapsed));
