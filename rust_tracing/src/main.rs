@@ -303,6 +303,14 @@ fn main() {
                     .max_values(1)
                     .multiple(true)
                     .help("Sets samples"))
+                  .arg(Arg::with_name("threads")
+                    .long("threads")
+                    .short("t")
+                    .takes_value(true)
+                    .min_values(1)
+                    .max_values(1)
+                    .multiple(true)
+                    .help("Set amount of worker threads"))
                   .get_matches();
 
   let width = if matches.is_present("width") {
@@ -325,6 +333,13 @@ fn main() {
       Err(_) => 2
     }
   } else { 2 };
+
+  if matches.is_present("threads") {
+    match value_t!(matches, "threads", usize) {
+      Ok(t) => rayon::ThreadPoolBuilder::new().num_threads(t).build_global().unwrap(),
+      Err(_) => ()
+    }
+  }
 
   let aperture = 2.6;
   let focal_length = 120.0;
