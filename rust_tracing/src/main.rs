@@ -1,5 +1,4 @@
 use std::f64::consts::PI;
-use std::sync::Arc;
 use std::thread;
 use std::time::{Duration, Instant};
 use std::sync::mpsc::channel;
@@ -16,6 +15,8 @@ extern crate rand;
 extern crate rayon;
 use rayon::prelude::*;
 
+extern crate image;
+
 extern crate indicatif;
 use indicatif::{ProgressBar, ProgressStyle};
 
@@ -23,15 +24,13 @@ use indicatif::{ProgressBar, ProgressStyle};
 extern crate glium;
 
 use glium::{
-    glutin::{Api, GlProfile, GlRequest}, glutin::dpi::LogicalSize, index::{NoIndices, PrimitiveType},
-    texture::buffer_texture::{BufferTexture, BufferTextureType}, vertex::EmptyVertexAttributes,
-    Surface,
+  glutin::{Api, GlProfile, GlRequest}, glutin::dpi::LogicalSize, index::{NoIndices, PrimitiveType},
+  texture::buffer_texture::{BufferTexture, BufferTextureType}, vertex::EmptyVertexAttributes,
+  Surface,
 };
 
 mod color;
 use color::Color;
-mod image;
-use image::Image;
 mod ray;
 use ray::Ray;
 mod sampler;
@@ -385,8 +384,6 @@ fn main() {
     None,
   ).expect("Failed to create shader");
 
-  let total_bench = Instant::now();
-
   let mut scene_objects: Vec<Box<&dyn SceneObject>> = Vec::new();
 
   for tris in TRIS.iter() {
@@ -403,22 +400,9 @@ fn main() {
   let cx = Vector::new(width as f64 * 0.5135 / height as f64, 0.0, 0.0);
   let cy = (cx.cross_product(&camera.dir)).normalize() * 0.5135;
 
-  let image = Arc::new(Image::new(width, height));
-  let image_clone = image.clone();
-
   let (worker_send, main_recv) = channel::<Vec<Color>>();
 
   let worker = thread::spawn(move || {
-    let image_thread = thread::spawn(move || {
-      thread::park();
-
-      if let Err(e) = image_clone.save("image.ppm") {
-        panic!("{:?}", e)
-      }
-    });
-
-    let start_saving = if height < 20 { height / 2 } else { height - 20 };
-
     let bar = ProgressBar::new(height as u64);
 
     bar.set_style(ProgressStyle::default_bar()
@@ -464,12 +448,6 @@ fn main() {
           }).sum()
         }).sum();
 
-        image.set_color(x, y, total_radiance);
-
-        if y == start_saving {
-          image_thread.thread().unpark();
-        }
-
         total_radiance
       }).collect();
 
@@ -478,14 +456,8 @@ fn main() {
 
     worker_send.send(total_radiances).unwrap();
 
-    image_thread.join().unwrap();
-
     bar.finish();
   });
-
-  let into_ms = |x: Duration| (x.as_secs() * 1_000) + (x.subsec_nanos() / 1_000_000) as u64;
-
-  let total_bench_elapsed = total_bench.elapsed();
 
   let mut quit = false;
 
@@ -496,8 +468,20 @@ fn main() {
         match event {
           WindowEvent::KeyboardInput { input, .. } => {
             if let ElementState::Released = input.state {
-              if let Some(VirtualKeyCode::Escape) = input.virtual_keycode {
-                quit = true;
+              match input.virtual_keycode {
+                Some(VirtualKeyCode::Escape) => quit = true,
+                Some(VirtualKeyCode::F1) => {
+                  let image: glium::texture::RawImage2d<u8> = display.read_front_buffer();
+                  let image = image::ImageBuffer::from_raw(
+                    image.width, image.height, image.data.into_owned()) .unwrap();
+
+                  let image = image::DynamicImage::ImageRgba8(image).flipv().to_rgb();
+
+                  image
+                      .save("image.png")
+                      .expect("Failed to save output image");
+                },
+                _ => ()
               }
             }
           }
@@ -536,8 +520,4 @@ fn main() {
   }
 
   worker.join().unwrap();
-
-  println!("┢━━━━━━━━━━━━━━━━━━━━╈━━━━━━━━━━━┪");
-  println!("┃ Total              ┃ {:#6 } ms ┃", into_ms(total_bench_elapsed));
-  println!("┗━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━┛");
 }
