@@ -466,6 +466,7 @@ fn main() {
       use glium::glutin::{ElementState, Event, VirtualKeyCode, WindowEvent};
       if let Event::WindowEvent { event, .. } = event {
         match event {
+          WindowEvent::CloseRequested => quit = true,
           WindowEvent::KeyboardInput { input, .. } => {
             if let ElementState::Released = input.state {
               match input.virtual_keycode {
