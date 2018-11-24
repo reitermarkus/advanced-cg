@@ -16,6 +16,9 @@ extern crate rand;
 extern crate rayon;
 use rayon::prelude::*;
 
+extern crate indicatif;
+use indicatif::{ProgressBar, ProgressStyle};
+
 #[macro_use]
 extern crate glium;
 
@@ -415,9 +418,14 @@ fn main() {
     });
 
     let start_saving = if height < 20 { height / 2 } else { height - 20 };
+
+    let bar = ProgressBar::new(height as u64);
+
+    bar.set_style(ProgressStyle::default_bar()
+        .template("[{elapsed_precise}] {wide_bar:.cyan/blue} {percent:>3}% {msg}"));
     // Loop over image rows.
-    let total_radiances = (0..height).rev().zip(0..height).flat_map(|(y, i)| {
-      println!("\rRendering ({}spp) {}%     ", samples * 4, (100 * i / (height - 1)));
+    let total_radiances = (0..height).rev().flat_map(|y| {
+      bar.inc(1);
 
       // Loop over image columns.
       let radiances : Vec<Color> = (0..width).into_par_iter().map(|x| {
@@ -471,6 +479,8 @@ fn main() {
     worker_send.send(total_radiances).unwrap();
 
     image_thread.join().unwrap();
+
+    bar.finish();
   });
 
   let into_ms = |x: Duration| (x.as_secs() * 1_000) + (x.subsec_nanos() / 1_000_000) as u64;
