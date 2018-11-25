@@ -1,6 +1,5 @@
 use std::f64::consts::PI;
 use std::thread;
-use std::time::{Duration, Instant};
 use std::sync::mpsc::channel;
 
 #[macro_use]
@@ -24,10 +23,13 @@ use indicatif::{ProgressBar, ProgressStyle};
 extern crate glium;
 
 use glium::{
-  glutin::{Api, GlProfile, GlRequest}, glutin::dpi::LogicalSize, index::{NoIndices, PrimitiveType},
+  glutin::{Api, GlProfile, GlRequest}, index::{NoIndices, PrimitiveType},
   texture::buffer_texture::{BufferTexture, BufferTextureType}, vertex::EmptyVertexAttributes,
   Surface,
 };
+
+#[macro_use]
+extern crate glium_text_rusttype as glium_text;
 
 mod color;
 use color::Color;
@@ -346,7 +348,7 @@ fn main() {
 
   let mut events_loop = glium::glutin::EventsLoop::new();
   let window = glium::glutin::WindowBuilder::new()
-    .with_dimensions(LogicalSize::new(width as f64, height as f64))
+    .with_dimensions((width as f64, height as f64).into())
     .with_title("rust_tracing");
 
   let context = glium::glutin::ContextBuilder::new()
@@ -422,6 +424,7 @@ fn main() {
 
     bar.set_style(ProgressStyle::default_bar()
         .template("[{elapsed_precise}] {wide_bar:.cyan/blue} {percent:>3}% {msg}"));
+
     // Loop over image rows.
     let total_radiances = (0..height).rev().flat_map(|y| {
       bar.inc(1);
@@ -474,6 +477,24 @@ fn main() {
     bar.finish();
   });
 
+  let system = glium_text::TextSystem::new(&display);
+
+  let font = glium_text::FontTexture::new(&display, &include_bytes!("../font.ttf")[..], 120, glium_text::FontTexture::ascii_character_list()).unwrap();
+
+  let text = glium_text::TextDisplay::new(&system, &font, "Rendering...");
+  let text_width = text.get_width();
+
+  let (w, h) = display.get_framebuffer_dimensions();
+
+  let matrix = [[2.0 / text_width, 0.0, 0.0, 0.0],
+                [0.0, 2.0 * (w as f32 / 2.0) / (h as f32 / 2.0) / text_width, 0.0, 0.0],
+                [0.0, 0.0, 1.0, 0.0],
+                [-1.0, 0.0, 0.0, 3.0f32]];
+
+  let mut target = display.draw();
+  glium_text::draw(&text, &system, &mut target, matrix, (1.0, 1.0, 1.0, 1.0));
+  target.finish().expect("failed to write text");
+
   let mut quit = false;
 
   while !quit {
@@ -494,8 +515,8 @@ fn main() {
                   let image = image::DynamicImage::ImageRgba8(image).flipv().to_rgb();
 
                   image
-                      .save("image.png")
-                      .expect("Failed to save output image");
+                    .save("image.png")
+                    .expect("Failed to save output image");
                 },
                 _ => ()
               }
